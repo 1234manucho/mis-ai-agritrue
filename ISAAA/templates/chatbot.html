@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0fdf4;
+      margin: 0;
+      padding: 0;
+    }
+    #chatbot-icon {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #34d399;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 999;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    #chatbot-container {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 360px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      animation: slide-up 0.4s ease-out;
+    }
+    @keyframes slide-up {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #chatbot-header {
+      background: linear-gradient(90deg, #34d399, #10b981);
+      color: white;
+      padding: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #chatbot-body {
+      padding: 16px;
+      background: #f0fdf4;
+      overflow-y: auto;
+      max-height: 320px;
+    }
+    #chatbot-input-container {
+      display: flex;
+      padding: 12px;
+      background: #ecfdf5;
+      border-top: 1px solid #d1fae5;
+    }
+    #chatbot-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1fae5;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    #send-message, #mic-button {
+      background: #34d399;
+      color: white;
+      border: none;
+      padding: 0 12px;
+      margin-left: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .chatbot-message {
+      padding: 10px 14px;
+      border-radius: 14px;
+      margin-bottom: 8px;
+      max-width: 80%;
+    }
+    .user-message {
+      background: #34d399;
+      color: white;
+      margin-left: auto;
+    }
+    .bot-message {
+      background: #d1fae5;
+      color: black;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbot-icon">💬</div>
+  <div id="chatbot-container">
+    <div id="chatbot-header">
+      <span>AgriTrue Chatbot</span>
+      <button id="close-chatbot" style="color:white;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+    </div>
+    <div id="chatbot-body">
+      <div id="chatbot-messages"></div>
+    </div>
+    <div id="chatbot-input-container">
+      <input type="text" id="chatbot-input" placeholder="Type or speak..."/>
+      <button id="mic-button">🎤</button>
+      <button id="send-message">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatbotIcon = document.getElementById("chatbot-icon");
+    const chatbotContainer = document.getElementById("chatbot-container");
+    const closeBtn = document.getElementById("close-chatbot");
+    const messagesDiv = document.getElementById("chatbot-messages");
+    const input = document.getElementById("chatbot-input");
+    const sendBtn = document.getElementById("send-message");
+    const micBtn = document.getElementById("mic-button");
+
+    const messages = [];
+
+    function appendMessage(text, isUser) {
+      const msg = document.createElement("div");
+      msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
+      msg.textContent = text;
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, true);
+      messages.push({ role: "user", content: text });
+      input.value = "";
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages })
+        });
+        const data = await res.json();
+        if (data.reply) {
+          appendMessage(data.reply, false);
+          messages.push({ role: "assistant", content: data.reply });
+        } else {
+          appendMessage("No response from server.", false);
+        }
+      } catch (err) {
+        console.error(err);
+        appendMessage("Error connecting to the server.", false);
+      }
+    }
+
+    sendBtn.onclick = sendMessage;
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") sendMessage();
+    };
+
+    chatbotIcon.onclick = () => {
+      chatbotContainer.style.display = "flex";
+      chatbotIcon.style.display = "none";
+    };
+
+    closeBtn.onclick = () => {
+      chatbotContainer.style.display = "none";
+      chatbotIcon.style.display = "flex";
+    };
+
+    // 🎤 Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        appendMessage("Sorry, I didn't catch that.", false);
+      };
+
+      micBtn.onclick = () => {
+        recognition.start();
+      };
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech Recognition not supported in this browser.";
+    }
+  </script>
+</body>
+</html>

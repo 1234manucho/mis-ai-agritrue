@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Community Notes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body.notes-body {
+            background: linear-gradient(to bottom, lightblue, green);
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .note-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .note-card:hover {
+            background: #e6ffe6;
+        }
+        .note-form textarea, .note-form input, .search-bar input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .note-form button, .note-actions button {
+            background: green;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .note-form button:hover, .note-actions button:hover {
+            background: darkgreen;
+        }
+        .search-bar input {
+            background: #e0f7fa;
+        }
+    </style>
+</head>
+<body class="notes-body">
+    <div class="container">
+        <section>
+            <h1><i class="fas fa-leaf"></i> Community Notes</h1>
+
+            <form method="POST" class="note-form">
+                <textarea name="note" placeholder="Write a new note..." required></textarea>
+                <input type="text" name="tags" placeholder="Add tags (comma separated)">
+                <button type="submit"><i class="fas fa-paper-plane"></i> Post Note</button>
+            </form>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Search notes by tag...">
+            </div>
+
+            <div id="notesContainer">
+                {% for note in notes %}
+                <div class="note-card" data-tags="{{ note.tags|default('') }}">
+                    <p>{{ note.content }}</p>
+                    <div class="note-tags">
+                        <strong>Tags:</strong> {{ note.tags or 'None' }} |
+                        <strong>Posted:</strong> {{ note.timestamp }} |
+                        {% if note.verified %}<span class="verified">✅ Verified</span>{% endif %}
+                    </div>
+                    <div class="note-actions">
+                        <form action="{{ url_for('post_comment', note_id=note.id) }}" method="post" style="display:inline;">
+                            <input type="text" name="comment" placeholder="💬 Add comment..." required>
+                            <button type="submit">Comment</button>
+                        </form>
+                        <button onclick="verifyNote('{{ note.id }}')">✔ Verify</button>
+                        <button onclick="repostNote('{{ note.id }}')">♻ Repost</button>
+                    </div>
+                    {% for comment in note.comments %}
+                        <div class="comment">💬 {{ comment[0] }} <small>({{ comment[1] }})</small></div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    <div class="text-center mt-5">
+        <a
+          href="/"
+          class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
+          style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
+        >
+          ← Back to Home
+        </a>
+    </div>
+    
+    <footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
+        &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+    </footer>
+
+    <script>
+        function verifyNote(noteId) {
+            fetch(`/verify/${noteId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'verified') {
+                        location.reload();
+                    }
+                });
+        }
+
+        function repostNote(noteId) {
+            fetch(`/repost/${noteId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'reposted') {
+                        location.reload();
+                    }
+                });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll('.note-card').forEach(note => {
+                const tags = note.getAttribute('data-tags').toLowerCase();
+                note.style.display = tags.includes(keyword) ? 'block' : 'none';
+            });
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTrue Home</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px; /* Initially collapsed */
+            height: 100vh;
+            background-color: #f8f9fa;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        .sidebar:hover {
+            width: 250px; /* Expanded width */
+        }
+        .sidebar .sidebar-content {
+            display: none;
+            padding: 10px;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar:hover .sidebar-content {
+            display: block;
+        }
+        /* Adjust the content section to not overlap with sidebar */
+        .content {
+            margin-left: 80px; /* Initially aligned with the collapsed sidebar */
+            transition: margin-left 0.3s ease;
+        }
+        .sidebar:hover ~ .content {
+            margin-left: 250px; /* Adjust content when sidebar is expanded */
+        }
+        /* Sidebar Links */
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px;
+            display: block;
+            font-size: 18px;
+        }
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-content">
+            <h4 class="text-center">Dashboard</h4>
+            <a href="/dashboard">Dashboard Overview</a>
+            <a href="/community-notes">Community Notes</a>
+            <a href="/chatbot">AI Chatbot</a>
+            <a href="/ml-analyzer">ML Analyzer</a>
+             <a href="/know_your_land">know yourland</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">🌾 AgriTrue</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/community-notes">Community Notes</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/chatbot">AI Chatbot</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/ml-analyzer">ML Analyzer</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/ussd">USSD</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/dashboard">Dashboard</a></li>
+                         <li class="nav-item"><a class="btn btn-outline-success me-2" href="/know_your_land">knowyourland</a></li>
+                        {% if current_user.is_authenticated %}
+                            <li class="nav-item"><a class="btn btn-outline-success me-2" href="/profile">Profile</a></li>
+                            <li class="nav-item"><a class="btn btn-outline-danger me-2" href="/logout">Logout</a></li>
+                            {% if current_user.is_admin %}
+                                <li class="nav-item"><a class="btn btn-outline-warning me-2" href="/admin">Admin</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li class="nav-item"><a class="btn btn-outline-primary me-2" href="/login">Login</a></li>
+                            <li class="nav-item"><a class="btn btn-outline-primary me-2" href="/register">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="container">
+                <h1>Welcome to AgriTrue</h1>
+                <p>Your trusted platform to combat agricultural misinformation.</p>
+                <a href="https://www.youtube.com/watch?v=6TLPSPwMSm0" class="btn btn-success btn-lg mt-3" style="color: black;">Learn More</a>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="container features">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Community Notes</h5>
+                            <p class="card-text">Collaborate with others to share verified agricultural information.</p>
+                            <a href="/community-notes" class="btn btn-success">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">AI Chatbot</h5>
+                            <p class="card-text">Get instant answers to your agricultural queries.</p>
+                            <a href="/chatbot" class="btn btn-success">Chat Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body">
+                            <h5 class="card-title">ML Analyzer</h5>
+                            <p class="card-text">Analyze data with machine learning tools for better insights.</p>
+                            <a href="/ml-analyzer" class="btn btn-success">Analyze</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <section>
+            <div class="row g-4 justify-content-center">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-success">1,200</h3>
+                        <p class="text-muted">Registered Farmers</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-primary">850</h3>
+                        <p class="text-muted">Hectares Cultivated</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-info">95%</h3>
+                        <p class="text-muted">Data Accuracy</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-warning">500+</h3>
+                        <p class="text-muted">Verified Experts</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-danger">300+</h3>
+                        <p class="text-muted">Community Projects</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
+                        <h3 class="display-6 text-secondary">50</h3>
+                        <p class="text-muted">Innovations Tracked</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <hr>
+       
+        <div class="gallery-container" background-color: #03f103; padding: 20px; border-radius: 10px;">
+            <div class="image-card">
+              <img src="/static/images/weed1.jpg" alt="Weed Identification" />
+              <div class="caption">
+                <h3>Weed Control by uprooting</h3>
+                <p>Uprooting weeds involves physically removing them from the soil, either by hand or with tools like hoes or weed wrenches. This method is effective for herbaceous, annual, and some shrub weeds, but may be less successful for deep-rooted perennial weeds. Uprooting can prevent weed spread and reduce competition with desired plant</p>
+              </div>
+            </div>
+            <div class="image-card">
+              <img src="/static/images/weed2.jpg" alt="Pest Control" />
+              <div class="caption">
+                <h3>Pest and weed Control by lawn fertilizer</h3>
+                <p>While standard lawn fertilizers don't kill weeds, some products combine fertilizers with herbicides to kill weeds and feed the lawn. These are often called "Weed & Feed" products. Maintaining a healthy, dense lawn through proper fertilization can also help suppress weed growth by outcompeting weeds for resources like sunlight and nutrients.</p>
+              </div>
+            </div>
+            <div class="image-card">
+              <img src="/static/images/weed4.jpg" alt="Soil Health" />
+              <div class="caption">
+                <h3>Soil Health</h3>
+                <p>Understand the importance of soil health for sustainable farming.
+                    Weed and pest control in soil involves various methods, including chemical, mechanical, and biological approaches. Herbicides are commonly used to kill weeds, while soil fumigants can target pests. Other techniques like soil solarization, cover cropping, and crop rotation also play a role in managing both weeds and pests.
+                </p>
+              </div>
+            </div>
+          </div>
+<style>
+  @keyframes slideIn {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>  
+<!-- AgriTrue Loader -->
+<!-- AgriTrue Loader -->
+<div id="agritrue-loader">
+    <div class="loader-wrapper">
+        <div class="leaf"></div>
+        <h3 class="loading-text">AgriTrue Hello farmer please wait...</h3>
+    </div>
+</div>
+
+<style>
+    #agritrue-loader {
+        position: fixed;
+        z-index: 9999;
+        background: #050806;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: opacity 0.5s ease;
+    }
+
+    .loader-wrapper {
+        text-align: center;
+    }
+
+    .leaf {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg, #03f103, #81C784);
+        border-radius: 0 50% 50% 50%;
+        animation: spin 1.2s linear infinite;
+        transform: rotate(-45deg);
+        margin: auto;
+    }
+
+    .loading-text {
+        margin-top: 20px;
+        color: #4CAF50;
+        font-weight: 600;
+        font-size: 1.2rem;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.2); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+</style>
+
+<script>
+    window.addEventListener("load", () => {
+        const loader = document.getElementById("agritrue-loader");
+
+        // Keep loader visible for 30 seconds
+        setTimeout(() => {
+            loader.style.opacity = 0;
+            setTimeout(() => loader.style.display = "none", 500);
+        }, 1500); // 30,000 ms = 30 seconds
+    });
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0fdf4;
+      margin: 0;
+      padding: 0;
+    }
+    #chatbot-icon {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #34d399;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 999;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    #chatbot-container {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 360px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      animation: slide-up 0.4s ease-out;
+    }
+    @keyframes slide-up {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #chatbot-header {
+      background: linear-gradient(90deg, #34d399, #10b981);
+      color: white;
+      padding: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #chatbot-body {
+      padding: 16px;
+      background: #f0fdf4;
+      overflow-y: auto;
+      max-height: 320px;
+    }
+    #chatbot-input-container {
+      display: flex;
+      padding: 12px;
+      background: #ecfdf5;
+      border-top: 1px solid #d1fae5;
+    }
+    #chatbot-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1fae5;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    #send-message, #mic-button {
+      background: #34d399;
+      color: white;
+      border: none;
+      padding: 0 12px;
+      margin-left: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .chatbot-message {
+      padding: 10px 14px;
+      border-radius: 14px;
+      margin-bottom: 8px;
+      max-width: 80%;
+    }
+    .user-message {
+      background: #34d399;
+      color: white;
+      margin-left: auto;
+    }
+    .bot-message {
+      background: #d1fae5;
+      color: black;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbot-icon">💬</div>
+  <div id="chatbot-container">
+    <div id="chatbot-header">
+      <span>AgriTrue Chatbot</span>
+      <button id="close-chatbot" style="color:white;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+    </div>
+    <div id="chatbot-body">
+      <div id="chatbot-messages"></div>
+    </div>
+    <div id="chatbot-input-container">
+      <input type="text" id="chatbot-input" placeholder="Type or speak..."/>
+      <button id="mic-button">🎤</button>
+      <button id="send-message">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatbotIcon = document.getElementById("chatbot-icon");
+    const chatbotContainer = document.getElementById("chatbot-container");
+    const closeBtn = document.getElementById("close-chatbot");
+    const messagesDiv = document.getElementById("chatbot-messages");
+    const input = document.getElementById("chatbot-input");
+    const sendBtn = document.getElementById("send-message");
+    const micBtn = document.getElementById("mic-button");
+
+    const messages = [];
+
+    function appendMessage(text, isUser) {
+      const msg = document.createElement("div");
+      msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
+      msg.textContent = text;
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, true);
+      messages.push({ role: "user", content: text });
+      input.value = "";
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages })
+        });
+        const data = await res.json();
+        if (data.reply) {
+          appendMessage(data.reply, false);
+          messages.push({ role: "assistant", content: data.reply });
+        } else {
+          appendMessage("No response from server.", false);
+        }
+      } catch (err) {
+        console.error(err);
+        appendMessage("Error connecting to the server.", false);
+      }
+    }
+
+    sendBtn.onclick = sendMessage;
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") sendMessage();
+    };
+
+    chatbotIcon.onclick = () => {
+      chatbotContainer.style.display = "flex";
+      chatbotIcon.style.display = "none";
+    };
+
+    closeBtn.onclick = () => {
+      chatbotContainer.style.display = "none";
+      chatbotIcon.style.display = "flex";
+    };
+
+    // 🎤 Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        appendMessage("Sorry, I didn't catch that.", false);
+      };
+
+      micBtn.onclick = () => {
+        recognition.start();
+      };
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech Recognition not supported in this browser.";
+    }
+  </script>
+</body>
+</html>
+<footer class="text-center py-6 text-sm text-gray-400">
+    &copy; 2025 AgriTrue. Empowering informed agriculture 🌱
+  </footer>
+
+
+      
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

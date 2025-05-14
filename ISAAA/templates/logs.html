@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>USSD Logs</title></head>
+<body>
+<h2>USSD Log History</h2>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Timestamp</th>
+        <th>Code Entered</th>
+        <th>Response</th>
+    </tr>
+    {% for log in logs %}
+    <tr>
+        <td>{{ log.timestamp }}</td>
+        <td>{{ log.code_entered }}</td>
+        <td>{{ log.response_given }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="/ussd">← Back to USSD</a>
+</body>
+</html>

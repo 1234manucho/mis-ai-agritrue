@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>USSD Simulation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom, #d4fcf8, #a8e6cf);
+            color: #333;
+            text-align: center;
+            padding: 30px;
+            margin: 0;
+        }
+        h1 {
+            color: #1b5e20;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        form {
+            margin-top: 30px;
+            display: inline-block;
+            background: #ffffff;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        input[type="text"] {
+            padding: 12px;
+            font-size: 1em;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #43a047;
+            outline: none;
+            box-shadow: 0 0 8px rgba(67, 160, 71, 0.5);
+        }
+        button {
+            padding: 12px 25px;
+            background: #43a047;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: #388e3c;
+            transform: scale(1.05);
+        }
+        p {
+            font-size: 1.2em;
+            margin-top: 20px;
+            background: #e8f5e9;
+            display: inline-block;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
+        }
+        .agri-image {
+            width: 150px;
+            margin-top: 30px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+        }
+        a {
+            text-decoration: none;
+            color: #2e7d32;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #1b5e20;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="animate_animated animate_fadeInDown">USSD Code Simulation</h1>
+    <form method="post">
+        <input type="hidden" name="session_level" value="{{ session_level }}">
+        <input type="text" name="ussd_code" placeholder="e.g., *456#" required>
+        <button type="submit">Submit</button>
+    </form>
+    {% if response %}
+        <p class="animate_animated animate_fadeInUp"><strong>Response:</strong><br>{{ response | safe }}</p>
+    {% endif %}
+    <br>
+    <a href="/">⬅ Back to Home</a>
+    <div>
+        <img src="https://cdn-icons-png.flaticon.com/512/2913/2913466.png" class="agri-image" alt="Farm Icon">
+    </div>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AgriTrue ML Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        body {
+            background: #f5fff5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        h2, h4, h5 {
+            color: #2e7d32;
+        }
+
+        .btn-primary {
+            background-color: #388e3c;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e7d32;
+        }
+
+        #loader {
+            position: fixed;
+            z-index: 9999;
+            background: rgba(255, 255, 255, 0.95);
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .loader-text {
+            font-size: 1.5rem;
+            color: #2e7d32;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .result-preview {
+            margin-top: 30px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+<div id="loader">
+    <div class="spinner-border text-success" style="width: 4rem; height: 4rem;" role="status"></div>
+    <p class="loader-text animate_animated animatepulse animate_infinite">Analyzing your data with AgriTrue...</p>
+</div>
+
+<div class="container mt-5">
+    <h2 class="mb-4 animate_animated animate_fadeInDown">🌾 AgriTrue ML Analyzer</h2>
+
+    {% if error %}
+        <div class="alert alert-danger animate_animated animate_fadeIn">{{ error }}</div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
+        <div class="form-group">
+            <label for="file">Upload Image, Video, or PDF</label>
+            <input type="file" class="form-control" name="file" id="file" accept=".jpg,.jpeg,.png,.mp4,.mov,.pdf" required>
+        </div>
+        <button class="btn btn-primary btn-block">Analyze</button>
+    </form>
+
+    {% if analysis_result %}
+        <div class="result-preview animate_animated animate_fadeInUp">
+            <h4 class="mt-5">Analysis Result</h4>
+
+            {% if file_type == 'image' %}
+                <img src="{{ url_for('static', filename='uploads/' + file_name) }}" class="img-fluid rounded mb-3" alt="Uploaded Image">
+            {% elif file_type == 'video' %}
+                <video controls class="w-100 mb-3">
+                    <source src="{{ url_for('static', filename='uploads/' + file_name) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% elif file_type == 'pdf' %}
+                <embed src="{{ url_for('static', filename='uploads/' + file_name) }}" width="100%" height="600px" type="application/pdf">
+            {% endif %}
+
+            <div class="alert alert-light border mt-3">
+                <h5>Summary Output:</h5>
+                <pre>{{ analysis_result }}</pre>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="text-center mt-5">
+    <a href="/" class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp" style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;">
+        ← Back to Home
+    </a>
+</div>
+
+<footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
+    &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+</footer>
+
+<script>
+    function showLoader() {
+        document.getElementById("loader").style.display = "flex";
+    }
+</script>
+</body>
+</html>

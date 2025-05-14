@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Know Your Land | AgriTrue</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-white font-sans text-gray-800">
+
+  <!-- Header -->
+<header class="bg-green-700 text-white p-8 shadow-md">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-4xl font-extrabold">🌾 AgriTrue Know Your Land</h1>
+      <p class="mt-2 text-lg max-w-2xl">Your land holds the key to better harvests. This section helps you unlock that potential. Discover your soil type, local weather trends, and get crop and fertilizer recommendations tailored to your county.</p>
+    </div>
+  </header>
+
+  <!-- Form Section -->
+  <section class="max-w-4xl mx-auto px-4 py-10">
+    <form method="POST" class="bg-white p-6 rounded-xl shadow-md space-y-6 border border-gray-200">
+      <label for="county" class="block text-xl font-medium text-gray-700">Enter your county name:</label>
+      <div class="flex flex-col md:flex-row items-stretch gap-4">
+        <input name="county" type="text" id="county" placeholder="e.g., Kirinyaga" required
+               class="flex-grow px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:outline-none text-lg">
+        <button type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md text-lg transition">Search</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Results Section -->
+  <section class="max-w-4xl mx-auto px-4">
+    {% if results %}
+    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-600 space-y-4">
+      <h2 class="text-2xl font-bold text-green-700 capitalize">Results for {{ request.form['county'] }}</h2>
+      <ul class="space-y-2 text-lg">
+        <li><strong>🌱 Soil Type:</strong> {{ results.soil_type }}</li>
+        <li><strong>🧪 Soil pH:</strong> {{ results.ph }}</li>
+        <li><strong>🌦 Weather Forecast:</strong> {{ results.weather }}</li>
+        <li><strong>🌾 Recommended Crop:</strong> {{ results.crop }}</li>
+        <li><strong>🧴 Fertilizer Suggestion:</strong> {{ results.fertilizer }}</li>
+      </ul>
+    </div>
+    {% elif request.method == 'POST' %}
+    <div class="text-red-600 text-center font-semibold text-lg mt-4">No data found for the specified county.</div>
+    {% endif %}
+  </section>
+
+  <!-- Map Embed -->
+  <section class="max-w-5xl mx-auto px-4 mt-12">
+    <h3 class="text-2xl font-semibold mb-4 text-green-700">Explore Interactive Soil Map of Kenya</h3>
+    <div class="overflow-hidden rounded-xl shadow-lg border border-gray-300">
+      <iframe
+        src="https://opendata.rcmrd.org/maps/rcmrd::kenya-soils-map/explore?location=0.832339%2C39.830470%2C6.11&path="
+        width="100%" height="500" class="w-full"></iframe>
+    </div>
+  </section>
+<div class="text-center mt-5">
+    <a
+      href="/"
+      class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
+      style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
+    >
+      ← Back to Home
+    </a>
+</div>
+
+<footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
+    &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+</footer>
+  <!-- Footer -->
+  
+
+</body>
+</html>

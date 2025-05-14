@@ -1,0 +1,80 @@
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Your AgriTrue Account</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(to right, #e8f5e9, #c8e6c9);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            color: #2e7d32;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #a5d6a7;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #388e3c;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2e7d32;
+        }
+        .error {
+            color: red;
+            text-align: center;
+        }
+        a {
+            text-align: center;
+            display: block;
+            margin-top: 15px;
+            color: #1b5e20;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Register</h2>
+    <form method="POST">
+        <input type="text" name="fullname" placeholder="Full Name" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+        <button type="submit">Create Account</button>
+    </form>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <a href="/">← Back to Home</a>
+</div>
+</body>
+</html>
