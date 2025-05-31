@@ -1,0 +1,86 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }}'s Profile - AgriTrue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f9f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+        }
+        .info {
+            margin: 20px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #444;
+        }
+        .streak-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #e8f5e9;
+            text-align: center;
+            font-size: 18px;
+        }
+        .streak-box strong {
+            color: #2e7d32;
+        }
+        .highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <h1>{{ user.username }}'s Profile</h1>
+
+        <div class="info"><span class="label">Region:</span> {{ user.region }}</div>
+        <div class="info"><span class="label">Crops:</span> {{ user.crops }}</div>
+
+        <div class="streak-box">
+            {% if user.streak|int >= 7 %}
+                <p class="highlight">🔥 Amazing! You're on a <strong>{{ user.streak }}</strong>-day streak!</p>
+            {% elif user.streak|int >= 3 %}
+                <p>🌿 Great progress! Keep going. Current streak: <strong>{{ user.streak }}</strong> days.</p>
+            {% else %}
+                <p>🌱 You're just starting! You've logged in <strong>{{ user.streak }}</strong> day(s).</p>
+            {% endif %}
+        </div>
+    </div>
+      <div class="text-center mt-5">
+        <a
+          href="/"
+          class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
+          style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
+        >
+          ← Back to Home
+        </a>
+    </div>
+    
+    <footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
+        &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+    </footer>
+    
+</body>
+</html>

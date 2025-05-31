@@ -10,7 +10,9 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from collections import defaultdict
 import pandas as pd
-
+from flask import Flask, render_template, redirect, url_for, request, session
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request
 from flask_cors import CORS
 
@@ -183,52 +185,6 @@ def add_user(username, password, email, fullname):
         )
         conn.commit()
 
-# Register route
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
-        fullname = request.form['fullname']
-
-        if get_user(username):
-            error = "Username already exists"
-        else:
-            hashed_pw = generate_password_hash(password)
-            add_user(username, hashed_pw, email, fullname)
-            return redirect(url_for('login'))
-
-    return render_template('register.html', error=error)
-
-# Login route
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = get_user(username)
-
-        if user and check_password_hash(user[2], password):  # user[2] is the hashed password
-            session['username'] = username
-            return redirect(url_for('home'))  # Redirect to home page after successful login
-        else:
-            error = "Invalid username or password"
-
-    return render_template('login.html', error=error)
-
-# Logout route
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('home'))
-
-
-
-
-
 @app.route('/community-notes', methods=['GET', 'POST'])
 def community_notes():
     if request.method == 'POST':
@@ -326,93 +282,55 @@ def fetch_chart_data():
 def chart_data():
     return jsonify(fetch_chart_data())
 
-from flask import Flask, render_template, request, redirect, url_for
-import os
+
+
+from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
-from PIL import Image
-import pytesseract
-import cv2
-import numpy as np
-import fitz  # PyMuPDF
-import torch
-from torchvision import models, transforms
+import os
+import pandas as pd
 
 # --- Machine Learning Analyzer ---
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'mov', 'pdf'}
-
-# Load image model
-model = models.resnet50(pretrained=True)
-model.eval()
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor()
-])
-imagenet_classes = {idx: cls for (idx, cls) in enumerate(open("imagenet_classes.txt"))}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def analyze_image(path):
-    image = Image.open(path).convert('RGB')
-    img_tensor = transform(image).unsqueeze(0)
-    with torch.no_grad():
-        outputs = model(img_tensor)
-    _, predicted = outputs.max(1)
-    label = imagenet_classes[predicted.item()]
-    return f"This image likely shows: {label.replace('_', ' ')}."
-
-def analyze_video(path):
-    cap = cv2.VideoCapture(path)
-    success, frame = cap.read()
-    cap.release()
-    if success:
-        temp_image_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp_frame.jpg')
-        cv2.imwrite(temp_image_path, frame)
-        return analyze_image(temp_image_path)
-    else:
-        return "Could not analyze video frame."
-
-def analyze_pdf(path):
-    text = ""
-    doc = fitz.open(path)
-    for page in doc:
-        text += page.get_text()
-    return text.strip() or "No text found in PDF."
+app.config['UPLOAD_FOLDER'] = 'uploads'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
 def ml_analyzer():
+    analysis_result = None
+    chart_data = {}
+    error = None
+
     if request.method == 'POST':
-        if 'file' not in request.files:
-            return render_template('ml_analyzer.html', error="No file uploaded.")
-        file = request.files['file']
-        if file.filename == '' or not allowed_file(file.filename):
-            return render_template('ml_analyzer.html', error="Invalid file type.")
+        file = request.files.get('file')
+        if not file:
+            error = "No file uploaded"
+        else:
+            try:
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
 
-        filename = secure_filename(file.filename)
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(save_path)
+                data = pd.read_csv(filepath)
+                analysis_result = data.describe(include='all').to_dict()
 
-        ext = filename.rsplit('.', 1)[1].lower()
-        result = ""
-        file_type = ""
+                # Limit to first 5 categorical and numeric columns
+                for col in data.select_dtypes(include=['object', 'category']).columns[:5]:
+                    chart_data[col] = data[col].value_counts().head(10).to_dict()
 
-        try:
-            if ext in ['jpg', 'jpeg', 'png']:
-                file_type = 'image'
-                result = analyze_image(save_path)
-            elif ext in ['mp4', 'mov']:
-                file_type = 'video'
-                result = analyze_video(save_path)
-            elif ext == 'pdf':
-                file_type = 'pdf'
-                result = analyze_pdf(save_path)
-        except Exception as e:
-            return render_template('ml_analyzer.html', error=str(e))
+                for col in data.select_dtypes(include=['number']).columns[:5]:
+                    chart_data[col] = {
+                        'min': data[col].min(),
+                        'max': data[col].max(),
+                        'mean': data[col].mean(),
+                        'median': data[col].median()
+                    }
 
-        return render_template('ml_analyzer.html', analysis_result=result, file_name=filename, file_type=file_type)
+            except Exception as e:
+                error = f"Error: {str(e)}"
 
-    return render_template('ml_analyzer.html')
+    return render_template("ml_analyzer.html",
+                           analysis_result=analysis_result,
+                           chart_data=chart_data,
+                           error=error)
 #ussd 
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
@@ -440,8 +358,8 @@ def ussd():
     response = None
     menu = """
     Welcome to <strong>AgriTrue</strong> USSD Services<br>
-    1. pestiside verification<br>
-    2. Verify my pesticides<br>
+    1. Weather Info<br>
+    2. Altitude Data<br>
     3. Soil Type<br>
     4. Pest Alerts<br>
     5. Crop Pricing<br>
@@ -462,8 +380,8 @@ def ussd():
 
         elif session_level == 'main_menu':
             responses = {
-                '1': "check products at <a href='https://www.agritrue.com'>AgriTrue</a>",
-                '2': "TYPE: Pesticide, NAME: Dudu Killer, STATUS: Verified",
+                '1': "☀ Weather Today: Sunny, 28°C",
+                '2': "🗻 Altitude at your location: 1,450 meters",
                 '3': "🌱 Soil Type: Loamy",
                 '4': "🐛 Pest Alert: Fall Armyworm in maize.",
                 '5': "💰 Maize: KES 45/kg, Beans: KES 80/kg",
@@ -972,10 +890,163 @@ def know_your_land():
         results = mock_data.get(county, {})
     return render_template('know_your_land.html', results=results)
 
+#streak
+# streak_backend_flask.py
 
 
+# User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), nullable=False, unique=True)
+    password = db.Column(db.String(150), nullable=False)
+    region = db.Column(db.String(100), default='Unknown')
+    crops = db.Column(db.String(200), default='Maize, Beans')
+    last_login = db.Column(db.DateTime)
+    streak = db.Column(db.Integer, default=0)
 
+# Login route with streak update
+from flask import flash, redirect, render_template, url_for
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password, password):
+            # Update streak
+            now = datetime.utcnow()
+            if user.last_login:
+                delta = (now.date() - user.last_login.date()).days
+                if delta == 1:
+                    user.streak += 1
+                elif delta > 1:
+                    user.streak = 1
+            else:
+                user.streak = 1
+
+            user.last_login = now
+            db.session.commit()
+
+            login_user(user)
+            flash('Logged in successfully!')
+            return redirect(url_for('profile'))  # or 'home' depending on your app
+
+        flash('Invalid username or password')
+
+    return render_template('login.html')
+
+# Register route
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        fullname = request.form['fullname']
+        if User.query.filter_by(username=username).first():
+            return "Username already exists."
+
+        new_user = User(username=username, password=password, streak=1, last_login=datetime.utcnow())
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Do NOT log in the user automatically. Redirect to login page.
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+# Profile route
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        session.pop('user_id', None)
+        return redirect(url_for('login'))
+
+    # Pass user object to template
+    return render_template('profile.html', user=user)
+
+# Edit profile route
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        new_username = request.form['username']
+
+        # Check if the new username is taken by another user
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user and existing_user.id != user.id:
+            flash('Username already taken. Please choose another one.')
+            return redirect(url_for('edit_profile'))
+
+        user.username = new_username
+        user.region = request.form['region']
+        user.crops = request.form['crops']
+        db.session.commit()
+
+        flash('Profile updated successfully.')
+        return redirect(url_for('profile'))
+
+    return render_template('edit_profile.html', user=user)
+
+# Folder where uploaded avatars will be stored
+UPLOAD_FOLDER = 'static/avatars'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 2MB limit
+
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Check if the file has an allowed extension
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Route for avatar upload
+@app.route('/upload_avatar', methods=['POST'])
+def upload_avatar():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if 'avatar' not in request.files:
+        flash('No file part')
+        return redirect(url_for('edit_profile'))
+
+    file = request.files['avatar']
+
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(url_for('edit_profile'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Save avatar filename to user's profile
+        user = User.query.get(session['user_id'])
+        user.avatar = filename
+        db.session.commit()
+
+        flash('Avatar uploaded successfully!')
+        return redirect(url_for('edit_profile'))
+
+    flash('Invalid file type. Allowed types: png, jpg, jpeg, gif')
+    return redirect(url_for('edit_profile'))
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+# --- Main Run ---
 
 if __name__ == '__main__':
     init_db()

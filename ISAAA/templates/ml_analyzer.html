@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <title>AgriTrue ML Analyzer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <!-- Bootstrap & Chart.js -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <!-- Animations -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-
     <style>
         body {
             background: #f5fff5;
@@ -54,13 +51,13 @@
             font-weight: 500;
         }
 
-        .result-preview {
-            margin-top: 30px;
+        canvas {
+            max-width: 100%;
+            margin-bottom: 40px;
         }
 
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        .table-hover tbody tr:hover {
+            background-color: #e8f5e9;
         }
     </style>
 </head>
@@ -72,7 +69,7 @@
 </div>
 
 <div class="container mt-5">
-    <h2 class="mb-4 animate_animated animate_fadeInDown">🌾 AgriTrue ML Analyzer</h2>
+    <h2 class="mb-4 animate_animated animate_fadeInDown">  🌾AgriTrue ML Analyzer</h2>
 
     {% if error %}
         <div class="alert alert-danger animate_animated animate_fadeIn">{{ error }}</div>
@@ -81,38 +78,91 @@
     <!-- Upload Form -->
     <form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
         <div class="form-group">
-            <label for="file">Upload Image, Video, or PDF</label>
-            <input type="file" class="form-control" name="file" id="file" accept=".jpg,.jpeg,.png,.mp4,.mov,.pdf" required>
+            <label for="file">Upload CSV File</label>
+            <input type="file" class="form-control" name="file" id="file" required>
         </div>
         <button class="btn btn-primary btn-block">Analyze</button>
     </form>
 
     {% if analysis_result %}
-        <div class="result-preview animate_animated animate_fadeInUp">
-            <h4 class="mt-5">Analysis Result</h4>
-
-            {% if file_type == 'image' %}
-                <img src="{{ url_for('static', filename='uploads/' + file_name) }}" class="img-fluid rounded mb-3" alt="Uploaded Image">
-            {% elif file_type == 'video' %}
-                <video controls class="w-100 mb-3">
-                    <source src="{{ url_for('static', filename='uploads/' + file_name) }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            {% elif file_type == 'pdf' %}
-                <embed src="{{ url_for('static', filename='uploads/' + file_name) }}" width="100%" height="600px" type="application/pdf">
-            {% endif %}
-
-            <div class="alert alert-light border mt-3">
-                <h5>Summary Output:</h5>
-                <pre>{{ analysis_result }}</pre>
-            </div>
+        <h4 class="mt-5 animate_animated animate_fadeInUp">Data Summary</h4>
+        <div class="table-responsive animate_animated animate_fadeInUp">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Column</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, stats in analysis_result.items() %}
+                        <tr>
+                            <td>{{ col }}</td>
+                            <td>
+                                {% for k, v in stats.items() %}
+                                    <strong>{{ k }}:</strong> {{ v }}<br>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
+        {% if chart_data %}
+            <h4 class="mt-5 animate_animated animate_fadeInUp">Charts</h4>
+            {% for col, values in chart_data.items() %}
+                <div class="animate_animated animate_fadeInUp">
+                    <h5 class="mt-4">{{ col }}</h5>
+                    <canvas id="chart_{{ col }}"></canvas>
+                    <script>
+                       const ctx = document.getElementById("chart_col").getContext("2d");
+const isNumeric = values.mean !== undefined;
+const chart = new Chart(ctx, {
+    type: isNumeric ? 'bar' : 'pie',
+    data: {
+        labels: Object.keys(values),
+        datasets: [{
+            label: 'col',
+            data: Object.values(values),
+            backgroundColor: [
+                '#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'
+            ],
+            borderColor: '#2e7d32',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: !isNumeric
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        },
+        scales: isNumeric ? {
+            y: {
+                beginAtZero: true
+            }
+        } : {}
+    }
+});
+                    </script>
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endif %}
 </div>
-
 <div class="text-center mt-5">
-    <a href="/" class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp" style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;">
-        ← Back to Home
+    <a
+      href="/"
+      class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
+      style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
+    >
+      ← Back to Home
     </a>
 </div>
 
