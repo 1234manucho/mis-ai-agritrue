@@ -69,22 +69,20 @@
 </div>
 
 <div class="container mt-5">
-    <h2 class="mb-4 animate_animated animate_fadeInDown">  🌾AgriTrue ML Analyzer</h2>
+    <h2 class="mb-4 animate_animated animate_fadeInDown">🌾 AgriTrue ML Analyzer</h2>
 
     {% if error %}
         <div class="alert alert-danger animate_animated animate_fadeIn">{{ error }}</div>
     {% endif %}
 
     <!-- Upload Form -->
-   <!-- Upload Form -->
-<form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
-    <div class="form-group">
-        <label for="file">Upload File (Image, Video, CSV, PDF, DOCX)</label>
-        <input type="file" class="form-control" name="file" id="file" accept=".csv,.pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov" required>
-    </div>
-    <button class="btn btn-primary btn-block">Analyze</button>
-</form>
-
+    <form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
+        <div class="form-group">
+            <label for="file">Upload File (Image, Video, CSV, PDF, DOCX)</label>
+            <input type="file" class="form-control" name="file" id="file" accept=".csv,.pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov" required>
+        </div>
+        <button class="btn btn-primary btn-block">Analyze</button>
+    </form>
 
     {% if analysis_result %}
         <h4 class="mt-5 animate_animated animate_fadeInUp">Data Summary</h4>
@@ -116,55 +114,55 @@
             {% for col, values in chart_data.items() %}
                 <div class="animate_animated animate_fadeInUp">
                     <h5 class="mt-4">{{ col }}</h5>
-                    <canvas id="chart_{{ col }}"></canvas>
+                    <canvas id="chart_{{ loop.index }}"></canvas>
                     <script>
-                       const ctx = document.getElementById("chart_col").getContext("2d");
-const isNumeric = values.mean !== undefined;
-const chart = new Chart(ctx, {
-    type: isNumeric ? 'bar' : 'pie',
-    data: {
-        labels: Object.keys(values),
-        datasets: [{
-            label: 'col',
-            data: Object.values(values),
-            backgroundColor: [
-                '#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'
-            ],
-            borderColor: '#2e7d32',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: !isNumeric
-            },
-            tooltip: {
-                mode: 'index',
-                intersect: false
-            }
-        },
-        scales: isNumeric ? {
-            y: {
-                beginAtZero: true
-            }
-        } : {}
-    }
-});
+                        const ctx_{{ loop.index }} = document.getElementById("chart_{{ loop.index }}").getContext("2d");
+                        const values_{{ loop.index }} = {{ values | tojson }};
+                        const isNumeric_{{ loop.index }} = values_{{ loop.index }}.hasOwnProperty("Mean");
+
+                        new Chart(ctx_{{ loop.index }}, {
+                            type: isNumeric_{{ loop.index }} ? 'bar' : 'pie',
+                            data: {
+                                labels: Object.keys(values_{{ loop.index }}),
+                                datasets: [{
+                                    label: '{{ col }}',
+                                    data: Object.values(values_{{ loop.index }}),
+                                    backgroundColor: [
+                                        '#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'
+                                    ],
+                                    borderColor: '#2e7d32',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: !isNumeric_{{ loop.index }}
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false
+                                    }
+                                },
+                                scales: isNumeric_{{ loop.index }} ? {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                } : {}
+                            }
+                        });
                     </script>
                 </div>
             {% endfor %}
         {% endif %}
     {% endif %}
 </div>
+
 <div class="text-center mt-5">
-    <a
-      href="/"
-      class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
-      style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
-    >
-      ← Back to Home
+    <a href="/" class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
+       style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;">
+        ← Back to Home
     </a>
 </div>
 
@@ -173,12 +171,10 @@ const chart = new Chart(ctx, {
 </footer>
 
 <script>
-    
     document.getElementById('file').addEventListener('change', function () {
         const fileName = this.files[0]?.name || "Choose a file";
         this.nextElementSibling.innerText = fileName;
     });
-
 
     function showLoader() {
         document.getElementById("loader").style.display = "flex";
