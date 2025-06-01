@@ -76,13 +76,15 @@
     {% endif %}
 
     <!-- Upload Form -->
-    <form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
-        <div class="form-group">
-            <label for="file">Upload CSV File</label>
-            <input type="file" class="form-control" name="file" id="file" required>
-        </div>
-        <button class="btn btn-primary btn-block">Analyze</button>
-    </form>
+   <!-- Upload Form -->
+<form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate_animated animate_fadeInUp">
+    <div class="form-group">
+        <label for="file">Upload File (Image, Video, CSV, PDF, DOCX)</label>
+        <input type="file" class="form-control" name="file" id="file" accept=".csv,.pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov" required>
+    </div>
+    <button class="btn btn-primary btn-block">Analyze</button>
+</form>
+
 
     {% if analysis_result %}
         <h4 class="mt-5 animate_animated animate_fadeInUp">Data Summary</h4>
@@ -171,6 +173,13 @@ const chart = new Chart(ctx, {
 </footer>
 
 <script>
+    
+    document.getElementById('file').addEventListener('change', function () {
+        const fileName = this.files[0]?.name || "Choose a file";
+        this.nextElementSibling.innerText = fileName;
+    });
+
+
     function showLoader() {
         document.getElementById("loader").style.display = "flex";
     }
