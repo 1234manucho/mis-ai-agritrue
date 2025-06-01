@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 import os
 import sqlite3
 from werkzeug.utils import secure_filename
@@ -10,7 +10,12 @@ from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from collections import defaultdict
 import pandas as pd
+from flask import Flask, render_template, redirect, url_for, request, session
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request
 from flask_cors import CORS
+
 
 # --- Configuration ---
 app = Flask(__name__)
@@ -179,7 +184,7 @@ def add_user(username, password, email, fullname):
             (username, password, email, fullname)
         )
         conn.commit()
-#community notes
+
 @app.route('/community-notes', methods=['GET', 'POST'])
 def community_notes():
     if request.method == 'POST':
@@ -276,22 +281,22 @@ def fetch_chart_data():
 @app.route('/api/chart-data')
 def chart_data():
     return jsonify(fetch_chart_data())
-
-#analyzer
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
 from docx import Document
-import fitz  # PyMuPDF
+import fitz  # PyMuPDF for PDF
 from PIL import Image
 import cv2
-import numpy as np
 
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
+
+# Correct upload path (consistent with HTML/static use)
+app.config['UPLOAD_FOLDER'] = 'static/avatars'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# CSV Analysis
 def analyze_csv(filepath):
     df = pd.read_csv(filepath)
     summary = df.describe(include='all').to_dict()
@@ -299,6 +304,7 @@ def analyze_csv(filepath):
 
     for col in df.select_dtypes(include=['object', 'category']).columns[:5]:
         charts[col] = df[col].value_counts().head(10).to_dict()
+
     for col in df.select_dtypes(include=['number']).columns[:5]:
         charts[col] = {
             'min': df[col].min(),
@@ -306,13 +312,16 @@ def analyze_csv(filepath):
             'mean': df[col].mean(),
             'median': df[col].median()
         }
+
     return summary, charts
 
+# DOCX Analysis
 def analyze_docx(filepath):
     doc = Document(filepath)
-    full_text = "\n".join([para.text for para in doc.paragraphs])
-    return {'Text': {'Content': full_text[:1000]}}, {}
+    text = "\n".join([para.text for para in doc.paragraphs])
+    return {'Text': {'Content': text[:1000]}}, {}
 
+# PDF Analysis
 def analyze_pdf(filepath):
     doc = fitz.open(filepath)
     text = ""
@@ -320,17 +329,19 @@ def analyze_pdf(filepath):
         text += page.get_text()
     return {'Text': {'Content': text[:1000]}}, {}
 
+# Image Analysis
 def analyze_image(filepath):
     img = Image.open(filepath)
-    # Dummy logic — replace with ML model
     return {'Image': {'Size': img.size, 'Format': img.format}}, {}
 
+# Video Analysis
 def analyze_video(filepath):
     cap = cv2.VideoCapture(filepath)
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     cap.release()
     return {'Video': {'Frame Count': frame_count}}, {}
 
+# Analyzer Route
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
 def ml_analyzer():
     analysis_result = None
@@ -340,7 +351,7 @@ def ml_analyzer():
     if request.method == 'POST':
         file = request.files.get('file')
         if not file:
-            error = "No file uploaded"
+            error = "No file uploaded."
         else:
             try:
                 filename = secure_filename(file.filename)
@@ -360,7 +371,7 @@ def ml_analyzer():
                 elif ext in ['.mp4', '.mov', '.avi']:
                     analysis_result, chart_data = analyze_video(filepath)
                 else:
-                    error = "Unsupported file type"
+                    error = "Unsupported file type."
 
             except Exception as e:
                 error = f"Error: {str(e)}"
@@ -369,14 +380,15 @@ def ml_analyzer():
                            analysis_result=analysis_result,
                            chart_data=chart_data,
                            error=error)
-
-#ussd
+# --- USSD Simulation ---
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
+
+# --- USSD Simulation ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ussd_db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 class USSDLog(db.Model):
@@ -385,145 +397,62 @@ class USSDLog(db.Model):
     response_given = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Manually ensure tables are created
 with app.app_context():
     db.create_all()
 
-languages = {
-    "1": "English",
-    "2": "Kiswahili",
-    "3": "Luhya",
-    "4": "Gikuyu",
-    "5": "Kisii"
-}
-
-translations = {
-    "Welcome": {
-        "English": "\U0001F44B Welcome to <strong>AgriTrue</strong><br>Please select your language:<br>",
-        "Kiswahili": "\U0001F44B Karibu kwenye <strong>AgriTrue</strong><br>Chagua lugha yako:<br>",
-        "Luhya": "\U0001F44B Wamukasa ku <strong>AgriTrue</strong><br>Chagula lulimi lwakho:<br>",
-        "Gikuyu": "\U0001F44B Wîthamûhîrîrî wa <strong>AgriTrue</strong><br>Thaitha wîcagûrûrû lugha:<br>",
-        "Kisii": "\U0001F44B Bwakire buya ku <strong>AgriTrue</strong><br>Chagura ririmi ryao:<br>"
-    },
-    "Exit": {
-        "English": "\U0001F44B Thank you for using AgriTrue. Goodbye!",
-        "Kiswahili": "\U0001F44B Asante kwa kutumia AgriTrue. Kwaheri!",
-        "Luhya": "\U0001F44B Webale muno kukhukhonya AgriTrue. Khulayi!",
-        "Gikuyu": "\U0001F44B Wîthamîrîrie AgriTrue. Wîgîe wega!",
-        "Kisii": "\U0001F44B Asante kwa kutumia AgriTrue. Bwakire buya!"
-    },
-    "Main Menu": {
-        "English": "<strong>AgriTrue SERVICES:</strong><br>1. Pest Control Assistance<br>2. Pesticide Verification<br>3. Soil & Crop Advisory<br>4. Crop Prices & Markets<br>5. Expert Help Desk<br>0. Exit",
-        "Kiswahili": "<strong>HUDUMA ZA AgriTrue:</strong><br>1. Msaada wa Wadudu<br>2. Uhakiki wa Dawa<br>3. Ushauri wa Udongo & Mazao<br>4. Bei za Mazao<br>5. Huduma ya Wataalamu<br>0. Exit",
-        "Luhya": "<strong>MAHUDUMU A AgriTrue:</strong><br>1. Kukhira Amaloba<br>2. Khwikinya Obulafu<br>3. Amachesi ku Sikwo & Amatunda<br>4. Amabele ga Amatunda<br>5. Khusaba Omusomi<br>0. Exit",
-        "Gikuyu": "<strong>THIRIKWA CIA AgriTrue:</strong><br>1. Kũheo ithuũri na mĩrimũ<br>2. Kũmenyekanĩrĩrĩa mathirikari<br>3. Wĩtikirio wa thurũri na mbembe<br>4. Mũthithania wa bũrũri<br>5. Mũgĩkũyũ wa wĩtikirio<br>0. Exit",
-        "Kisii": "<strong>NYAMOKO Y'OBULIMI AgriTrue:</strong><br>1. Obokonyi bw’abasari<br>2. Okobwita ebiwabo<br>3. Gusabati ebisika n’ebibagara<br>4. Emari y’ebibagara<br>5. Kobwita omosomi<br>0. Exit"
-    }
-}
 
 @app.route('/ussd', methods=['GET', 'POST'])
 def ussd():
     response = None
-    session_level = ''
-    selected_language = ''
+    menu = """
+    Welcome to <strong>AgriTrue</strong> USSD Services<br>
+    1. Weather Info<br>
+    2. Altitude Data<br>
+    3. Soil Type<br>
+    4. Pest Alerts<br>
+    5. Crop Pricing<br>
+    6. Market Locations<br>
+    7. Expert Advice<br>
+    8. Innovations<br>
+    9. Misinformation Alerts<br>
+    10. Exit
+    """
 
     if request.method == 'POST':
         ussd_code = request.form.get('ussd_code', '').strip()
         session_level = request.form.get('session_level', '')
-        selected_language = request.form.get('selected_language', '')
-
-        # Default to English if not set
-        if not selected_language:
-            selected_language = 'English'
 
         if ussd_code == '*456#' and session_level == '':
-            response = translations['Welcome'][selected_language] + \
-                       "<br>".join([f"{k}. {v}" for k, v in languages.items()]) + "<br>0. Exit"
-            session_level = 'language_selection'
-
-        elif session_level == 'language_selection':
-            if ussd_code == '0':
-                response = translations['Exit'][selected_language]
-                session_level = ''
-            elif ussd_code in languages:
-                selected_language = languages[ussd_code]
-                response = translations['Main Menu'].get(selected_language, translations['Main Menu']['English'])
-                session_level = 'main_menu'
-            else:
-                response = "❌ Invalid choice. Try again:<br>" + \
-                           "<br>".join([f"{k}. {v}" for k, v in languages.items()]) + "<br>0. Exit"
+            response = menu
+            session_level = 'main_menu'
 
         elif session_level == 'main_menu':
-            if ussd_code == '1':
-                pest_categories = {
-                    "English": "SELECT PEST CATEGORY:<br>1. Insects/Caterpillars<br>2. Fungal Diseases<br>3. Weeds<br>4. Can't Identify Pest<br>#. Back<br>0. Exit",
-                    "Kiswahili": "CHAGUA AINA YA WADUDU:<br>1. Wadudu/Vitunguu<br>2. Magonjwa ya Ukungu<br>3. Magugu<br>4. Siwezi Tambua Wadudu<br>#. Rudi<br>0. Exit",
-                    "Luhya": "KHULA LUYENYI LW’EMISWA:<br>1. Insects/Obunyenya<br>2. Amibimbi<br>3. Amatunda<br>4. Sindinyala Khumanya<br>#. Rudi<br>0. Exit",
-                    "Gikuyu": "HĨTĨRA MŨRIMŨ:<br>1. Ndurũ/Vithũmũ<br>2. Mĩrimũ ya Fungus<br>3. Magugu<br>4. Ndĩgĩtĩkĩrie mũrĩmũ<br>#. Gũcoka<br>0. Exit",
-                    "Kisii": "RAGERA RIRIMI RI'OBOSARE:<br>1. Ensangwe/Nyegonyego<br>2. Chironda<br>3. Ebibiranya<br>4. Sindi chigwete<br>#. Rokera<br>0. Exit"
-                }
-                response = pest_categories[selected_language]
-                session_level = 'pest_category'
+            responses = {
+                '1': "☀ Weather Today: Sunny, 28°C",
+                '2': "🗻 Altitude at your location: 1,450 meters",
+                '3': "🌱 Soil Type: Loamy",
+                '4': "🐛 Pest Alert: Fall Armyworm in maize.",
+                '5': "💰 Maize: KES 45/kg, Beans: KES 80/kg",
+                '6': "🛒 Nearest Market: Machakos Open Market",
+                '7': "🧠 Tip: Rotate crops to improve soil fertility.",
+                '8': "💡 Innovation: AI-Powered Irrigation in Nairobi.",
+                '9': "🚫 Fake: 'Boiling seeds increases yield' is FALSE.",
+                '10': "👋 Thanks for using AgriTrue. Goodbye!"
+            }
+            response = responses.get(ussd_code, "❌ Invalid option. Try again.")
+            session_level = ''
 
-            elif ussd_code == '2':
-                response = {
-                    "English": "ENTER PRODUCT NAME OR REGISTRATION NUMBER:<br>(e.g., 'Glyphosate 41% SL' or 'KEPHIS PX-12345')",
-                    "Kiswahili": "ANDIKA JINA LA BIDHAA AU NAMBA YA USAJILI:<br>(kwa mfano: 'Glyphosate 41% SL' au 'KEPHIS PX-12345')",
-                    "Luhya": "ANDIKA ERINYA LYA PRODUCT KUNDA YANGE ESIKHULU:<br>(okhukholola: 'Glyphosate 41% SL')",
-                    "Gikuyu": "ANDIKA RĨTWA RĨA MATHIRIKARI KANA NĨMBA YA USAJIRI:<br>(rĩrĩa: 'Glyphosate 41% SL')",
-                    "Kisii": "RANDA ZINA YA OBULIMI OKO REGISTRATION CODE:<br>(e.g. 'Glyphosate 41% SL')"
-                }[selected_language]
-                session_level = 'pesticide_input'
-
-            elif ussd_code == '3':
-                response = {
-                    "English": "SELECT YOUR COUNTY:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
-                    "Kiswahili": "CHAGUA KAUNTI YAKO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
-                    "Luhya": "KHULA KAUNTI YAKHO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
-                    "Gikuyu": "THITHANIA KAUNTI YAKU:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
-                    "Kisii": "RAGERA COUNTY YAO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit"
-                }[selected_language]
-                session_level = 'soil_info'
-
-            elif ussd_code == '4':
-                response = {
-                    "English": "SELECT CROP:<br>1. Maize<br>2. Tomatoes<br>...<br>8. Other Crops<br>0. Exit",
-                    "Kiswahili": "CHAGUA MAZAO:<br>1. Mahindi<br>2. Nyanya<br>...<br>8. Mazao Mengine<br>0. Exit",
-                    "Luhya": "KHULA AMATUNDA:<br>1. Obusuma<br>2. Omunyanya<br>...<br>8. Amatunda Ka<br>0. Exit",
-                    "Gikuyu": "THITHANIA MBEMBE:<br>1. Mũgũmbĩ<br>2. Nyanya<br>...<br>8. Ĩgĩrĩria<br>0. Exit",
-                    "Kisii": "RAGERA EBIKIO:<br>1. Oboka<br>2. Nyanya<br>...<br>8. Ebindi<br>0. Exit"
-                }[selected_language]
-                session_level = 'crop_prices'
-
-            elif ussd_code == '5':
-                response = {
-                    "English": "CONTACT OPTIONS:<br>1. Call County Agent (Free)<br>2. WhatsApp Chat<br>3. Visit Office<br>0. Exit",
-                    "Kiswahili": "CHAGUO ZA MAWASILIANO:<br>1. Piga Wakala (Bure)<br>2. WhatsApp Chat<br>3. Tembelea Ofisi<br>0. Exit",
-                    "Luhya": "OKHUSABA OKHUBWA:<br>1. Khuchema Agent<br>2. WhatsApp<br>3. Okhulola Office<br>0. Exit",
-                    "Gikuyu": "WIRA WA KUGÛCOKA:<br>1. Hoya mũtuhĩ<br>2. WhatsApp<br>3. Gũcoka Office<br>0. Exit",
-                    "Kisii": "BORA ROKERA MOSOBOKI:<br>1. Bera Official<br>2. WhatsApp<br>3. Gokera Office<br>0. Exit"
-                }[selected_language]
-                session_level = 'expert_help'
-
-            elif ussd_code == '0':
-                response = translations['Exit'][selected_language]
-                session_level = ''
-
-            else:
-                response = translations['Main Menu'][selected_language]
-
-        # Handle other session levels as-is (pest_category, etc.) and translate content there too...
+        else:
+            response = "Enter *456# to begin."
 
         log = USSDLog(code_entered=ussd_code, response_given=response)
         db.session.add(log)
         db.session.commit()
 
-        return render_template('ussd.html', response=response,
-                               session_level=session_level,
-                               selected_language=selected_language)
+        return render_template('ussd.html', response=response, session_level=session_level)
 
-    return render_template('ussd.html', response=None, session_level='', selected_language='')
-
-
+    return render_template('ussd.html', response=None, session_level='')
 #chatbot
 from flask import Flask, request, jsonify, render_template
 import openai
@@ -621,10 +550,6 @@ def generate_response(messages):
         return "Muriena mno😙😚 wavolkho."
     elif "habari" in user_input:
         return "Jambo mkulima😊."
-    elif "niaje" in user_input:
-        return "poa mkulima😊."
-    elif "Do gmo cause infertility" in user_input:
-        return "There is no scientific evidence that GMOs cause infertility. Multiple global health organizations, including the WHO and FDA, have found GMOs to be safe for human consumption and do not cause infertility."
     elif "wheat" in user_input:
         return "Wheat is mostly grown in Nakuru, Uasin Gishu, and Trans Nzoia counties."
     elif "wheat" in user_input:
@@ -687,7 +612,6 @@ def generate_response(messages):
         return "Goat farming is common in Eastern and arid regions. It requires hardy breeds."
     elif "bees" in user_input or "apiculture" in user_input:
         return "Beekeeping produces honey and wax. Ensure proper hive management."
-    
     else:
         return "I'm still learning! Try asking something else about crops, livestock, markets, or weather."
     
@@ -1015,15 +939,8 @@ def know_your_land():
         results = mock_data.get(county, {})
     return render_template('know_your_land.html', results=results)
 
-
-
 #streak
 # streak_backend_flask.py
-from flask import Flask, render_template, redirect, url_for, request, session
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-
-
 
 
 # User model
@@ -1037,14 +954,17 @@ class User(db.Model):
     streak = db.Column(db.Integer, default=0)
 
 # Login route with streak update
+from flask import flash, redirect, render_template, url_for
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username, password=password).first()
+        user = User.query.filter_by(username=username).first()
 
-        if user:
+        if user and check_password_hash(user.password, password):
+            # Update streak
             now = datetime.utcnow()
             if user.last_login:
                 delta = (now.date() - user.last_login.date()).days
@@ -1058,10 +978,11 @@ def login():
             user.last_login = now
             db.session.commit()
 
-            session['user_id'] = user.id
-            return redirect(url_for('profile'))
+            login_user(user)
+            flash('Logged in successfully!')
+            return redirect(url_for('profile'))  # or 'home' depending on your app
 
-        return "Invalid credentials, try again."
+        flash('Invalid username or password')
 
     return render_template('login.html')
 
@@ -1098,6 +1019,7 @@ def profile():
 
     # Pass user object to template
     return render_template('profile.html', user=user)
+
 # Edit profile route
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -1125,11 +1047,10 @@ def edit_profile():
 
     return render_template('edit_profile.html', user=user)
 
-
 # Folder where uploaded avatars will be stored
 UPLOAD_FOLDER = 'static/avatars'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB limit
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 2MB limit
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -1170,14 +1091,12 @@ def upload_avatar():
     flash('Invalid file type. Allowed types: png, jpg, jpeg, gif')
     return redirect(url_for('edit_profile'))
 
-
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
+# --- Main Run ---
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    init_db()
     app.run(debug=True)
-    
