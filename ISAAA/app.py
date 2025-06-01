@@ -341,9 +341,7 @@ def analyze_csv(filepath):
         print("CSV Analysis Error:", e)
         return None, None
 
-@app.route('/')
-def index():
-    return render_template('ml_analyzer.html')
+
 
 @app.route('/ml_analyzer', methods=['POST'])
 def ml_analyzer():
