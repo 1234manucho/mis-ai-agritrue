@@ -284,14 +284,59 @@ def chart_data():
 
 
 
+#analyzer
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
+from docx import Document
+import fitz  # PyMuPDF
+from PIL import Image
+import cv2
+import numpy as np
 
-# --- Machine Learning Analyzer ---
+
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def analyze_csv(filepath):
+    df = pd.read_csv(filepath)
+    summary = df.describe(include='all').to_dict()
+    charts = {}
+
+    for col in df.select_dtypes(include=['object', 'category']).columns[:5]:
+        charts[col] = df[col].value_counts().head(10).to_dict()
+    for col in df.select_dtypes(include=['number']).columns[:5]:
+        charts[col] = {
+            'min': df[col].min(),
+            'max': df[col].max(),
+            'mean': df[col].mean(),
+            'median': df[col].median()
+        }
+    return summary, charts
+
+def analyze_docx(filepath):
+    doc = Document(filepath)
+    full_text = "\n".join([para.text for para in doc.paragraphs])
+    return {'Text': {'Content': full_text[:1000]}}, {}
+
+def analyze_pdf(filepath):
+    doc = fitz.open(filepath)
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    return {'Text': {'Content': text[:1000]}}, {}
+
+def analyze_image(filepath):
+    img = Image.open(filepath)
+    # Dummy logic — replace with ML model
+    return {'Image': {'Size': img.size, 'Format': img.format}}, {}
+
+def analyze_video(filepath):
+    cap = cv2.VideoCapture(filepath)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    return {'Video': {'Frame Count': frame_count}}, {}
 
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
 def ml_analyzer():
@@ -309,20 +354,20 @@ def ml_analyzer():
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
 
-                data = pd.read_csv(filepath)
-                analysis_result = data.describe(include='all').to_dict()
+                ext = os.path.splitext(filename)[1].lower()
 
-                # Limit to first 5 categorical and numeric columns
-                for col in data.select_dtypes(include=['object', 'category']).columns[:5]:
-                    chart_data[col] = data[col].value_counts().head(10).to_dict()
-
-                for col in data.select_dtypes(include=['number']).columns[:5]:
-                    chart_data[col] = {
-                        'min': data[col].min(),
-                        'max': data[col].max(),
-                        'mean': data[col].mean(),
-                        'median': data[col].median()
-                    }
+                if ext == '.csv':
+                    analysis_result, chart_data = analyze_csv(filepath)
+                elif ext == '.docx':
+                    analysis_result, chart_data = analyze_docx(filepath)
+                elif ext == '.pdf':
+                    analysis_result, chart_data = analyze_pdf(filepath)
+                elif ext in ['.jpg', '.jpeg', '.png']:
+                    analysis_result, chart_data = analyze_image(filepath)
+                elif ext in ['.mp4', '.mov', '.avi']:
+                    analysis_result, chart_data = analyze_video(filepath)
+                else:
+                    error = "Unsupported file type"
 
             except Exception as e:
                 error = f"Error: {str(e)}"
@@ -331,15 +376,14 @@ def ml_analyzer():
                            analysis_result=analysis_result,
                            chart_data=chart_data,
                            error=error)
-#ussd 
+
+#ussd
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import os
-
-# --- USSD Simulation ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ussd_db.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 class USSDLog(db.Model):
@@ -348,62 +392,145 @@ class USSDLog(db.Model):
     response_given = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Manually ensure tables are created
 with app.app_context():
     db.create_all()
 
+languages = {
+    "1": "English",
+    "2": "Kiswahili",
+    "3": "Luhya",
+    "4": "Gikuyu",
+    "5": "Kisii"
+}
+
+translations = {
+    "Welcome": {
+        "English": "\U0001F44B Welcome to <strong>AgriTrue</strong><br>Please select your language:<br>",
+        "Kiswahili": "\U0001F44B Karibu kwenye <strong>AgriTrue</strong><br>Chagua lugha yako:<br>",
+        "Luhya": "\U0001F44B Wamukasa ku <strong>AgriTrue</strong><br>Chagula lulimi lwakho:<br>",
+        "Gikuyu": "\U0001F44B Wîthamûhîrîrî wa <strong>AgriTrue</strong><br>Thaitha wîcagûrûrû lugha:<br>",
+        "Kisii": "\U0001F44B Bwakire buya ku <strong>AgriTrue</strong><br>Chagura ririmi ryao:<br>"
+    },
+    "Exit": {
+        "English": "\U0001F44B Thank you for using AgriTrue. Goodbye!",
+        "Kiswahili": "\U0001F44B Asante kwa kutumia AgriTrue. Kwaheri!",
+        "Luhya": "\U0001F44B Webale muno kukhukhonya AgriTrue. Khulayi!",
+        "Gikuyu": "\U0001F44B Wîthamîrîrie AgriTrue. Wîgîe wega!",
+        "Kisii": "\U0001F44B Asante kwa kutumia AgriTrue. Bwakire buya!"
+    },
+    "Main Menu": {
+        "English": "<strong>AgriTrue SERVICES:</strong><br>1. Pest Control Assistance<br>2. Pesticide Verification<br>3. Soil & Crop Advisory<br>4. Crop Prices & Markets<br>5. Expert Help Desk<br>0. Exit",
+        "Kiswahili": "<strong>HUDUMA ZA AgriTrue:</strong><br>1. Msaada wa Wadudu<br>2. Uhakiki wa Dawa<br>3. Ushauri wa Udongo & Mazao<br>4. Bei za Mazao<br>5. Huduma ya Wataalamu<br>0. Exit",
+        "Luhya": "<strong>MAHUDUMU A AgriTrue:</strong><br>1. Kukhira Amaloba<br>2. Khwikinya Obulafu<br>3. Amachesi ku Sikwo & Amatunda<br>4. Amabele ga Amatunda<br>5. Khusaba Omusomi<br>0. Exit",
+        "Gikuyu": "<strong>THIRIKWA CIA AgriTrue:</strong><br>1. Kũheo ithuũri na mĩrimũ<br>2. Kũmenyekanĩrĩrĩa mathirikari<br>3. Wĩtikirio wa thurũri na mbembe<br>4. Mũthithania wa bũrũri<br>5. Mũgĩkũyũ wa wĩtikirio<br>0. Exit",
+        "Kisii": "<strong>NYAMOKO Y'OBULIMI AgriTrue:</strong><br>1. Obokonyi bw’abasari<br>2. Okobwita ebiwabo<br>3. Gusabati ebisika n’ebibagara<br>4. Emari y’ebibagara<br>5. Kobwita omosomi<br>0. Exit"
+    }
+}
 
 @app.route('/ussd', methods=['GET', 'POST'])
 def ussd():
     response = None
-    menu = """
-    Welcome to <strong>AgriTrue</strong> USSD Services<br>
-    1. Weather Info<br>
-    2. Altitude Data<br>
-    3. Soil Type<br>
-    4. Pest Alerts<br>
-    5. Crop Pricing<br>
-    6. Market Locations<br>
-    7. Expert Advice<br>
-    8. Innovations<br>
-    9. Misinformation Alerts<br>
-    10. Exit
-    """
+    session_level = ''
+    selected_language = ''
 
     if request.method == 'POST':
         ussd_code = request.form.get('ussd_code', '').strip()
         session_level = request.form.get('session_level', '')
+        selected_language = request.form.get('selected_language', '')
+
+        # Default to English if not set
+        if not selected_language:
+            selected_language = 'English'
 
         if ussd_code == '*456#' and session_level == '':
-            response = menu
-            session_level = 'main_menu'
+            response = translations['Welcome'][selected_language] + \
+                       "<br>".join([f"{k}. {v}" for k, v in languages.items()]) + "<br>0. Exit"
+            session_level = 'language_selection'
+
+        elif session_level == 'language_selection':
+            if ussd_code == '0':
+                response = translations['Exit'][selected_language]
+                session_level = ''
+            elif ussd_code in languages:
+                selected_language = languages[ussd_code]
+                response = translations['Main Menu'].get(selected_language, translations['Main Menu']['English'])
+                session_level = 'main_menu'
+            else:
+                response = "❌ Invalid choice. Try again:<br>" + \
+                           "<br>".join([f"{k}. {v}" for k, v in languages.items()]) + "<br>0. Exit"
 
         elif session_level == 'main_menu':
-            responses = {
-                '1': "☀ Weather Today: Sunny, 28°C",
-                '2': "🗻 Altitude at your location: 1,450 meters",
-                '3': "🌱 Soil Type: Loamy",
-                '4': "🐛 Pest Alert: Fall Armyworm in maize.",
-                '5': "💰 Maize: KES 45/kg, Beans: KES 80/kg",
-                '6': "🛒 Nearest Market: Machakos Open Market",
-                '7': "🧠 Tip: Rotate crops to improve soil fertility.",
-                '8': "💡 Innovation: AI-Powered Irrigation in Nairobi.",
-                '9': "🚫 Fake: 'Boiling seeds increases yield' is FALSE.",
-                '10': "👋 Thanks for using AgriTrue. Goodbye!"
-            }
-            response = responses.get(ussd_code, "❌ Invalid option. Try again.")
-            session_level = ''
+            if ussd_code == '1':
+                pest_categories = {
+                    "English": "SELECT PEST CATEGORY:<br>1. Insects/Caterpillars<br>2. Fungal Diseases<br>3. Weeds<br>4. Can't Identify Pest<br>#. Back<br>0. Exit",
+                    "Kiswahili": "CHAGUA AINA YA WADUDU:<br>1. Wadudu/Vitunguu<br>2. Magonjwa ya Ukungu<br>3. Magugu<br>4. Siwezi Tambua Wadudu<br>#. Rudi<br>0. Exit",
+                    "Luhya": "KHULA LUYENYI LW’EMISWA:<br>1. Insects/Obunyenya<br>2. Amibimbi<br>3. Amatunda<br>4. Sindinyala Khumanya<br>#. Rudi<br>0. Exit",
+                    "Gikuyu": "HĨTĨRA MŨRIMŨ:<br>1. Ndurũ/Vithũmũ<br>2. Mĩrimũ ya Fungus<br>3. Magugu<br>4. Ndĩgĩtĩkĩrie mũrĩmũ<br>#. Gũcoka<br>0. Exit",
+                    "Kisii": "RAGERA RIRIMI RI'OBOSARE:<br>1. Ensangwe/Nyegonyego<br>2. Chironda<br>3. Ebibiranya<br>4. Sindi chigwete<br>#. Rokera<br>0. Exit"
+                }
+                response = pest_categories[selected_language]
+                session_level = 'pest_category'
 
-        else:
-            response = "Enter *456# to begin."
+            elif ussd_code == '2':
+                response = {
+                    "English": "ENTER PRODUCT NAME OR REGISTRATION NUMBER:<br>(e.g., 'Glyphosate 41% SL' or 'KEPHIS PX-12345')",
+                    "Kiswahili": "ANDIKA JINA LA BIDHAA AU NAMBA YA USAJILI:<br>(kwa mfano: 'Glyphosate 41% SL' au 'KEPHIS PX-12345')",
+                    "Luhya": "ANDIKA ERINYA LYA PRODUCT KUNDA YANGE ESIKHULU:<br>(okhukholola: 'Glyphosate 41% SL')",
+                    "Gikuyu": "ANDIKA RĨTWA RĨA MATHIRIKARI KANA NĨMBA YA USAJIRI:<br>(rĩrĩa: 'Glyphosate 41% SL')",
+                    "Kisii": "RANDA ZINA YA OBULIMI OKO REGISTRATION CODE:<br>(e.g. 'Glyphosate 41% SL')"
+                }[selected_language]
+                session_level = 'pesticide_input'
+
+            elif ussd_code == '3':
+                response = {
+                    "English": "SELECT YOUR COUNTY:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
+                    "Kiswahili": "CHAGUA KAUNTI YAKO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
+                    "Luhya": "KHULA KAUNTI YAKHO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
+                    "Gikuyu": "THITHANIA KAUNTI YAKU:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit",
+                    "Kisii": "RAGERA COUNTY YAO:<br>1. Nakuru<br>2. Embu<br>...<br>47. Turkana<br>0. Exit"
+                }[selected_language]
+                session_level = 'soil_info'
+
+            elif ussd_code == '4':
+                response = {
+                    "English": "SELECT CROP:<br>1. Maize<br>2. Tomatoes<br>...<br>8. Other Crops<br>0. Exit",
+                    "Kiswahili": "CHAGUA MAZAO:<br>1. Mahindi<br>2. Nyanya<br>...<br>8. Mazao Mengine<br>0. Exit",
+                    "Luhya": "KHULA AMATUNDA:<br>1. Obusuma<br>2. Omunyanya<br>...<br>8. Amatunda Ka<br>0. Exit",
+                    "Gikuyu": "THITHANIA MBEMBE:<br>1. Mũgũmbĩ<br>2. Nyanya<br>...<br>8. Ĩgĩrĩria<br>0. Exit",
+                    "Kisii": "RAGERA EBIKIO:<br>1. Oboka<br>2. Nyanya<br>...<br>8. Ebindi<br>0. Exit"
+                }[selected_language]
+                session_level = 'crop_prices'
+
+            elif ussd_code == '5':
+                response = {
+                    "English": "CONTACT OPTIONS:<br>1. Call County Agent (Free)<br>2. WhatsApp Chat<br>3. Visit Office<br>0. Exit",
+                    "Kiswahili": "CHAGUO ZA MAWASILIANO:<br>1. Piga Wakala (Bure)<br>2. WhatsApp Chat<br>3. Tembelea Ofisi<br>0. Exit",
+                    "Luhya": "OKHUSABA OKHUBWA:<br>1. Khuchema Agent<br>2. WhatsApp<br>3. Okhulola Office<br>0. Exit",
+                    "Gikuyu": "WIRA WA KUGÛCOKA:<br>1. Hoya mũtuhĩ<br>2. WhatsApp<br>3. Gũcoka Office<br>0. Exit",
+                    "Kisii": "BORA ROKERA MOSOBOKI:<br>1. Bera Official<br>2. WhatsApp<br>3. Gokera Office<br>0. Exit"
+                }[selected_language]
+                session_level = 'expert_help'
+
+            elif ussd_code == '0':
+                response = translations['Exit'][selected_language]
+                session_level = ''
+
+            else:
+                response = translations['Main Menu'][selected_language]
+
+        # Handle other session levels as-is (pest_category, etc.) and translate content there too...
 
         log = USSDLog(code_entered=ussd_code, response_given=response)
         db.session.add(log)
         db.session.commit()
 
-        return render_template('ussd.html', response=response, session_level=session_level)
+        return render_template('ussd.html', response=response,
+                               session_level=session_level,
+                               selected_language=selected_language)
 
-    return render_template('ussd.html', response=None, session_level='')
+    return render_template('ussd.html', response=None, session_level='', selected_language='')
+
+
 #chatbot
 from flask import Flask, request, jsonify, render_template
 import openai
