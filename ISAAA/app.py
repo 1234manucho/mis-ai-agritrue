@@ -296,86 +296,81 @@ import cv2
 import numpy as np
 
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+UPLOAD_FOLDER = 'static/avatars'
+ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'doc', 'jpg', 'jpeg', 'png', 'mp4', 'mov'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def analyze_csv(filepath):
-    df = pd.read_csv(filepath)
-    summary = df.describe(include='all').to_dict()
-    charts = {}
+    try:
+        df = pd.read_csv(filepath)
+        analysis_result = {}
+        chart_data = {}
 
-    for col in df.select_dtypes(include=['object', 'category']).columns[:5]:
-        charts[col] = df[col].value_counts().head(10).to_dict()
-    for col in df.select_dtypes(include=['number']).columns[:5]:
-        charts[col] = {
-            'min': df[col].min(),
-            'max': df[col].max(),
-            'mean': df[col].mean(),
-            'median': df[col].median()
-        }
-    return summary, charts
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                analysis_result[col] = {
+                    'mean': round(df[col].mean(), 2),
+                    'min': df[col].min(),
+                    'max': df[col].max(),
+                    'std': round(df[col].std(), 2),
+                    'missing': int(df[col].isna().sum())
+                }
+                chart_data[col] = {
+                    'Mean': df[col].mean(),
+                    'Min': df[col].min(),
+                    'Max': df[col].max()
+                }
+            else:
+                value_counts = df[col].value_counts().head(5)
+                analysis_result[col] = {
+                    'top_values': value_counts.to_dict(),
+                    'unique': df[col].nunique(),
+                    'missing': int(df[col].isna().sum())
+                }
+                chart_data[col] = value_counts.to_dict()
 
-def analyze_docx(filepath):
-    doc = Document(filepath)
-    full_text = "\n".join([para.text for para in doc.paragraphs])
-    return {'Text': {'Content': full_text[:1000]}}, {}
+        return analysis_result, chart_data
+    except Exception as e:
+        print("CSV Analysis Error:", e)
+        return None, None
 
-def analyze_pdf(filepath):
-    doc = fitz.open(filepath)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return {'Text': {'Content': text[:1000]}}, {}
+@app.route('/')
+def index():
+    return render_template('ml_analyzer.html')
 
-def analyze_image(filepath):
-    img = Image.open(filepath)
-    # Dummy logic — replace with ML model
-    return {'Image': {'Size': img.size, 'Format': img.format}}, {}
-
-def analyze_video(filepath):
-    cap = cv2.VideoCapture(filepath)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    cap.release()
-    return {'Video': {'Frame Count': frame_count}}, {}
-
-@app.route('/ml-analyzer', methods=['GET', 'POST'])
+@app.route('/ml_analyzer', methods=['POST'])
 def ml_analyzer():
-    analysis_result = None
-    chart_data = {}
-    error = None
+    if 'file' not in request.files:
+        return render_template('ml_analyzer.html', error="No file part in request")
 
-    if request.method == 'POST':
-        file = request.files.get('file')
-        if not file:
-            error = "No file uploaded"
+    file = request.files['file']
+    if file.filename == '':
+        return render_template('ml_analyzer.html', error="No file selected")
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        if filename.lower().endswith('.csv'):
+            analysis_result, chart_data = analyze_csv(filepath)
+            if analysis_result:
+                return render_template('ml_analyzer.html',
+                                       analysis_result=analysis_result,
+                                       chart_data=chart_data)
+            else:
+                return render_template('ml_analyzer.html', error="Failed to analyze CSV file")
         else:
-            try:
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-
-                ext = os.path.splitext(filename)[1].lower()
-
-                if ext == '.csv':
-                    analysis_result, chart_data = analyze_csv(filepath)
-                elif ext == '.docx':
-                    analysis_result, chart_data = analyze_docx(filepath)
-                elif ext == '.pdf':
-                    analysis_result, chart_data = analyze_pdf(filepath)
-                elif ext in ['.jpg', '.jpeg', '.png']:
-                    analysis_result, chart_data = analyze_image(filepath)
-                elif ext in ['.mp4', '.mov', '.avi']:
-                    analysis_result, chart_data = analyze_video(filepath)
-                else:
-                    error = "Unsupported file type"
-
-            except Exception as e:
-                error = f"Error: {str(e)}"
-
-    return render_template("ml_analyzer.html",
-                           analysis_result=analysis_result,
-                           chart_data=chart_data,
-                           error=error)
+            return render_template('ml_analyzer.html', error="File uploaded successfully (non-CSV), but no analysis done.")
+    else:
+        return render_template('ml_analyzer.html', error="Invalid file type")
 
 #ussd
 from flask import Flask, render_template, request
