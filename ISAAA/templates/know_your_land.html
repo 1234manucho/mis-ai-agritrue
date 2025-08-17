@@ -1,76 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Know Your Land | AgriTrue</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Know Your Land | AgriTrue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .hero-content {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Loader Styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Slideshow Styles */
+        #slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
+            z-index: 2;
+        }
+
+        /* Chatbot Styles */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #34d399;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 360px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        #chatbot-header {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: white;
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #chatbot-body {
+            padding: 16px;
+            background: #f0fdf4;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+        
+        #chatbot-input-container {
+            display: flex;
+            padding: 12px;
+            background: #ecfdf5;
+            border-top: 1px solid #d1fae5;
+        }
+        
+        #chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #send-message, #mic-button {
+            background: #34d399;
+            color: white;
+            border: none;
+            padding: 0 12px;
+            margin-left: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: #34d399;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: #d1fae5;
+            color: black;
+            margin-right: auto;
+        }
+
+        /* Hide default Bootstrap toggler on larger screens */
+        @media (min-width: 992px) {
+            .navbar-toggler {
+                display: none;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: #f0fdf4;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-green-50 to-white font-sans text-gray-800">
+<body class="bg-[#f0fdf4] font-['Inter']">
+    
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
 
-  <!-- Header -->
-<header class="bg-green-700 text-white p-8 shadow-md">
-    <div class="max-w-6xl mx-auto">
-      <h1 class="text-4xl font-extrabold">🌾 AgriTrue Know Your Land</h1>
-      <p class="mt-2 text-lg max-w-2xl">Your land holds the key to better harvests. This section helps you unlock that potential. Discover your soil type, local weather trends, and get crop and fertilizer recommendations tailored to your county.</p>
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                    <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                </div>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
     </div>
-  </header>
-
-  <!-- Form Section -->
-  <section class="max-w-4xl mx-auto px-4 py-10">
-    <form method="POST" class="bg-white p-6 rounded-xl shadow-md space-y-6 border border-gray-200">
-      <label for="county" class="block text-xl font-medium text-gray-700">Enter your county name:</label>
-      <div class="flex flex-col md:flex-row items-stretch gap-4">
-        <input name="county" type="text" id="county" placeholder="e.g., Kirinyaga" required
-               class="flex-grow px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-green-500 focus:outline-none text-lg">
-        <button type="submit"
-                class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md text-lg transition">Search</button>
+    <!-- Header -->
+    <header class="relative bg-gradient-to-br from-green-700 via-green-900 to-green-800 text-white py-20 px-4 shadow-xl overflow-hidden">
+      <div class="absolute inset-0 z-0">
+        <img src="/static/images/land.jpeg" alt="Land background" class="w-full h-full object-cover opacity-40" />
+        <div class="absolute inset-0 bg-gradient-to-br from-green-800 via-transparent to-green-900 opacity-80"></div>
       </div>
-    </form>
-  </section>
+      <div class="relative z-10 max-w-6xl mx-auto text-center animate-fade-in">
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 drop-shadow-lg">
+          Know Your Land 🌾
+        </h1>
+        <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto drop-shadow">
+          Your land holds the key to better harvests. Discover your soil type, local weather, and get tailored crop and fertilizer recommendations.
+        </p>
+      </div>
+    </header>
+    <style>
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(30px);}
+        to { opacity: 1; transform: translateY(0);}
+      }
+      .animate-fade-in {
+        animation: fade-in 1s ease;
+      }
+    </style>
 
-  <!-- Results Section -->
-  <section class="max-w-4xl mx-auto px-4">
-    {% if results %}
-    <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-600 space-y-4">
-      <h2 class="text-2xl font-bold text-green-700 capitalize">Results for {{ request.form['county'] }}</h2>
-      <ul class="space-y-2 text-lg">
-        <li><strong>🌱 Soil Type:</strong> {{ results.soil_type }}</li>
-        <li><strong>🧪 Soil pH:</strong> {{ results.ph }}</li>
-        <li><strong>🌦 Weather Forecast:</strong> {{ results.weather }}</li>
-        <li><strong>🌾 Recommended Crop:</strong> {{ results.crop }}</li>
-        <li><strong>🧴 Fertilizer Suggestion:</strong> {{ results.fertilizer }}</li>
-      </ul>
-    </div>
-    {% elif request.method == 'POST' %}
-    <div class="text-red-600 text-center font-semibold text-lg mt-4">No data found for the specified county.</div>
-    {% endif %}
-  </section>
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-12 space-y-12">
 
-  <!-- Map Embed -->
-  <section class="max-w-5xl mx-auto px-4 mt-12">
-    <h3 class="text-2xl font-semibold mb-4 text-green-700">Explore Interactive Soil Map of Kenya</h3>
-    <div class="overflow-hidden rounded-xl shadow-lg border border-gray-300">
-      <iframe
-        src="https://opendata.rcmrd.org/maps/rcmrd::kenya-soils-map/explore?location=0.832339%2C39.830470%2C6.11&path="
-        width="100%" height="500" class="w-full"></iframe>
-    </div>
-  </section>
-<div class="text-center mt-5">
-    <a
-      href="/"
-      class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
-      style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
-    >
-      ← Back to Home
-    </a>
-</div>
+        <!-- Form Section -->
+        <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+            <h2 class="text-3xl font-semibold text-green-700 mb-6">Find Your County's Agricultural Data</h2>
+            <form method="POST" class="space-y-6">
+                <label for="county" class="block text-lg font-medium text-gray-700">Enter your county name:</label>
+                <div class="flex flex-col sm:flex-row items-stretch gap-4">
+                    <input name="county" type="text" id="county" placeholder="e.g., Kirinyaga" required
+                           class="flex-grow px-4 py-3 rounded-lg border border-gray-300 focus:ring-4 focus:ring-green-400 focus:outline-none text-lg transition shadow-sm">
+                    <button type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition transform hover:scale-105 shadow-md">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </section>
 
-<footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
-    &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
-</footer>
-  <!-- Footer -->
-  
+        <!-- Results Section -->
+        <section>
+            {% if results %}
+            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-green-600 space-y-6">
+                <h2 class="text-3xl font-bold text-green-700 capitalize">Results for {{ request.form['county'] }}</h2>
+                <ul class="space-y-4 text-lg">
+                    <li class="flex items-center"><span class="text-2xl mr-3">🌱</span> <strong>Soil Type:</strong> {{ results.soil_type }}</li>
+                    <li class="flex items-center"><span class="text-2xl mr-3">🧪</span> <strong>Soil pH:</strong> {{ results.ph }}</li>
+                    <li class="flex items-center"><span class="text-2xl mr-3">🌦</span> <strong>Weather Forecast:</strong> {{ results.weather }}</li>
+                    <li class="flex items-center"><span class="text-2xl mr-3">🌾</span> <strong>Recommended Crop:</strong> {{ results.crop }}</li>
+                    <li class="flex items-center"><span class="text-2xl mr-3">🧴</span> <strong>Fertilizer Suggestion:</strong> {{ results.fertilizer }}</li>
+                </ul>
+            </div>
+            {% elif request.method == 'POST' %}
+            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-red-500 text-center">
+                <p class="text-xl font-semibold text-red-600">No data found for the specified county.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Creative Ideas Section -->
+        <section class="py-8">
+            <h2 class="text-3xl font-semibold text-center text-green-700 mb-8">Creative Ways to Know Your Land</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Sensory Map Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-4">🗺️</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Create a Sensory Map</h3>
+                    <p class="text-gray-600">
+                        Turn learning into a tactile experience. Use materials like sand, leaves, or stones from your local area to build a map you can feel.
+                    </p>
+                </div>
+
+                <!-- Land-Inspired Journal Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-4">✍️</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Start a Land Journal</h3>
+                    <p class="text-gray-600">
+                        Document your discoveries. Fill a notebook with sketches of local plants, pressed flowers, and stories inspired by the places you visit.
+                    </p>
+                </div>
+
+                <!-- Time-Lapse Tour Card -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-4">📱</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Time-Lapse a Single Spot</h3>
+                    <p class="text-gray-600">
+                        Capture the passage of time. Take a photo of the same location every month for a year to see how the landscape changes with the seasons.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Embed Section -->
+        <section>
+            <h3 class="text-3xl font-semibold mb-6 text-green-700">Explore Interactive Soil Map of Kenya</h3>
+            <div class="overflow-hidden rounded-2xl shadow-xl border border-gray-300">
+                <iframe
+                    src="https://opendata.rcmrd.org/maps/rcmrd::kenya-soils-map/explore?location=0.832339%2C39.830470%2C6.11&path="
+                    width="100%" height="500" class="w-full">
+                </iframe>
+            </div>
+        </section>
+
+        <!-- Back to Home Button -->
+      
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
+    </footer>
 
 </body>
 </html>

@@ -1,97 +1,421 @@
-
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8" />
-  <title>AgriTrue Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriTrue - Modern Dashboard</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Chart.js & Datalabels -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
-  <!-- Animate.css for extra flair -->
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    rel="stylesheet"
-  />
-</head>
-<body class="bg-gradient-to-b from-green-50 via-white to-green-100 min-h-screen text-gray-800 font-sans">
-  <header class="py-6 shadow bg-white sticky top-0 z-50">
-    <h1 class="text-4xl font-extrabold text-center text-green-700 tracking-tight animate__animated animate__fadeInDown">
-      🌾 AgriTrue Misinformation Dashboard
-    </h1>
-    <p class="text-center mt-2 text-gray-500 animate__animated animate__fadeIn animate__delay-1s">
-      Visual insights into agricultural misinformation trends by crop, soil, pests, and more.
-    </p>
-  </header>
-
-  <main class="container mx-auto px-4 py-10">
-    <div class="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-      <!-- Soil Types Chart -->
-      <div class="bg-white shadow-xl rounded-2xl p-6 animate__animated animate__zoomIn animate__delay-1s">
-        <h2 class="text-lg font-semibold text-green-600 mb-2">Soil Types</h2>
-        <canvas id="soilChart"></canvas>
-      </div>
-
-      <!-- Pest Reports Chart -->
-      <div class="bg-white shadow-xl rounded-2xl p-6 animate__animated animate__zoomIn animate__delay-2s">
-        <h2 class="text-lg font-semibold text-green-600 mb-2">Pest Reports</h2>
-        <canvas id="pestChart"></canvas>
-      </div>
-
-      <!-- Innovations Chart -->
-      <div class="bg-white shadow-xl rounded-2xl p-6 animate__animated animate__zoomIn animate__delay-3s">
-        <h2 class="text-lg font-semibold text-green-600 mb-2">Innovations</h2>
-        <canvas id="innovationChart"></canvas>
-      </div>
-
-      <!-- Weed Types Chart -->
-      <div class="bg-white shadow-xl rounded-2xl p-6 animate__animated animate__zoomIn animate__delay-4s">
-        <h2 class="text-lg font-semibold text-green-600 mb-2">Weed Types</h2>
-        <canvas id="weedChart"></canvas>
-      </div>
-
-   
-  </main>
-
-  <div class="text-center mt-5">
-    <a
-      href="/"
-      class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
-      style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
-    >
-      ← Back to Home
-    </a>
-</div>
-
-<footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
-    &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
-</footer>
-
-  <!-- Custom JS -->
-  <script src="/static/script.js" defer></script>
-  
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts for Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
-    @keyframes fade-in {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+      color: #1a202c;
     }
-
-    .animate-fade-in {
-      animation: fade-in 1s ease-in-out;
+    .custom-navbar {
+      background: linear-gradient(to right, #16a34a, #22c55e);
+      transition: all 0.3s ease-in-out;
     }
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      z-index: 40; display: none; opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .mobile-menu { position: fixed; top: 0; right: -100%; width: 75%; max-width: 350px; height: 100%; background: white; padding: 1.5rem; box-shadow: -2px 0 15px rgba(0,0,0,0.2); z-index: 50; transition: right 0.3s cubic-bezier(0.25,0.46,0.45,0.94);}
+    .mobile-menu.active { right: 0; }
+    .mobile-menu-overlay.active { display: block; opacity: 1; }
+    .card { background: #fff; border-radius: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.3s, box-shadow 0.3s; padding: 2rem;}
+    .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.05);}
+    .nav-link:hover, .nav-link-mobile:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+    .document-content { max-height: 200px; overflow: hidden; transition: max-height 0.5s;}
+    .document-content.expanded { max-height: 2000px;}
+    .info-card { border-left: 6px solid #16a34a; background: #f0fdf4; }
+    .misinfo-card { border-left: 6px solid #ef4444; background: #fef2f2; }
   </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Navigation Bar -->
+  <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+    <div class="container mx-auto px-4 flex items-center justify-between py-3">
+      <a class="flex items-center space-x-2" href="#">
+        <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 w-9 rounded-full">
+        <span class="text-white text-2xl font-bold">AgriTrue</span>
+      </a>
+      <div class="hidden lg:flex items-center space-x-6">
+        <div class="relative group">
+          <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+          <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+            <div class="py-1">
+              <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+              <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+              <hr class="my-1 border-gray-200">
+              <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+            </div>
+          </div>
+        </div>
+        <a href="#dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+        <a href="#documentation" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Documentation</a>
+        <div class="relative group">
+          <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+          <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+            <div class="py-1">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+              <a href="/edit-profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+              <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+              <hr class="my-1 border-gray-200">
+              <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-100">Logout</a>
+              <hr class="my-1 border-gray-200">
+              <a href="#" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+        <i class="fas fa-bars text-2xl"></i>
+      </button>
+    </div>
+  </nav>
+  <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+  <div id="mobileMenu" class="mobile-menu lg:hidden">
+    <div class="flex justify-between items-center mb-5">
+      <h5 class="text-xl font-bold text-green-700">Menu</h5>
+      <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+    </div>
+    <ul class="flex flex-col space-y-2">
+      <li>
+        <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+      </li>
+      <li>
+        <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#documentation"><i class="fas fa-book-open mr-3"></i>Documentation</a>
+      </li>
+      <li class="relative">
+        <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+          <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+          <i class="fas fa-chevron-down text-xs"></i>
+        </a>
+        <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+          <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+          <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">AI Chatbot</a>
+          <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+          <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+        </div>
+      </li>
+    </ul>
+    <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+      <a class="p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700 transition" href="#">My Profile</a>
+      <a class="p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50 transition" href="#">Logout</a>
+    </div>
+  </div>
+
+  <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+    <!-- Quick Stats Section -->
+    <section id="stats" class="max-w-7xl mx-auto my-12 pt-8">
+      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Quick Agricultural Stats</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+        <div class="card p-6">
+          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-seedling"></i></div>
+          <h3 class="text-4xl font-extrabold text-gray-800">12.5M</h3>
+          <p class="text-gray-500 mt-1">Hectares Cultivated</p>
+        </div>
+        <div class="card p-6">
+          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-tractor"></i></div>
+          <h3 class="text-4xl font-extrabold text-gray-800">75%</h3>
+          <p class="text-gray-500 mt-1">Farm Productivity Increase</p>
+        </div>
+        <div class="card p-6">
+          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-water"></i></div>
+          <h3 class="text-4xl font-extrabold text-gray-800">30%</h3>
+          <p class="text-gray-500 mt-1">Water Usage Reduction</p>
+        </div>
+        <div class="card p-6">
+          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-globe-americas"></i></div>
+          <h3 class="text-4xl font-extrabold text-gray-800">20+</h3>
+          <p class="text-gray-500 mt-1">Countries Supported</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section id="dashboard" class="max-w-7xl mx-auto my-12 pt-8">
+      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Detailed Agricultural Trends</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="card">
+          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-line mr-2"></i> Crop Yield Over Time</h3>
+          <canvas id="cropYieldChart" class="w-full"></canvas>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-pie mr-2"></i> Fertilizer Usage Breakdown</h3>
+          <canvas id="fertilizerChart" class="w-full"></canvas>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-cloud-sun-rain mr-2"></i> Rainfall & Temperature</h3>
+          <canvas id="weatherChart" class="w-full"></canvas>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-area mr-2"></i> Land Use Distribution</h3>
+          <canvas id="landUseChart" class="w-full"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agricultural Information & Misinformation Section -->
+    <section id="agri-info" class="max-w-7xl mx-auto my-12 pt-8">
+      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Agricultural Information & Misinformation</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Accurate Information Card -->
+        <div class="card info-card">
+          <h3 class="text-xl font-bold text-green-700 mb-2 flex items-center"><i class="fas fa-check-circle mr-2"></i> Accurate Information</h3>
+          <ul class="list-disc pl-6 text-gray-700 space-y-2">
+            <li>Precision farming uses data and technology to optimize crop yields and resource use.</li>
+            <li>Crop rotation helps maintain soil fertility and reduce pests.</li>
+            <li>Modern irrigation systems can reduce water usage by up to 30%.</li>
+            <li>Integrated pest management minimizes chemical use and environmental impact.</li>
+            <li>Hydroponics and aeroponics enable year-round farming in controlled environments.</li>
+          </ul>
+        </div>
+        <!-- Misinformation Card -->
+        <div class="card misinfo-card">
+          <h3 class="text-xl font-bold text-red-600 mb-2 flex items-center"><i class="fas fa-exclamation-triangle mr-2"></i> Common Misinformation</h3>
+          <ul class="list-disc pl-6 text-gray-700 space-y-2">
+            <li>All GMOs are unsafe for consumption. <span class="text-red-500 font-semibold">False</span></li>
+            <li>Organic farming never uses pesticides. <span class="text-red-500 font-semibold">False</span></li>
+            <li>Modern agriculture always harms the environment. <span class="text-red-500 font-semibold">False</span></li>
+            <li>Fertilizers always pollute water sources. <span class="text-red-500 font-semibold">False</span></li>
+            <li>Technology replaces farmers. <span class="text-red-500 font-semibold">False</span></li>
+          </ul>
+          <div class="mt-4 text-sm text-gray-500">
+            <span class="font-bold text-red-600">Note:</span> Always verify agricultural claims with trusted sources and scientific research.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="documentation" class="max-w-7xl mx-auto my-12 pt-8">
+      <div class="card">
+        <h2 class="text-3xl font-bold text-green-800 mb-4">A Guide to Modern Agriculture</h2>
+        <div id="documentContent" class="document-content">
+          <p class="text-gray-600 leading-relaxed mb-4">
+            Modern agriculture is a dynamic field driven by innovation and technology. It encompasses a wide range of practices designed to increase efficiency, improve crop yields, and ensure sustainability for future generations. From precision farming techniques that use GPS and data analytics to smart irrigation systems that conserve water, the goal is to produce more with less.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            One of the key pillars of modern farming is <strong>data-driven decision-making</strong>. Farmers now use sensors, drones, and satellite imagery to collect vast amounts of information about their land, crops, and weather patterns. This data is then analyzed to provide insights into soil health, pest infestations, and nutrient deficiencies, allowing for targeted interventions that reduce waste and maximize output.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-4">
+            Another critical area is <strong>sustainable farming</strong>. As the global population grows, there is an increasing demand for food, but also a greater need to protect our natural resources. Modern agriculture emphasizes practices like no-till farming to reduce soil erosion, crop rotation to maintain soil fertility, and integrated pest management to minimize the use of harmful chemicals. These methods not only help the environment but also lead to more resilient and profitable farms.
+          </p>
+          <p class="text-gray-600 leading-relaxed">
+            <strong>Hydroponics</strong> and <strong>aeroponics</strong> are also gaining traction, allowing crops to be grown in controlled environments without soil. This can significantly reduce water usage and enable farming in areas where traditional agriculture is not possible. These controlled-environment agriculture systems offer consistent yields year-round, regardless of external climate conditions.
+          </p>
+        </div>
+        <div class="mt-6 text-center">
+          <button id="readMoreBtn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 transition hover:scale-105">
+            Read More
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+          <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+        </div>
+        <div>
+          <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+          <ul class="space-y-2">
+            <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+            <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+            <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+            <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+          <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+          <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+          <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+        </div>
+      </div>
+      <hr class="border-gray-700 my-8">
+      <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mobile menu
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const closeMobileMenu = document.getElementById('closeMobileMenu');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+      const navLinks = document.querySelectorAll('.nav-link-mobile');
+      function openMenu() {
+        mobileMenu.classList.add('active');
+        mobileMenuOverlay.classList.add('active');
+      }
+      function closeMenu() {
+        mobileMenu.classList.remove('active');
+        mobileMenuOverlay.classList.remove('active');
+      }
+      mobileMenuBtn.addEventListener('click', openMenu);
+      closeMobileMenu.addEventListener('click', closeMenu);
+      mobileMenuOverlay.addEventListener('click', closeMenu);
+      navLinks.forEach(link => link.addEventListener('click', closeMenu));
+      // Read More
+      const readMoreBtn = document.getElementById('readMoreBtn');
+      const documentContent = document.getElementById('documentContent');
+      readMoreBtn.addEventListener('click', () => {
+        const isExpanded = documentContent.classList.toggle('expanded');
+        readMoreBtn.textContent = isExpanded ? 'Read Less' : 'Read More';
+      });
+      // Chart.js global defaults
+      Chart.defaults.font.family = 'Inter, sans-serif';
+      Chart.defaults.color = '#4a5568';
+      // Crop Yield Line Chart
+      const cropYieldCtx = document.getElementById('cropYieldChart').getContext('2d');
+      new Chart(cropYieldCtx, {
+        type: 'line',
+        data: {
+          labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+          datasets: [
+            {
+              label: 'Maize Yield (tons/ha)',
+              data: [8.2, 8.5, 8.1, 8.7, 9.0, 9.2, 9.1],
+              borderColor: '#16a34a',
+              backgroundColor: 'rgba(22, 163, 74, 0.2)',
+              tension: 0.4,
+              fill: true,
+            },
+            {
+              label: 'Wheat Yield (tons/ha)',
+              data: [5.1, 5.3, 5.0, 5.5, 5.6, 5.8, 5.7],
+              borderColor: '#22c55e',
+              backgroundColor: 'rgba(34, 197, 94, 0.2)',
+              tension: 0.4,
+              fill: true,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+      // Fertilizer Usage Doughnut Chart
+      const fertilizerCtx = document.getElementById('fertilizerChart').getContext('2d');
+      new Chart(fertilizerCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Nitrogen', 'Phosphorus', 'Potassium', 'Organic'],
+          datasets: [{
+            label: 'Fertilizer Usage',
+            data: [45, 25, 15, 15],
+            backgroundColor: [
+              '#16a34a',
+              '#22c55e',
+              '#65a30d',
+              '#a3e635'
+            ],
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'right' } }
+        }
+      });
+      // Rainfall & Temp Bar Chart
+      const weatherCtx = document.getElementById('weatherChart').getContext('2d');
+      new Chart(weatherCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+          datasets: [
+            {
+              label: 'Average Rainfall (mm)',
+              data: [50, 65, 80, 120, 150, 110, 95],
+              backgroundColor: '#3b82f6',
+              yAxisID: 'y',
+            },
+            {
+              label: 'Average Temp (°C)',
+              data: [15, 16, 18, 20, 22, 25, 26],
+              backgroundColor: '#ef4444',
+              yAxisID: 'y1',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: { display: true, text: 'Rainfall (mm)' }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: { display: true, text: 'Temperature (°C)' },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+      // Land Use Area Chart
+      const landUseCtx = document.getElementById('landUseChart').getContext('2d');
+      new Chart(landUseCtx, {
+        type: 'polarArea',
+        data: {
+          labels: ['Cropland', 'Pasture', 'Forest', 'Urban', 'Water'],
+          datasets: [{
+            label: 'Land Use',
+            data: [45, 30, 15, 5, 5],
+            backgroundColor: [
+              '#16a34a',
+              '#22c55e',
+              '#a3e635',
+              '#60a5fa',
+              '#3b82f6'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'right' } },
+          scales: {
+            r: {
+              pointLabels: {
+                display: true,
+                centerPointLabels: true,
+                font: { size: 14 }
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>

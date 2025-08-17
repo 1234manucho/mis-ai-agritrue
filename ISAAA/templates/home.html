@@ -4,515 +4,1215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgriTrue Home</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+ 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2U6nN5D0W9u8i+R5nS22Q+P3G/gX6r2Cj2sQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        /* Sidebar Styles */
-        .sidebar {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .hero-content {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Loader Styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Slideshow Styles */
+        #slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
+            z-index: 2;
+        }
+
+        /* Chatbot Styles */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #34d399;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 360px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        #chatbot-header {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: white;
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #chatbot-body {
+            padding: 16px;
+            background: #f0fdf4;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+        
+        #chatbot-input-container {
+            display: flex;
+            padding: 12px;
+            background: #ecfdf5;
+            border-top: 1px solid #d1fae5;
+        }
+        
+        #chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #send-message, #mic-button {
+            background: #34d399;
+            color: white;
+            border: none;
+            padding: 0 12px;
+            margin-left: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: #34d399;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: #d1fae5;
+            color: black;
+            margin-right: auto;
+        }
+
+        /* Hide default Bootstrap toggler on larger screens */
+        @media (min-width: 992px) {
+            .navbar-toggler {
+                display: none;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: #f0fdf4;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 80px; /* Initially collapsed */
+            width: 100vw;
             height: 100vh;
-            background-color: #f8f9fa;
-            transition: width 0.3s ease;
-            overflow: hidden;
-        }
-        .sidebar:hover {
-            width: 250px; /* Expanded width */
-        }
-        .sidebar .sidebar-content {
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
             display: none;
-            padding: 10px;
-            transition: opacity 0.3s ease;
         }
-        .sidebar:hover .sidebar-content {
+
+        .mobile-menu-overlay.show {
             display: block;
-        }
-        /* Adjust the content section to not overlap with sidebar */
-        .content {
-            margin-left: 80px; /* Initially aligned with the collapsed sidebar */
-            transition: margin-left 0.3s ease;
-        }
-        .sidebar:hover ~ .content {
-            margin-left: 250px; /* Adjust content when sidebar is expanded */
-        }
-        /* Sidebar Links */
-        .sidebar a {
-            text-decoration: none;
-            color: #333;
-            padding: 10px;
-            display: block;
-            font-size: 18px;
-        }
-        .sidebar a:hover {
-            background-color: #ddd;
         }
     </style>
 </head>
-<body>
-    
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-content">
-            <h4 class="text-center">Dashboard</h4>
-            <a href="/dashboard">Dashboard Overview</a>
-            <a href="/community-notes">Community Notes</a>
-            <a href="/chatbot">AI Chatbot</a>
-            <a href="/ml-analyzer">ML Analyzer</a>
-             <a href="/know_your_land">know yourland</a>
-              <a href="/profile">profile</a>
-               <a href="/streak">streak</a>
+<body class="bg-f0fdf4 font-inter">
+
+    <!-- Loader -->
+    <div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="text-center">
+            <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
+            <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="content">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">🌾 AgriTrue</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/community-notes">Community Notes</a></li>
-                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/chatbot">AI Chatbot</a></li>
-                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/ml-analyzer">ML Analyzer</a></li>
-                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/ussd">USSD</a></li>
-                        <li class="nav-item"><a class="btn btn-outline-success me-2" href="/dashboard">Dashboard</a></li>
-                         <li class="nav-item"><a class="btn btn-outline-success me-2" href="/know_your_land">knowyourland</a></li>
-                         <li class="nav-item"><a class="btn btn-outline-success me-2" href="/edit_profile">profile</a></li>
-                         <li class="nav-item"><a class="btn btn-outline-success me-2" href="/profile">streak</a></li>
-                        {% if current_user.is_authenticated %}
-                            <li class="nav-item"><a class="btn btn-outline-success me-2" href="/profile">Profile</a></li>
-                            <li class="nav-item"><a class="btn btn-outline-danger me-2" href="/logout">Logout</a></li>
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
                             {% if current_user.is_admin %}
-                                <li class="nav-item"><a class="btn btn-outline-warning me-2" href="/admin">Admin</a></li>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
                             {% endif %}
-                        {% else %}
-                            <li class="nav-item"><a class="btn btn-outline-primary me-2" href="/login">Login</a></li>
-                            <li class="nav-item"><a class="btn btn-outline-primary me-2" href="/register">Register</a></li>
-                        {% endif %}
-                    </ul>
+                        </div>
+                    </div>
                 </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
             </div>
-        </nav>
 
-        <!-- Hero Section -->
-        <div class="hero-section">
-            <div class="container">
-                <h1>Welcome to AgriTrue</h1>
-                <p>Your trusted platform to combat agricultural misinformation.</p>
-                <a href="https://www.youtube.com/watch?v=6TLPSPwMSm0" class="btn btn-success btn-lg mt-3" style="color: black;">Learn More</a>
-            </div>
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
         </div>
-
-        <!-- Features Section -->
-        <div class="container features">
-            <div class="row text-center">
-                <div class="col-md-4">
-                    <div class="card feature-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Community Notes</h5>
-                            <p class="card-text">Collaborate with others to share verified agricultural information.</p>
-                            <a href="/community-notes" class="btn btn-success">Explore</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card feature-card">
-                        <div class="card-body">
-                            <h5 class="card-title">AI Chatbot</h5>
-                            <p class="card-text">Get instant answers to your agricultural queries.</p>
-                            <a href="/chatbot" class="btn btn-success">Chat Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card feature-card">
-                        <div class="card-body">
-                            <h5 class="card-title">ML Analyzer</h5>
-                            <p class="card-text">Analyze data with machine learning tools for better insights.</p>
-                            <a href="/ml-analyzer" class="btn btn-success">Analyze</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
         </div>
-
-        <!-- Statistics Overview -->
-        <section>
-            <div class="row g-4 justify-content-center">
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-success">1,200</h3>
-                        <p class="text-muted">Registered Farmers</p>
-                    </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                    <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
                 </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-primary">850</h3>
-                        <p class="text-muted">Hectares Cultivated</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-info">95%</h3>
-                        <p class="text-muted">Data Accuracy</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-warning">500+</h3>
-                        <p class="text-muted">Verified Experts</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-danger">300+</h3>
-                        <p class="text-muted">Community Projects</p>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="stat-item card p-4 text-center border-0 shadow-sm h-100">
-                        <h3 class="display-6 text-secondary">50</h3>
-                        <p class="text-muted">Innovations Tracked</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <hr>
-       
-        <div class="gallery-container" background-color: #03f103; padding: 20px; border-radius: 10px;">
-            <div class="image-card">
-              <img src="/static/images/weed1.jpg" alt="Weed Identification" />
-              <div class="caption">
-                <h3>Weed Control by uprooting</h3>
-                <p>Uprooting weeds involves physically removing them from the soil, either by hand or with tools like hoes or weed wrenches. This method is effective for herbaceous, annual, and some shrub weeds, but may be less successful for deep-rooted perennial weeds. Uprooting can prevent weed spread and reduce competition with desired plant</p>
-              </div>
-            </div>
-            <div class="image-card">
-              <img src="/static/images/weed2.jpg" alt="Pest Control" />
-              <div class="caption">
-                <h3>Pest and weed Control by lawn fertilizer</h3>
-                <p>While standard lawn fertilizers don't kill weeds, some products combine fertilizers with herbicides to kill weeds and feed the lawn. These are often called "Weed & Feed" products. Maintaining a healthy, dense lawn through proper fertilization can also help suppress weed growth by outcompeting weeds for resources like sunlight and nutrients.</p>
-              </div>
-            </div>
-            <div class="image-card">
-              <img src="/static/images/weed4.jpg" alt="Soil Health" />
-              <div class="caption">
-                <h3>Soil Health</h3>
-                <p>Understand the importance of soil health for sustainable farming.
-                    Weed and pest control in soil involves various methods, including chemical, mechanical, and biological approaches. Herbicides are commonly used to kill weeds, while soil fumigants can target pests. Other techniques like soil solarization, cover cropping, and crop rotation also play a role in managing both weeds and pests.
-                </p>
-              </div>
-            </div>
-          </div>
-<style>
-  @keyframes slideIn {
-    from {
-      transform: translateY(30px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-</style>  
-<!-- AgriTrue Loader -->
-<!-- AgriTrue Loader -->
-<div id="agritrue-loader">
-    <div class="loader-wrapper">
-        <div class="leaf"></div>
-        <h3 class="loading-text">AgriTrue Hello farmer please wait...</h3>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
     </div>
-</div>
+
+
+    <header class="relative w-full min-h-screen pt-[56px] lg:pt-[72px]">
+        <div id="slideshow" class="absolute inset-0">
+            <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" class="slide active">
+            <img src="{{ url_for('static', filename='images/pic2.jpeg') }}" class="slide">
+            <img src="{{ url_for('static', filename='images/pic3.jpeg') }}" class="slide">
+            <img src="{{ url_for('static', filename='images/pic4.jpeg') }}" class="slide">
+        </div>
+        <div class="dark-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-black/80 z-10"></div>
+        <div class="hero-content relative z-20 text-white text-left p-5"
+             style="position: absolute; top: 50%; left: 6%; transform: translateY(-50%); max-width: 600px;">
+            <h1 class="hero-title text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 text-shadow-lg"
+            style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">
+            Empowering Informed Agriculture
+            </h1>
+            <p class="hero-subtitle text-lg sm:text-xl md:text-2xl max-w-2xl mb-6 sm:mb-8 leading-relaxed text-shadow-lg"
+               style="text-shadow: 1px 1px 6px rgba(0,0,0,0.4);">
+            Join AgriTrue to access cutting-edge tools, data insights, and community-driven solutions that transform agriculture for a sustainable future.
+            </p>
+            <div class="hero-buttons flex gap-4 sm:gap-6 flex-wrap"
+             style="justify-content: flex-start;">
+            <a href="/register" class="bg-green-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                Get Started
+            </a>
+            <a href="/research" class="border-2 border-green-500 text-green-500 font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 hover:bg-green-500 hover:text-white">
+                Learn More
+            </a>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid py-5"></div>
+    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
+        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
+            </span>
+            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
+            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
+                Hello! I am AgriTrue AI. How can I help you today?
+                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
+            </div>
+        </div>
+        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+                
+                 <input type="file" id="image-input" accept="image/*" style="display:none;">
+                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
+                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
+                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
+               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
+                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
+                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
+                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
+            </div>
+            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
+                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
+                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
+            </div>
+            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
+                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-phone-alt"></i>
+                </a>
+                <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-sms"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
+        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
+    </button>
 
 <style>
-    #agritrue-loader {
-        position: fixed;
-        z-index: 9999;
-        background: #050806;
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        transition: opacity 0.5s ease;
+    @keyframes slide-up {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
-
-    .loader-wrapper {
-        text-align: center;
+    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
+    .dot-pulse {
+        position: relative;
+        width: 10px; height: 10px; border-radius: 50%;
+        background-color: #22c55e; color: #22c55e;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
+        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-
-    .leaf {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(45deg, #03f103, #81C784);
-        border-radius: 0 50% 50% 50%;
-        animation: spin 1.2s linear infinite;
-        transform: rotate(-45deg);
-        margin: auto;
+    .dot-pulse::before, .dot-pulse::after {
+        content: ''; position: absolute; width: 10px; height: 10px;
+        border-radius: 50%; background-color: #22c55e;
+        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
     }
-
-    .loading-text {
-        margin-top: 20px;
-        color: #4CAF50;
-        font-weight: 600;
-        font-size: 1.2rem;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg) scale(1); }
-        50% { transform: rotate(180deg) scale(1.2); }
-        100% { transform: rotate(360deg) scale(1); }
+    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
+    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
+    @keyframes dot-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
     }
 </style>
 
 <script>
-    window.addEventListener("load", () => {
-        const loader = document.getElementById("agritrue-loader");
+    window.onload = function() {
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeChatbotBtn = document.getElementById("close-chatbot");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const voiceInputBtn = document.getElementById("voice-input-btn");
+        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
+        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
+        const reportBtn = document.getElementById("report-btn"); // New button for Report
+        const messagesContainer = document.getElementById("chatbot-messages");
+        const headerText = document.getElementById("header-text");
+        const originalHeaderText = headerText.innerHTML;
 
-        // Keep loader visible for 30 seconds
-        setTimeout(() => {
-            loader.style.opacity = 0;
-            setTimeout(() => loader.style.display = "none", 500);
-        }, 1500); // 30,000 ms = 30 seconds
-    });
-</script>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chatbot</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0fdf4;
-      margin: 0;
-      padding: 0;
-    }
-    #chatbot-icon {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #34d399;
-      color: #fff;
-      font-size: 2rem;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      cursor: pointer;
-      z-index: 999;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    #chatbot-container {
-      position: fixed;
-      bottom: 100px;
-      right: 24px;
-      width: 360px;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 1000;
-      animation: slide-up 0.4s ease-out;
-    }
-    @keyframes slide-up {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    #chatbot-header {
-      background: linear-gradient(90deg, #34d399, #10b981);
-      color: white;
-      padding: 16px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #chatbot-body {
-      padding: 16px;
-      background: #f0fdf4;
-      overflow-y: auto;
-      max-height: 320px;
-    }
-    #chatbot-input-container {
-      display: flex;
-      padding: 12px;
-      background: #ecfdf5;
-      border-top: 1px solid #d1fae5;
-    }
-    #chatbot-input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #d1fae5;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    #send-message, #mic-button {
-      background: #34d399;
-      color: white;
-      border: none;
-      padding: 0 12px;
-      margin-left: 8px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .chatbot-message {
-      padding: 10px 14px;
-      border-radius: 14px;
-      margin-bottom: 8px;
-      max-width: 80%;
-    }
-    .user-message {
-      background: #34d399;
-      color: white;
-      margin-left: auto;
-    }
-    .bot-message {
-      background: #d1fae5;
-      color: black;
-      margin-right: auto;
-    }
-  </style>
-</head>
-<body>
-  <div id="chatbot-icon">💬</div>
-  <div id="chatbot-container">
-    <div id="chatbot-header">
-      <span>AgriTrue Chatbot</span>
-      <button id="close-chatbot" style="color:white;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
-    </div>
-    <div id="chatbot-body">
-      <div id="chatbot-messages"></div>
-    </div>
-    <div id="chatbot-input-container">
-      <input type="text" id="chatbot-input" placeholder="Type or speak..."/>
-      <button id="mic-button">🎤</button>
-      <button id="send-message">Send</button>
-    </div>
-  </div>
+        const imageInput = document.getElementById("image-input");
+        const imageUploadBtn = document.getElementById("image-upload-btn");
+        const imagePreviewContainer = document.getElementById("image-preview-container");
+        const imagePreview = document.getElementById("image-preview");
+        const removeImageBtn = document.getElementById("remove-image-btn");
+        let uploadedImageBase64 = null;
 
-  <script>
-    const chatbotIcon = document.getElementById("chatbot-icon");
-    const chatbotContainer = document.getElementById("chatbot-container");
-    const closeBtn = document.getElementById("close-chatbot");
-    const messagesDiv = document.getElementById("chatbot-messages");
-    const input = document.getElementById("chatbot-input");
-    const sendBtn = document.getElementById("send-message");
-    const micBtn = document.getElementById("mic-button");
-
-    const messages = [];
-
-    function appendMessage(text, isUser) {
-      const msg = document.createElement("div");
-      msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
-      msg.textContent = text;
-      messagesDiv.appendChild(msg);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-      appendMessage(text, true);
-      messages.push({ role: "user", content: text });
-      input.value = "";
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages })
-        });
-        const data = await res.json();
-        if (data.reply) {
-          appendMessage(data.reply, false);
-          messages.push({ role: "assistant", content: data.reply });
-        } else {
-          appendMessage("No response from server.", false);
+        // Helper functions for TTS
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
         }
-      } catch (err) {
-        console.error(err);
-        appendMessage("Error connecting to the server.", false);
-      }
-    }
+        function pcmToWav(pcm16, sampleRate) {
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+            view.setUint32(0, 0x46464952, true); // "RIFF"
+            view.setUint32(4, 36 + pcm16.length * 2, true);
+            view.setUint32(8, 0x45564157, true); // "WAVE"
+            view.setUint32(12, 0x20746d66, true); // "fmt "
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            view.setUint32(36, 0x61746164, true); // "data"
+            view.setUint32(40, pcm16.length * 2, true);
+            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
+            buffer.set(new Uint8Array(wavHeader), 0);
+            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
+            return new Blob([buffer], { type: "audio/wav" });
+        }
+        async function speakMessage(text) {
+            const audio = new Audio();
+            audio.src = '#';
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                }
+            };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    audio.src = audioUrl;
+                    audio.play();
+                } else {
+                    console.error("TTS response is not a valid audio format.");
+                }
+            } catch (error) {
+                console.error('Error with TTS:', error);
+            }
+        }
 
-    sendBtn.onclick = sendMessage;
-    input.onkeydown = (e) => {
-      if (e.key === "Enter") sendMessage();
+        // Function to append a new message to the chat
+        function appendMessage(message, sender, imageBase64 = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.maxWidth = '80%';
+            messageDiv.style.padding = '10px 14px';
+            messageDiv.style.borderRadius = '18px';
+            messageDiv.style.lineHeight = '1.4';
+            messageDiv.style.fontSize = '0.95rem';
+            messageDiv.style.position = 'relative';
+
+            if (sender === 'user') {
+                messageDiv.style.backgroundColor = '#e2e8f0';
+                messageDiv.style.color = '#333';
+                messageDiv.style.alignSelf = 'flex-end';
+                messageDiv.style.borderBottomRightRadius = '4px';
+            } else {
+                messageDiv.style.backgroundColor = '#22c55e';
+                messageDiv.style.color = 'white';
+                messageDiv.style.alignSelf = 'flex-start';
+                messageDiv.style.borderBottomLeftRadius = '4px';
+            }
+
+            if (imageBase64) {
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${imageBase64}`;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '8px';
+                img.style.marginBottom = '8px';
+                messageDiv.appendChild(img);
+            }
+            const textNode = document.createTextNode(message);
+            messageDiv.appendChild(textNode);
+            messagesContainer.appendChild(messageDiv);
+
+            if (sender === 'bot') {
+                const ttsButton = document.createElement('button');
+                ttsButton.textContent = '🔊';
+                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
+                ttsButton.onclick = () => speakMessage(message);
+                messageDiv.appendChild(ttsButton);
+            }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function getGeminiTextResponse(prompt) {
+            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response at this time.";
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
+        }
+
+        async function getGeminiImageResponse(prompt, imageBase64) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
+                }]
+            };
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response for this image.";
+                } catch (error) {
+                    console.error('Error calling Gemini API with image:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
+        }
+
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            const hasImage = uploadedImageBase64 !== null;
+            if (message || hasImage) {
+                appendMessage(message, 'user', uploadedImageBase64);
+                userInput.value = '';
+                uploadedImageBase64 = null;
+                imagePreviewContainer.style.display = 'none';
+
+                const thinkingMessageDiv = document.createElement('div');
+                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+                thinkingMessageDiv.className = 'message bot-message';
+                thinkingMessageDiv.style.display = 'flex';
+                thinkingMessageDiv.style.alignItems = 'center';
+                thinkingMessageDiv.style.gap = '0.5rem';
+                messagesContainer.appendChild(thinkingMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                let botResponse;
+                if (hasImage) {
+                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
+                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
+                } else {
+                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
+                    // Special handling for greetings
+                    const lowerCaseMessage = message.toLowerCase();
+                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
+                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
+                    }
+                    botResponse = await getGeminiTextResponse(aiPrompt);
+                }
+
+                messagesContainer.removeChild(thinkingMessageDiv);
+                appendMessage(botResponse, 'bot');
+            }
+        }
+
+        // Function for the "Get Advice" feature
+        async function getAdvice() {
+            const problem = prompt("What is your crop and what problem are you seeing?");
+            if (!problem) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Function for the "Generate Report" feature
+        async function generateReport() {
+            const topic = prompt("What is the topic for your agricultural report?");
+            if (!topic) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Existing function to generate a farm fact
+        async function generateFarmFact() {
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            thinkingMessageDiv.style.display = 'flex';
+            thinkingMessageDiv.style.alignItems = 'center';
+            thinkingMessageDiv.style.gap = '0.5rem';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
+            const botResponse = await getGeminiTextResponse(factPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            voiceInputBtn.addEventListener('click', () => {
+                try {
+                    recognition.start();
+                    voiceInputBtn.innerHTML = '�';
+                    voiceInputBtn.style.backgroundColor = 'gray';
+                } catch (e) { console.error('Speech recognition start error:', e); }
+            });
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage();
+            };
+            recognition.onend = () => {
+                voiceInputBtn.innerHTML = '🎙️';
+                voiceInputBtn.style.backgroundColor = '#3b82f6';
+            };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
+            };
+        } else {
+            voiceInputBtn.style.display = 'none';
+            console.warn("Speech Recognition API not supported in this browser.");
+        }
+
+        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
+                    imagePreview.src = reader.result;
+                    imagePreviewContainer.style.display = 'block';
+                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageBtn.addEventListener('click', () => {
+            uploadedImageBase64 = null;
+            imagePreviewContainer.style.display = 'none';
+            userInput.placeholder = "Type a message...";
+            imageInput.value = '';
+        });
+
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
+        };
+        closeChatbotBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "block";
+            headerText.innerHTML = originalHeaderText;
+        };
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { sendMessage(); }
+        });
+        factBtn.addEventListener('click', generateFarmFact);
+        adviceBtn.addEventListener('click', getAdvice);
+        reportBtn.addEventListener('click', generateReport);
     };
+</script>
 
-    chatbotIcon.onclick = () => {
-      chatbotContainer.style.display = "flex";
-      chatbotIcon.style.display = "none";
-    };
+<!-- Section for Feature Cards, now focused on combating misinformation -->
+<section class="mb-12">
+    <h2 class="text-3xl font-bold text-center text-green-700 mb-8">Our Tools for Verified Farming</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-    closeBtn.onclick = () => {
-      chatbotContainer.style.display = "none";
-      chatbotIcon.style.display = "flex";
-    };
+        <!-- Community Fact-Checks Card -->
+        <a href="/community-notes" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <img src="/static/images/comm.jpeg" alt="Community Fact-Checks" class="w-full h-48 object-cover rounded-t-xl">
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2 text-green-600">Community Fact-Checks</h3>
+                <p class="text-gray-600">Report and verify misleading information with insights from experienced farmers and agricultural experts.</p>
+            </div>
+        </a>
 
-    // 🎤 Speech Recognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
+        <!-- AI-Powered Verification Card -->
+        <a href="/ml-analyzer" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <img src="/static/images/aiv.jpg" alt="AI-Powered Verification" class="w-full h-48 object-cover rounded-t-xl">
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2 text-green-600">AI-Powered Verification</h3>
+                <p class="text-gray-600">Our machine learning engine analyzes data sources and claims to identify and flag potential misinformation.</p>
+            </div>
+        </a>
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        input.value = transcript;
-        sendMessage();
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        appendMessage("Sorry, I didn't catch that.", false);
-      };
-
-      micBtn.onclick = () => {
-        recognition.start();
-      };
-    } else {
-      micBtn.disabled = true;
-      micBtn.title = "Speech Recognition not supported in this browser.";
-    }
-  </script>
-</body>
-</html>
-<footer class="text-center py-6 text-sm text-gray-400">
-    &copy; 2025 AgriTrue. Empowering informed agriculture 🌱
-  </footer>
-
-
-      
-
+        <!-- Data-Backed Truths Card -->
+        <a href="/know_your_land" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <img src="/static/images/data.jpeg" alt="Data-Backed Truths" class="w-full h-48 object-cover rounded-t-xl">
+            <div class="p-6">
+                <h3 class="text-xl font-semibold mb-2 text-green-600">Data-Backed Truths</h3>
+                <p class="text-gray-600">Access clear, science-based infographics and reports that debunk common agricultural myths.</p>
+            </div>
+        </a>
     </div>
+</section>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Section with Image on Left, Text on Right, now focused on fighting misinformation -->
+<section class="mb-12" id="combating-misinformation">
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col md:flex-row-reverse items-center gap-8">
+        <!-- Image Container on the Left -->
+        <div class="md:w-1/2">
+            <img src="/static/images/data1.jpg" alt="Ensuring accurate agricultural data" class="w-full rounded-xl shadow-md">
+        </div>
+        <!-- Text and Table Container on the Right -->
+        <div class="md:w-1/2">
+            <h2 class="text-3xl font-bold text-green-700 mb-4">Empowering Farmers with Verified Information</h2>
+            <p class="text-gray-600 leading-relaxed mb-6">
+                Misinformation in agriculture can lead to poor yields, financial loss, and environmental harm. Our platform is dedicated to providing a safe, reliable space where farmers can find accurate information, share verified insights, and avoid common pitfalls caused by false claims.
+            </p>
+            
+            <!-- Example Table focused on verification metrics -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead class="bg-green-100">
+                        <tr>
+                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">Metric</th>
+                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">Last Month</th>
+                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">This Month</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 px-4 border-b text-gray-700">Misinformation Claims Flagged</td>
+                            <td class="py-3 px-4 border-b text-gray-700">85</td>
+                            <td class="py-3 px-4 border-b text-gray-700">120</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 px-4 border-b text-gray-700">Verified Reports Published</td>
+                            <td class="py-3 px-4 border-b text-gray-700">18</td>
+                            <td class="py-3 px-4 border-b text-gray-700">24</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="py-3 px-4 border-b text-gray-700">Engagement with Verified Content</td>
+                            <td class="py-3 px-4 border-b text-gray-700">+12%</td>
+                            <td class="py-3 px-4 border-b text-gray-700">+15%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Section for Impact & Testimonials -->
+<section class="mb-12 py-12 bg-white rounded-xl shadow-lg" id="case-study">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-green-700 mb-4">Case Study: Proving Our Value</h2>
+        <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
+            See how AgriTrue transforms challenges into triumphs. This case study demonstrates the direct financial impact of our platform on a farmer's operations.
+        </p>
+
+        <!-- Case Study Content -->
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+            <!-- Problem Description -->
+            <div class="md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-3 text-red-600">The Problem: Misinformation Costs</h3>
+                <p class="text-gray-600 mb-4">
+                    A farmer, Sarah, adopted a widely-shared but unproven natural pesticide recipe she found online. The mixture failed to protect her crop, leading to a severe pest infestation.
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li><span class="font-bold">Misinformation Source:</span> Social Media Post</li>
+                    <li><span class="font-bold">Initial Cost of Spray:</span> $500</li>
+                    <li><span class="font-bold">Resulting Crop Loss:</span> 25% of her harvest</li>
+                    <li><span class="font-bold">Estimated Financial Loss:</span> <span class="text-red-600 font-bold">$10,000</span></li>
+                </ul>
+            </div>
+
+            <!-- Solution and Results -->
+            <div class="md:w-1/2 p-6 bg-green-50 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-3 text-green-700">The AgriTrue Solution</h3>
+                <p class="text-gray-600 mb-4">
+                    After joining AgriTrue, Sarah used our AI-Powered Verification tool for a new pest issue. The tool flagged a similar solution as misinformation, recommending a proven, verified alternative from our database.
+                </p>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li><span class="font-bold">Platform Tool Used:</span> AI-Powered Verification</li>
+                    <li><span class="font-bold">Verified Solution Cost:</span> $800</li>
+                    <li><span class="font-bold">Pest Infestation Rate:</span> 0%</li>
+                    <li><span class="font-bold">Financial Benefit:</span> <span class="text-green-700 font-bold">Crop saved, preventing another $10,000 loss.</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="mt-12 text-center">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Ready to See Results Like Sarah?</h3>
+            <a href="/register" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                Join AgriTrue Today
+            </a>
+        </div>
+    </div>
+</section>
+<!-- Section for the Final "Gem" content -->
+<section class="py-16 bg-gradient-to-br from-green-50 to-white" id="final-gem-section"></section>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-4xl font-extrabold text-center text-green-800 mb-6 tracking-tight">A Brighter Future for Agriculture</h2>
+        <p class="text-center text-gray-700 mb-12 max-w-2xl mx-auto text-lg">
+            Discover verified news, expert insights, and inspiring success stories that drive agricultural innovation and sustainability.
+        </p>
+        <div class="flex flex-col lg:flex-row gap-10">
+            <!-- Left side: YouTube Video -->
+            <div class="lg:w-1/2 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.03] bg-white">
+                <div class="relative w-full" style="padding-top: 56.25%;">
+                    <iframe 
+                        class="absolute top-0 left-0 w-full h-full rounded-t-2xl"
+                        src="https://www.youtube.com/embed/gVjuwEHvwJg"
+                        title="Sustainable Farming Video" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="p-8">
+                    <h3 class="text-2xl font-semibold mb-3 text-green-700">The Power of Sustainable Farming</h3>
+                    <p class="text-gray-600 text-base">Explore how verified, data-driven techniques are transforming yields and reducing environmental impact for farmers worldwide.</p>
+                </div>
+            </div>
+            <!-- Right side: Articles and Good News -->
+            <div class="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Article Card 1 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-green-800 mb-2">New Pest-Resistant Crop Variety Released</h4>
+                        <p class="text-xs text-gray-400 mb-3">Dec 15, 2024</p>
+                        <p class="text-gray-600 mb-4">Breakthrough research delivers new crop varieties, helping farmers protect harvests and boost productivity.</p>
+                        <a href="#" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+                    </div>
+                </div>
+                <!-- Article Card 2 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-green-800 mb-2">Government Announces New Grant for Small Farms</h4>
+                        <p class="text-xs text-gray-400 mb-3">Dec 12, 2024</p>
+                        <p class="text-gray-600 mb-4">A new initiative supports sustainable practices and technology adoption for small-scale farmers.</p>
+                        <a href="#" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+                    </div>
+                </div>
+                <!-- Article Card 3 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-green-800 mb-2">AI-Powered Tools Boost Crop Health by 20%</h4>
+                        <p class="text-xs text-gray-400 mb-3">Dec 8, 2024</p>
+                        <p class="text-gray-600 mb-4">Recent studies show platforms like AgriTrue help farmers increase yields and reduce waste through smart insights.</p>
+                        <a href="#" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+                    </div>
+                </div>
+                <!-- Article Card 4 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-green-800 mb-2">New Community Forum Connects Farmers Nationwide</h4>
+                        <p class="text-xs text-gray-400 mb-3">Dec 5, 2024</p>
+                        <p class="text-gray-600 mb-4">AgriTrue's expanding community enables knowledge sharing and collaboration for best farming practices.</p>
+                        <a href="#" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Loader Script
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("agritrue-loader");
+            setTimeout(() => {
+                loader.style.opacity = 0;
+                setTimeout(() => loader.style.display = "none", 50);
+            }, 1);
+        });
+
+        // Slideshow Script
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('#slideshow .slide');
+            let current = 0;
+            if (slides.length > 0) {
+                slides[current].classList.add('active');
+            }
+            setInterval(() => {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }, 5000); // Change slide every 5 seconds
+        });
+
+        // Mobile Menu Script
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
+        const mobileMenu = document.getElementById("mobileMenu");
+        const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+        mobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.add("show");
+            mobileMenuOverlay.classList.add("show");
+            document.body.style.overflow = "hidden";
+        });
+        
+        closeMobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        mobileMenuOverlay.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        // Chatbot Script
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeBtn = document.getElementById("close-chatbot");
+        const messagesDiv = document.getElementById("chatbot-messages");
+        const input = document.getElementById("chatbot-input");
+        const sendBtn = document.getElementById("send-message");
+        const micBtn = document.getElementById("mic-button");
+        const messages = [];
+
+        function appendMessage(text, isUser) {
+            const msg = document.createElement("div");
+            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
+            msg.textContent = text;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            appendMessage(text, true);
+            messages.push({ role: "user", content: text });
+            input.value = "";
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ messages })
+                });
+                const data = await res.json();
+                if (data.reply) {
+                    appendMessage(data.reply, false);
+                    messages.push({ role: "assistant", content: data.reply });
+                } else {
+                    appendMessage("No response from server.", false);
+                }
+            } catch (err) {
+                console.error(err);
+                appendMessage("Error connecting to the server.", false);
+            }
+        }
+        
+        sendBtn.onclick = sendMessage;
+        input.onkeydown = (e) => {
+            if (e.key === "Enter") sendMessage();
+        };
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+        };
+        closeBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "flex";
+        };
+        
+        // 🎤 Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                sendMessage();
+            };
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                appendMessage("Sorry, I didn't catch that.", false);
+            };
+            micBtn.onclick = () => {
+                recognition.start();
+            };
+        } else {
+            micBtn.disabled = true;
+            micBtn.title = "Speech Recognition not supported in this browser.";
+        }
+    </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U",
+    authDomain: "worklink-africa.firebaseapp.com",
+    projectId: "worklink-africa",
+    storageBucket: "worklink-africa.firebasestorage.app",
+    messagingSenderId: "571773934857",
+    appId: "1:571773934857:web:19ce96818e4a7c1b6287d8",
+    measurementId: "G-R3CBNVDGQ1"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 </body>
 </html>

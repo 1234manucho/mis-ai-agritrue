@@ -1,286 +1,507 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
-import os
-import sqlite3
-from werkzeug.utils import secure_filename
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
-import openai
-import speech_recognition as sr
-from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
-from collections import defaultdict
-import pandas as pd
-from flask import Flask, render_template, redirect, url_for, request, session
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
+import re
+import requests
+import json
+from datetime import datetime, timedelta
+# import firebase_db # type: ignore
+from sqlalchemy import desc
+from flask_login import current_user, login_required
 
+# Firebase Admin
+import firebase_admin
+from firebase_admin import credentials, auth, firestore
 
-# --- Configuration ---
+# Local imports
+from extensions import db
+from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_user, get_user_by_email
+
+# Google Generative AI
+import google.generativeai as genai
+genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# OpenAI
+import openai
+openai.api_key = "your_openai_api_key"
+
+# --- App Configuration ---
 app = Flask(__name__)
 CORS(app)
 app.secret_key = 'supersecretkey'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-openai.api_key = "your_openai_api_key"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 # --- Flask-Login Setup ---
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-class User(UserMixin):
-    def init(self, id, username, is_admin):
-        self.id = id
-        self.username = username
-        self.is_admin = bool(is_admin)
-
 @login_manager.user_loader
 def load_user(user_id):
-    row = get_user_by_id(int(user_id))
-    if row:
-        uid, uname, _pw, is_admin = row
-        return User(uid, uname, is_admin)
-    return None
+    """
+    Flask-Login hook to reload the user object from the user ID stored in the session.
+    Looks up the user in Firestore and returns a User model instance.
+    """
+    try:
+        # Fetch from Firestore
+        doc_ref = firestore_db.collection("users").document(user_id)
+        doc = doc_ref.get()
 
-# --- Database Functions ---
-DB_NAME = "agritrue.db"
+        if not doc.exists:
+            return None
 
-def query_db(query, args=(), one=False):
-    with sqlite3.connect(DB_NAME) as con:
-        cur = con.cursor()
-        cur.execute(query, args)
-        rv = cur.fetchall()
-        return (rv[0] if rv else None) if one else rv
+        data = doc.to_dict()
 
-def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
-        cur = conn.cursor()
-        
-        cur.execute("""CREATE TABLE IF NOT EXISTS community_notes (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        note TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        tags TEXT, verified INTEGER DEFAULT 0, reposted_from INTEGER, upvotes INTEGER DEFAULT 0);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS comments (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        content TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        note_id INTEGER, FOREIGN KEY(note_id) REFERENCES community_notes(id));""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS users (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        username TEXT UNIQUE, password TEXT, is_admin INTEGER DEFAULT 0);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS soil_data (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        county TEXT, soil_type TEXT);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS pest_reports (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        region TEXT, pest_type TEXT);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS innovations (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        county TEXT, innovation TEXT);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS weather_data (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        county TEXT, weather_type TEXT, value INTEGER);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS altitude_data (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        county TEXT, altitude INTEGER);""")
-        cur.execute("""CREATE TABLE IF NOT EXISTS weed_types (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        county TEXT, weed_type TEXT);""")
+        # Map Firestore data into SQLAlchemy User model
+        user = User(
+            uid=user_id,
+            username=data.get("username"),
+            email=data.get("email"),
+            fullname=data.get("fullname"),
+            phone=data.get("phone"),
+            id_number=data.get("id_number"),
+            home_address=data.get("home_address"),
+            country=data.get("country"),
+            county=data.get("county"),
+            is_admin=data.get("is_admin", False),
+            created_at=data.get("created_at"),
+        )
 
-        # Insert sample data if empty
-        cur.execute("SELECT COUNT(*) FROM soil_data")
-        if cur.fetchone()[0] == 0:
-            cur.executemany("INSERT INTO soil_data (county, soil_type) VALUES (?, ?)", [
-                ('Nairobi', 'Clay'), ('Nairobi', 'Clay'), ('Kisumu', 'Sandy'), ('Kisumu', 'Loam')
-            ])
-        cur.execute("SELECT COUNT(*) FROM pest_reports")
-        if cur.fetchone()[0] == 0:
-            cur.executemany("INSERT INTO pest_reports (region, pest_type) VALUES (?, ?)", [
-                ('Western', 'Armyworm'), ('Western', 'Armyworm'), ('Rift Valley', 'Locust')
-            ])
-        cur.execute("SELECT COUNT(*) FROM innovations")
-        if cur.fetchone()[0] == 0:
-            cur.executemany("INSERT INTO innovations (county, innovation) VALUES (?, ?)", [
-                ('Nairobi', 'Biotech'), ('Kisumu', 'Drone Spraying'), ('Kisumu', 'Biotech')
-            ])
+        return user
 
-        conn.commit()
+    except Exception as e:
+        print(f"Error loading user {user_id}: {e}")
+        return None
 
-def save_note(note, tags=None, reposted_from=None):
-    query_db("INSERT INTO community_notes (note, tags, reposted_from) VALUES (?, ?, ?)", (note, tags, reposted_from))
-
-def get_all_notes():
-    return query_db("SELECT id, note, timestamp, verified, tags, upvotes FROM community_notes ORDER BY timestamp DESC")
-
-def add_comment(note_id, content):
-    query_db("INSERT INTO comments (note_id, content) VALUES (?, ?)", (note_id, content))
-
-def get_comments_for_note(note_id):
-    return query_db("SELECT content, timestamp FROM comments WHERE note_id=? ORDER BY timestamp", (note_id,))
-
-def verify_note(note_id):
-    query_db("UPDATE community_notes SET verified=1 WHERE id=?", (note_id,))
-
-def upvote_note(note_id):
-    query_db("UPDATE community_notes SET upvotes = upvotes + 1 WHERE id=?", (note_id,))
-
-def add_user(username, pw_hash, is_admin=0):
-    query_db("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", (username, pw_hash, is_admin))
-
-def get_user(username):
-    return query_db("SELECT id, username, password, is_admin FROM users WHERE username=?", (username,), one=True)
-
-def get_user_by_id(user_id):
-    return query_db("SELECT id, username, password, is_admin FROM users WHERE id=?", (user_id,), one=True)
-
-# --- Twilio Config ---
-TWILIO_PHONE_NUMBER = 'whatsapp:+14155238886'
-TWILIO_SID = 'your_twilio_sid'
-TWILIO_AUTH_TOKEN = 'your_twilio_auth_token'
-client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
-
-def send_whatsapp_message(to, message):
-    client.messages.create(body=message, from_=TWILIO_PHONE_NUMBER, to=f'whatsapp:{to}')
+# --- Firebase Initialization ---
+if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase-service-account.json")
+    firebase_admin.initialize_app(cred)
+firebase_db = firestore.client()
+FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"  # Your Firebase Web API Key
 
 # --- Routes ---
+
 @app.route('/')
 def home():
     return render_template('home.html')
-from flask import Flask, render_template, request, redirect, url_for
-from werkzeug.security import generate_password_hash
-import sqlite3
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
+# --- Chatbot API ---
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_message = request.json.get('message')
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
+    try:
+        prompt = f"You are AgriTrue, an expert agricultural AI. Respond to the user's query concisely and only about farming. User's query: {user_message}"
+        response = model.generate_content(prompt)
+        response_text = ""
+        for part in response.candidates[0].content.parts:
+            if hasattr(part, 'text'):
+                response_text += part.text
+        if not response_text:
+            response_text = "I'm sorry, I couldn't generate a response this time. Please try a different query."
+        return jsonify({"reply": response_text})
+    except Exception as e:
+        print(f"Error during API call: {e}")
+        return jsonify({"error": "Server error. Could not get response."}), 500
 
-# --- User Registration and Login ---
-# Initialize the database
-def init_db():
-    with sqlite3.connect("users.db") as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                email TEXT,
-                fullname TEXT
+# --- Registration Route ---
+# --- Registration Route ---
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        fullname = request.form.get('fullname', '').strip()
+        username = request.form.get('username', '').strip().lower()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+        phone = request.form.get('phone', '').strip()
+        id_number = request.form.get('id_number', '').strip()
+        home_address = request.form.get('home_address', '').strip()
+        country = request.form.get('country', '').strip()
+        county = request.form.get('county', '').strip()
+
+        errors = []
+
+        # --- Required fields validation ---
+        if not fullname: errors.append("Full name is required.")
+        if not username: errors.append("Username is required.")
+        if not email: errors.append("Email is required.")
+        if not password: errors.append("Password is required.")
+        if not confirm_password: errors.append("Confirm password is required.")
+        if not country: errors.append("Country is required.")
+
+        # --- Email format ---
+        if email and not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            errors.append("Invalid email format.")
+
+        # --- Password validation ---
+        if password != confirm_password:
+            errors.append("Passwords do not match.")
+        if password and (len(password) < 6 or not re.search(r"[A-Za-z]", password) or not re.search(r"[0-9]", password)):
+            errors.append("Password must be at least 6 chars and include letters & numbers.")
+
+        # --- Phone formatting ---
+        formatted_phone = None
+        phone_for_auth = None  # Firebase Auth ≤15 digits
+        if phone:
+            phone_digits = re.sub(r"[^\d]", "", phone)
+            country_code_map = {
+                'kenya': '+254', 'uganda': '+256', 'tanzania': '+255',
+                'ghana': '+233', 'nigeria': '+234', 'south-africa': '+27',
+                'zambia': '+260', 'zimbabwe': '+263', 'rwanda': '+250',
+                'malawi': '+265', 'ethiopia': '+251', 'egypt': '+20',
+                'morocco': '+212', 'algeria': '+213', 'tunisia': '+216'
+            }
+            code = country_code_map.get(country.lower(), '+000')
+            if phone_digits.startswith('0'):
+                phone_digits = phone_digits[1:]
+            formatted_phone = code + phone_digits
+
+            if len(formatted_phone) <= 15:
+                phone_for_auth = formatted_phone  # Firebase-valid
+            # Always store full phone in DB, no limit
+
+        # --- Check duplicate email ---
+        try:
+            auth.get_user_by_email(email)
+            errors.append("Email already registered. Please log in.")
+        except auth.UserNotFoundError:
+            pass
+
+        # --- Check duplicate username ---
+        users_ref = firebase_db.collection("users")
+        if users_ref.where("username", "==", username).get():
+            errors.append("Username already exists. Please choose another.")
+
+        # --- If errors exist, flash and redirect ---
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return redirect(url_for('register'))
+
+        # --- Create user in Firebase Auth ---
+        try:
+            firebase_user = auth.create_user(
+                email=email,
+                password=password,
+                display_name=username,
+                phone_number=phone_for_auth  # only if valid
             )
-        """)
-init_db()
+        except Exception as e:
+            flash(f"Error creating account: {str(e)}", "error")
+            return redirect(url_for('register'))
 
-# Get a user by username
-def get_user(username):
-    with sqlite3.connect("users.db") as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-        return cur.fetchone()
+        # --- Save user info in Firestore ---
+        user_doc = {
+            "fullname": fullname,
+            "username": username,
+            "email": email,
+            "phone": formatted_phone,  # full phone any length
+            "id_number": id_number,
+            "home_address": home_address,
+            "country": country,
+            "county": county,
+            "uid": firebase_user.uid,
+            "streak_count": 1,
+            "last_login": datetime.utcnow().isoformat()
+        }
+        firebase_db.collection("users").document(firebase_user.uid).set(user_doc)
+        print(User.__table__)
 
-# Add a new user
-def add_user(username, password, email, fullname):
-    with sqlite3.connect("users.db") as conn:
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO users (username, password, email, fullname) VALUES (?, ?, ?, ?)",
-            (username, password, email, fullname)
+        # --- Auto-login with proper User model ---
+        user = User(id=firebase_user.uid, username=username, email=email)
+        login_user(user)
+
+        flash("✅ Account created successfully! Welcome to AgriTrue.", "success")
+        return redirect(url_for('community_notes'))
+
+    return render_template('register.html')
+
+
+
+# --- Login Route ---
+# --- Login Route ---
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        if not email or not password:
+            flash("Please enter both email and password.", "error")
+            return redirect(url_for('login'))
+
+        login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+        payload = {"email": email, "password": password, "returnSecureToken": True}
+        headers = {"Content-Type": "application/json"}
+        res = requests.post(login_url, data=json.dumps(payload), headers=headers)
+        result = res.json()
+
+        if "error" in result:
+            flash("Invalid email or password.", "error")
+            return redirect(url_for('login'))
+
+        uid = result.get("localId")
+        firebase_user = auth.get_user(uid)
+
+        # --- Fetch all user data from Firestore first ---
+        user_ref = firebase_db.collection("users").document(uid)
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            # Handle case where user exists in Auth but not Firestore
+            flash("User data not found. Please contact support.", "error")
+            return redirect(url_for('login'))
+        
+        user_data = user_doc.to_dict()
+        
+        # --- Update streak and other logic ---
+        today = datetime.utcnow().date()
+        streak = user_data.get("streak_count", 1)
+        last_login = user_data.get("last_login")
+        if last_login:
+            last_login_date = datetime.fromisoformat(last_login).date()
+            if last_login_date == today - timedelta(days=1):
+                streak += 1
+            elif last_login_date < today - timedelta(days=1):
+                streak = 1
+        
+        user_ref.update({"streak_count": streak, "last_login": datetime.utcnow().isoformat()})
+
+        # --- Create user with complete data from Firestore ---
+        # Note: We use the SQLAlchemy constructor which maps keywords to columns
+        user = User(
+            id=uid,
+            username=user_data.get('username'),
+            email=user_data.get('email'),
+            fullname=user_data.get('fullname'),
+            phone=user_data.get('phone'),
+            id_number=user_data.get('id_number'),
+            home_address=user_data.get('home_address'),
+            country=user_data.get('country'),
+            county=user_data.get('county'),
+            is_admin=user_data.get('is_admin', False),
+            created_at=datetime.fromisoformat(user_data.get('created_at')) if user_data.get('created_at') else None
         )
-        conn.commit()
+        
+        login_user(user)
 
+        flash(f"✅ Logged in successfully! Current streak: {streak} day(s).", "success")
+        return redirect(url_for('community_notes'))
+
+    return render_template('login.html')
+# --- Protected Notes Page ---
 @app.route('/community-notes', methods=['GET', 'POST'])
+# @login_required
 def community_notes():
     if request.method == 'POST':
-        note = request.form.get('note')
-        tags = request.form.get('tags')
-        if note:
-            save_note(note, tags)
-    notes = get_all_notes()
+        note = request.form.get('note', '').strip()
+        tags = request.form.get('tags', '').strip()
+        if not note:
+            flash("Note content cannot be empty.", "error")
+        else:
+            new_note = CommunityNote(
+                note=note,
+                tags=tags,
+                user_id=current_user.id
+            )
+            db.session.add(new_note)
+            db.session.commit()
+            flash("Note posted successfully!", "success")
+        return redirect(url_for('community_notes'))
+
+    notes = CommunityNote.query.order_by(desc(CommunityNote.timestamp)).all()
     enriched = []
     for n in notes:
-        note_id, content, ts, verified, tags, upvotes = n
-        comments = get_comments_for_note(note_id)
-        enriched.append({"id": note_id, "content": content, "timestamp": ts, "verified": verified, "tags": tags, "upvotes": upvotes, "comments": comments})
-    return render_template('community_notes.html', notes=enriched)
+        comments = Comment.query.filter_by(note_id=n.id).order_by(Comment.timestamp.asc()).all()
+        enriched.append({
+            "id": n.id,
+            "content": n.note,
+            "timestamp": n.timestamp,
+            "verified": n.verified,
+            "tags": n.tags,
+            "upvotes": n.upvotes,
+            "comments": comments
+        })
 
+    return render_template('community_notes.html', notes=enriched)
 @app.route('/comment/<int:note_id>', methods=['POST'])
 def post_comment(note_id):
-    content = request.form.get('comment')
+    content = request.form.get('comment', '').strip()
     if content:
-        add_comment(note_id, content)
+        note_exists = CommunityNote.query.get(note_id)
+        if not note_exists:
+            flash("Note not found.", "error")
+            return redirect(url_for('community_notes'))
+
+        new_comment = Comment(content=content, note_id=note_id, timestamp=datetime.utcnow())
+        db.session.add(new_comment)
+        db.session.commit()
+        flash("Comment added!", "success")
+    else:
+        flash("Comment cannot be empty.", "error")
+
     return redirect(url_for('community_notes'))
+
 
 @app.route('/verify/<int:note_id>', methods=['POST'])
 def mark_verified(note_id):
-    verify_note(note_id)
-    return jsonify({'status': 'verified'})
+    note = CommunityNote.query.get(note_id)
+    if note:
+        note.verified = True
+        db.session.commit()
+        return jsonify({'status': 'verified'})
+    return jsonify({'status': 'not found'}), 404
+
 
 @app.route('/upvote/<int:note_id>', methods=['POST'])
 def upvote(note_id):
-    upvote_note(note_id)
-    return jsonify({'status': 'upvoted'})
+    note = CommunityNote.query.get(note_id)
+    if not note:
+        return jsonify({'status': 'not found'}), 404
+
+    # Prevent duplicate upvotes from same session
+    voted_notes = session.get('voted_notes', [])
+    if note_id in voted_notes:
+        return jsonify({'status': 'already upvoted'}), 400
+
+    note.upvotes += 1
+    db.session.commit()
+
+    voted_notes.append(note_id)
+    session['voted_notes'] = voted_notes
+
+    return jsonify({'status': 'upvoted', 'upvotes': note.upvotes})
+
 
 @app.route('/repost/<int:note_id>', methods=['POST'])
 def repost(note_id):
-    note = next((n for n in get_all_notes() if n[0] == note_id), None)
+    note = CommunityNote.query.get(note_id)
     if note:
-        save_note(note[1], note[4], reposted_from=note_id)
-        return jsonify({'status': 'reposted'})
+        new_note = CommunityNote(
+            note=note.note,
+            tags=note.tags,
+            reposted_from=note_id,
+            timestamp=datetime.utcnow(),
+            upvotes=0,
+            verified=False
+        )
+        db.session.add(new_note)
+        db.session.commit()
+        return jsonify({'status': 'reposted', 'new_note_id': new_note.id})
     return jsonify({'status': 'not found'}), 404
 
+
+
 #dashboard
+from flask import render_template, jsonify
+from collections import defaultdict
+import sqlite3
+
+DB_NAME = "agritrue"  # Make sure this is set to your DB file
 
 @app.route('/dashboard')
 def dashboard():
+    """Render the dashboard page."""
     return render_template('dashboard.html')
 
+
 def fetch_chart_data():
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
+    """Fetch and organize all chart datasets from the database."""
     charts = {}
 
-    cur.execute("SELECT county, soil_type, COUNT(*) FROM soil_data GROUP BY county, soil_type")
-    soil_data = defaultdict(list)
-    for county, soil, count in cur.fetchall():
-        soil_data[county].append({'soil_type': soil, 'count': count})
-    charts['soil_by_county'] = soil_data
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cur = conn.cursor()
 
-    cur.execute("SELECT region, pest_type, COUNT(*) FROM pest_reports GROUP BY region, pest_type")
-    pest_data = defaultdict(list)
-    for region, pest, count in cur.fetchall():
-        pest_data[region].append({'pest_type': pest, 'count': count})
-    charts['pests_by_region'] = pest_data
+            # Soil data by county
+            cur.execute("""
+                SELECT county, soil_type, COUNT(*) 
+                FROM soil_data 
+                GROUP BY county, soil_type
+            """)
+            soil_data = defaultdict(list)
+            for county, soil_type, count in cur.fetchall():
+                soil_data[county].append({'soil_type': soil_type, 'count': count})
+            charts['soil_by_county'] = dict(soil_data)
 
-    cur.execute("SELECT county, innovation, COUNT(*) FROM innovations GROUP BY county, innovation")
-    innovation_data = defaultdict(list)
-    for county, innov, count in cur.fetchall():
-        innovation_data[county].append({'innovation': innov, 'count': count})
-    charts['innovations_by_county'] = innovation_data
+            # Pests by region
+            cur.execute("""
+                SELECT region, pest_type, COUNT(*) 
+                FROM pest_reports 
+                GROUP BY region, pest_type
+            """)
+            pest_data = defaultdict(list)
+            for region, pest_type, count in cur.fetchall():
+                pest_data[region].append({'pest_type': pest_type, 'count': count})
+            charts['pests_by_region'] = dict(pest_data)
 
-    # Fetch weather data
-    cur.execute("SELECT county, weather_type, value FROM weather_data")
-    weather_data = defaultdict(list)
-    for county, weather_type, value in cur.fetchall():
-        weather_data[county].append({'weather_type': weather_type, 'value': value})
-    charts['weather_by_county'] = weather_data
+            # Innovations by county
+            cur.execute("""
+                SELECT county, innovation, COUNT(*) 
+                FROM innovations 
+                GROUP BY county, innovation
+            """)
+            innovation_data = defaultdict(list)
+            for county, innovation, count in cur.fetchall():
+                innovation_data[county].append({'innovation': innovation, 'count': count})
+            charts['innovations_by_county'] = dict(innovation_data)
 
-    # Fetch altitude data
-    cur.execute("SELECT county, altitude FROM altitude_data")
-    altitude_data = defaultdict(list)
-    for county, altitude in cur.fetchall():
-        altitude_data[county].append({'altitude': altitude})
-    charts['altitude_by_county'] = altitude_data
+            # Weather data
+            cur.execute("""
+                SELECT county, weather_type, value 
+                FROM weather_data
+            """)
+            weather_data = defaultdict(list)
+            for county, weather_type, value in cur.fetchall():
+                weather_data[county].append({'weather_type': weather_type, 'value': value})
+            charts['weather_by_county'] = dict(weather_data)
 
-    # Fetch weed types data
-    cur.execute("SELECT county, weed_type FROM weed_types")
-    weed_data = defaultdict(list)
-    for county, weed in cur.fetchall():
-        weed_data[county].append({'weed_type': weed})
-    charts['weeds_by_county'] = weed_data
+            # Altitude data
+            cur.execute("""
+                SELECT county, altitude 
+                FROM altitude_data
+            """)
+            altitude_data = defaultdict(list)
+            for county, altitude in cur.fetchall():
+                altitude_data[county].append({'altitude': altitude})
+            charts['altitude_by_county'] = dict(altitude_data)
 
-    conn.close()
+            # Weed types
+            cur.execute("""
+                SELECT county, weed_type 
+                FROM weed_types
+            """)
+            weed_data = defaultdict(list)
+            for county, weed_type in cur.fetchall():
+                weed_data[county].append({'weed_type': weed_type})
+            charts['weeds_by_county'] = dict(weed_data)
+
+    except sqlite3.Error as e:
+        charts['error'] = f"Database error: {str(e)}"
+    except Exception as e:
+        charts['error'] = f"Unexpected error: {str(e)}"
+
     return charts
+
 
 @app.route('/api/chart-data')
 def chart_data():
+    """API endpoint to return all chart data as JSON."""
     return jsonify(fetch_chart_data())
+
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 import os
@@ -387,9 +608,7 @@ from datetime import datetime
 import os
 
 # --- USSD Simulation ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ussd_db.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ussd_logs.db'
 
 class USSDLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -524,97 +743,6 @@ def generate_bot_response(user_input):
         max_tokens=150
     )
     return res.choices[0].text.strip()
-
-
-
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    data = request.get_json()
-    messages = data.get("messages", [])
-    reply = generate_response(messages)
-    return jsonify({"reply": reply})
-def generate_response(messages):
-    user_input = messages[-1]["content"].lower().strip()
-
-    if "hello" in user_input:
-        return "Hello Farmer! 😊"
-    elif "how are you" in user_input:
-        return "I'm doing great, thanks for asking!"
-    elif "bye" in user_input:
-        return "Goodbye! Talk to you soon."
-    elif "help" in user_input:
-        return "Sure! You can ask me about crops, weather, pests, farming tips, markets, and more."
-
-    # Agricultural topics
-    elif "muriena" in user_input:
-        return "Muriena mno😙😚 wavolkho."
-    elif "habari" in user_input:
-        return "Jambo mkulima😊."
-    elif "wheat" in user_input:
-        return "Wheat is mostly grown in Nakuru, Uasin Gishu, and Trans Nzoia counties."
-    elif "wheat" in user_input:
-        return "Wheat is mostly grown in Nakuru, Uasin Gishu, and Trans Nzoia counties."
-    elif "maize" in user_input:
-        return "Maize is a staple crop in Kenya, often grown in Rift Valley and Western regions."
-    elif "wheat" in user_input:
-        return "Wheat is mostly grown in Nakuru, Uasin Gishu, and Trans Nzoia counties."
-    elif "coffee" in user_input:
-        return "Kenyan coffee is renowned globally. It's mainly grown in Central Kenya and parts of Rift Valley."
-    elif "tea" in user_input:
-        return "Kenya is one of the top tea exporters. Tea is largely grown in Kericho, Bomet, and Nyeri."
-    elif "dairy" in user_input or "milk" in user_input:
-        return "Dairy farming thrives in Central and Rift Valley regions. Cooling and feed management are key."
-    elif "poultry" in user_input:
-        return "Poultry farming includes layers and broilers. Proper vaccination is essential."
-    elif "fish" in user_input or "aquaculture" in user_input:
-        return "Aquaculture is growing around Lake Victoria and in Central Kenya through fish ponds."
-    elif "irrigation" in user_input:
-        return "Irrigation helps in arid zones like Turkana and parts of Machakos. Drip irrigation is efficient."
-    elif "fertilizer" in user_input:
-        return "Organic and inorganic fertilizers boost yield. Proper use depends on soil testing."
-    elif "soil" in user_input:
-        return "Soil testing is essential for crop selection. Black cotton soil suits cotton and maize well."
-    elif "climate" in user_input or "weather" in user_input:
-        return "Kenya has varied climates. Knowing your zone helps determine best planting seasons."
-    elif "greenhouse" in user_input:
-        return "Greenhouse farming extends growing seasons and protects crops from pests."
-    elif "market" in user_input:
-        return "You can access markets via cooperatives, digital platforms, or county market days."
-    elif "prices" in user_input:
-        return "Crop prices fluctuate. Check with the National Cereals Board or your nearest market."
-    elif "subsidy" in user_input:
-        return "Government subsidies are available for inputs like fertilizer and seeds."
-    elif "weeds" in user_input:
-        return "Common weeds like Striga and couch grass reduce yields. Use certified herbicides."
-    elif "pests" in user_input:
-        return "Fall armyworm affects maize; Tuta absoluta affects tomatoes. Use IPM techniques."
-    elif "disease" in user_input:
-        return "Crop diseases include blight in potatoes, rust in wheat, and bacterial wilt in tomatoes."
-    elif "tractor" in user_input:
-        return "Tractors improve efficiency. Hire services are available via government and private entities."
-    elif "training" in user_input:
-        return "You can attend farmer field schools or contact your county agricultural officer."
-    elif "storage" in user_input:
-        return "Proper storage reduces post-harvest losses. Use hermetic bags or metallic silos."
-    elif "extension" in user_input:
-        return "Agricultural extension services are provided by counties and NGOs."
-    elif "youth" in user_input:
-        return "Youth can access agri-funding through programs like Ajira, YEDF, and AgriBiz."
-    elif "funding" in user_input:
-        return "Try the Agricultural Finance Corporation (AFC), Equity Bank, or government grants."
-    elif "agribusiness" in user_input:
-        return "Agribusiness includes production, processing, and marketing. It offers job opportunities."
-    elif "export" in user_input:
-        return "Kenya exports tea, coffee, flowers, and fruits like mangoes and avocados."
-    elif "livestock" in user_input:
-        return "Livestock farming includes cattle, goats, sheep, and camels especially in ASAL areas."
-    elif "goat" in user_input:
-        return "Goat farming is common in Eastern and arid regions. It requires hardy breeds."
-    elif "bees" in user_input or "apiculture" in user_input:
-        return "Beekeeping produces honey and wax. Ensure proper hive management."
-    else:
-        return "I'm still learning! Try asking something else about crops, livestock, markets, or weather."
-    
 
 
 
@@ -944,7 +1072,11 @@ def know_your_land():
 
 
 # User model
-class User(db.Model):
+class User(UserMixin, db.Model):
+    """
+    Represents a user in the database with a simplified schema.
+    This model integrates with Flask-Login for user authentication.
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
     password = db.Column(db.String(150), nullable=False)
@@ -953,58 +1085,16 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     streak = db.Column(db.Integer, default=0)
 
+    def __repr__(self):
+        return f"User('{self.username}')"
+
+    # Required by Flask-Login for user authentication
+    def get_id(self):
+        return str(self.id)
+
 # Login route with streak update
 from flask import flash, redirect, render_template, url_for
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-
-        if user and check_password_hash(user.password, password):
-            # Update streak
-            now = datetime.utcnow()
-            if user.last_login:
-                delta = (now.date() - user.last_login.date()).days
-                if delta == 1:
-                    user.streak += 1
-                elif delta > 1:
-                    user.streak = 1
-            else:
-                user.streak = 1
-
-            user.last_login = now
-            db.session.commit()
-
-            login_user(user)
-            flash('Logged in successfully!')
-            return redirect(url_for('profile'))  # or 'home' depending on your app
-
-        flash('Invalid username or password')
-
-    return render_template('login.html')
-
-# Register route
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
-        fullname = request.form['fullname']
-        if User.query.filter_by(username=username).first():
-            return "Username already exists."
-
-        new_user = User(username=username, password=password, streak=1, last_login=datetime.utcnow())
-        db.session.add(new_user)
-        db.session.commit()
-
-        # Do NOT log in the user automatically. Redirect to login page.
-        return redirect(url_for('login'))
-
-    return render_template('register.html')
 
 # Profile route
 @app.route('/profile')
@@ -1098,5 +1188,5 @@ def logout():
 # --- Main Run ---
 
 if __name__ == '__main__':
-    init_db()
+   
     app.run(debug=True)

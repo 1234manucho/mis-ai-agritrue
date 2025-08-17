@@ -2,131 +2,812 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgriTrue ML Analyzer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <!-- Tailwind CSS for a modern, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { background: #f5fff5; font-family: 'Segoe UI', sans-serif; }
-        h2, h4, h5 { color: #2e7d32; }
-        .btn-primary { background-color: #388e3c; border: none; transition: 0.3s; }
-        .btn-primary:hover { background-color: #2e7d32; }
-        #loader {
-            position: fixed; z-index: 9999; background: rgba(255, 255, 255, 0.95);
-            width: 100vw; height: 100vh; top: 0; left: 0;
-            display: none; align-items: center; justify-content: center; flex-direction: column;
+        /* Import a custom font to give the page a unique look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
         }
-        .loader-text { font-size: 1.5rem; color: #2e7d32; margin-top: 20px; font-weight: 500; }
-        canvas { max-width: 100%; margin-bottom: 40px; }
-        .table-hover tbody tr:hover { background-color: #e8f5e9; }
+
+        /* Styles for the custom gradient navbar */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        /* Loader animation styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        /* Chatbot and floating icon animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Loader for analysis sections */
+        .analysis-loader-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .analysis-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10B981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Chatbot styling */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 90%;
+            max-width: 400px;
+            height: 60vh;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        #chatbot-header {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.125rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        #chatbot-body {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f7ffe8;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+            max-width: 80%;
+        }
+        .bot-message {
+            background-color: #f0f4f7;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            max-width: 80%;
+        }
+        .chatbot-message {
+            padding: 0.75rem;
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+        #chatbot-input-container {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: #ffffff;
+        }
+        #chatbot-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid #cbd5e0;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+        #send-message {
+            padding: 0.75rem;
+            border-radius: 9999px;
+            background-color: #10B981;
+            color: white;
+            border: none;
+        }
+
+        .chat-loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: dot-flicker 1.4s infinite ease-in-out both;
+        }
+
+        .chat-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .chat-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .chat-loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes dot-flicker {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            height: 100vh;
+            width: 75%;
+            background-color: white;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu.open {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
     </style>
 </head>
+<body class="bg-[#f0fdf4] font-['Inter']">
+    
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <!-- Placeholder image for the logo, using a fallback and a simple text logo -->
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
 
-<body>
-<div id="loader">
-    <div class="spinner-border text-success" style="width: 4rem; height: 4rem;" role="status"></div>
-    <p class="loader-text animate__animated animate__pulse animate__infinite">Analyzing your data with AgriTrue...</p>
-</div>
-
-<div class="container mt-5">
-    <h2 class="mb-4 animate__animated animate__fadeInDown">🌾 AgriTrue ML Analyzer</h2>
-
-    {% if error %}
-        <div class="alert alert-danger animate__animated animate__fadeIn">{{ error }}</div>
-    {% endif %}
-
-    <form action="{{ url_for('ml_analyzer') }}" method="POST" enctype="multipart/form-data" onsubmit="showLoader()" class="animate__animated animate__fadeInUp">
-        <div class="form-group">
-            <label for="file">Upload File (CSV, PDF, DOCX)</label>
-            <input type="file" class="form-control" name="file" id="file" accept=".csv,.pdf,.docx" required>
-        </div>
-        <button class="btn btn-primary btn-block">Analyze</button>
-    </form>
-
-    {% if analysis_result %}
-        <h4 class="mt-5 animate__animated animate__fadeInUp">Data Summary</h4>
-        <div class="table-responsive animate__animated animate__fadeInUp">
-            <table class="table table-bordered table-hover">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Column</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for col, stats in analysis_result.items() %}
-                        <tr>
-                            <td>{{ col }}</td>
-                            <td>
-                                {% for k, v in stats.items() %}
-                                    <strong>{{ k }}:</strong> {{ v }}<br>
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% if chart_data %}
-            <h4 class="mt-5 animate__animated animate__fadeInUp">Charts</h4>
-            {% for col, values in chart_data.items() %}
-                <div class="animate__animated animate__fadeInUp">
-                    <h5 class="mt-4">{{ col }}</h5>
-                    <canvas id="chart_{{ col|replace(' ', '_') }}"></canvas>
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
                 </div>
-            {% endfor %}
-            <script id="chart-data" type="application/json">
-                {{ chart_data | tojson | safe }}
-            </script>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    const chartData = JSON.parse(document.getElementById("chart-data").textContent);
-                    for (const [col, values] of Object.entries(chartData)) {
-                        const ctx = document.getElementById("chart_" + col.replace(/ /g, "_")).getContext("2d");
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: Object.keys(values),
-                                datasets: [{
-                                    label: col,
-                                    data: Object.values(values),
-                                    backgroundColor: ['#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'],
-                                    borderColor: '#2e7d32',
-                                    borderWidth: 1
-                                }]
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                <a href="#" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="#" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Streak</a>
+                </div>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="#">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="#">Register</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="min-h-screen pt-24 pb-12 px-4 bg-[#f0fdf4]">
+        <div class="container mx-auto max-w-5xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
+                <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+            </h2>
+
+            <!-- Tabbed navigation for Document and Image analysis -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
+                <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
+            </div>
+
+            <!-- Document Analyzer Section -->
+            <div id="doc-analyzer" class="active-tab" style="display: none;">
+                <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+                    <div class="mb-4">
+                        <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, PDF, DOCX)</label>
+                        <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.pdf,.docx" required>
+                    </div>
+                    <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
+                        Analyze Document
+                    </button>
+                </div>
+                <!-- Document analysis results will be injected here by JavaScript -->
+                <div id="doc-analysis-results" class="hidden">
+                    <section class="mt-8">
+                        <h4 class="text-3xl font-bold text-green-700 mb-4">Data Summary</h4>
+                        <div id="doc-summary-table" class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-100">
+                            <!-- Table will be inserted here by JavaScript -->
+                        </div>
+                    </section>
+                    <section class="mt-8">
+                        <h4 class="text-3xl font-bold text-green-700 mb-4">Data Visualizations</h4>
+                        <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Charts will be inserted here by JavaScript -->
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Image Analyzer Section -->
+            <div id="image-analyzer" class="hidden-tab" style="display: block;">
+                <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+                    <div class="mb-4">
+                        <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
+                        <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
+                    </div>
+                    <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
+                        Analyze Image
+                    </button>
+                </div>
+                <!-- Image analysis results will be injected here by JavaScript -->
+                <div id="image-analysis-results" class="hidden">
+                    <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                        <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
+                        <div id="image-display-container" class="mb-4">
+                            <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200">
+                        </div>
+                        <p id="image-description" class="text-gray-800 text-lg leading-relaxed"></p>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Universal loader for any analysis process -->
+            <div id="analysis-loader" class="analysis-loader-container">
+                <div class="analysis-spinner"></div>
+                <p class="analysis-loading-text mt-3">Analyzing your data...</p>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Chatbot Floating Icon and Container -->
+    <div id="chatbot-icon" class="fixed bottom-6 right-6 z-40 bg-green-600 text-white p-4 rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110 animate-pulse">
+        <i class="fas fa-comment-dots text-2xl"></i>
+    </div>
+    <div id="chatbot-container" class="chatbot-container hidden">
+        <div id="chatbot-header">
+            <span class="text-white text-lg font-semibold">AgriTrue Bot</span>
+            <button id="close-chatbot" class="text-white text-xl">&times;</button>
+        </div>
+        <div id="chatbot-body" class="p-4 flex-1 overflow-y-auto">
+            <div class="bot-message p-3 rounded-xl shadow-md mb-2 bg-green-100 text-green-800">Hello! I am AgriTrue AI. How can I help you today?</div>
+        </div>
+        <div id="chatbot-input-container" class="p-4 bg-gray-100 flex items-center rounded-b-xl">
+            <input type="text" id="chatbot-input" placeholder="Type a message..." class="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button id="send-message" class="ml-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+            <button id="mic-button" class="ml-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors">
+                <i class="fas fa-microphone"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript to handle all interactivity, including tabs, analysis, and the chatbot -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // --- UI Elements and State Variables ---
+            const docTabBtn = document.getElementById('doc-tab-btn');
+            const imageTabBtn = document.getElementById('image-tab-btn');
+            const docAnalyzer = document.getElementById('doc-analyzer');
+            const imageAnalyzer = document.getElementById('image-analyzer');
+            const docFile = document.getElementById('doc-file');
+            const analyzeDocBtn = document.getElementById('analyze-doc-btn');
+            const imageFile = document.getElementById('image-file');
+            const analyzeImageBtn = document.getElementById('analyze-image-btn');
+            const analysisLoader = document.getElementById('analysis-loader');
+            const docResults = document.getElementById('doc-analysis-results');
+            const imageResults = document.getElementById('image-analysis-results');
+            const docSummaryTable = document.getElementById('doc-summary-table');
+            const docCharts = document.getElementById('doc-charts');
+            const analyzedImage = document.getElementById('analyzed-image');
+            const imageDescription = document.getElementById('image-description');
+            
+            // Chatbot elements
+            const chatbotIcon = document.getElementById('chatbot-icon');
+            const chatbotContainer = document.getElementById('chatbot-container');
+            const chatbotBody = document.getElementById('chatbot-body');
+            const chatbotInput = document.getElementById('chatbot-input');
+            const sendMessageBtn = document.getElementById('send-message');
+            const micButton = document.getElementById('mic-button');
+            const closeChatbotBtn = document.getElementById('close-chatbot');
+
+            // Chart colors for consistent styling
+            const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
+            let chartInstances = {};
+            let chatHistory = [];
+            const apiKey = ""; 
+
+            // --- Tab Switching Logic ---
+            function showTab(tabToShow) {
+                if (tabToShow === 'doc') {
+                    docTabBtn.classList.add('border-green-500', 'text-green-700');
+                    docTabBtn.classList.remove('border-transparent', 'text-gray-500');
+                    imageTabBtn.classList.add('border-transparent', 'text-gray-500');
+                    imageTabBtn.classList.remove('border-green-500', 'text-green-700');
+                    docAnalyzer.style.display = 'block';
+                    imageAnalyzer.style.display = 'none';
+                    docResults.classList.add('hidden'); // Hide results when switching tabs
+                    imageResults.classList.add('hidden');
+                } else {
+                    imageTabBtn.classList.add('border-green-500', 'text-green-700');
+                    imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
+                    docTabBtn.classList.add('border-transparent', 'text-gray-500');
+                    docTabBtn.classList.remove('border-green-500', 'text-green-700');
+                    imageAnalyzer.style.display = 'block';
+                    docAnalyzer.style.display = 'none';
+                    imageResults.classList.add('hidden'); // Hide results when switching tabs
+                    docResults.classList.add('hidden');
+                }
+            }
+
+            // Attach event listeners for tab clicks
+            docTabBtn.addEventListener('click', () => showTab('doc'));
+            imageTabBtn.addEventListener('click', () => showTab('image'));
+
+            // Set the initial tab to Image Analyzer
+            showTab('image');
+
+            // --- Analysis Logic (Simulated for Docs, Live for Images) ---
+            function showAnalysisLoader(isLoading) {
+                analysisLoader.style.display = isLoading ? 'flex' : 'none';
+            }
+
+            function renderDocAnalysis(data) {
+                docResults.classList.remove('hidden');
+
+                // Clear previous content and destroy old chart instances to prevent memory leaks
+                docSummaryTable.innerHTML = '';
+                docCharts.innerHTML = '';
+                for (const chartId in chartInstances) {
+                    chartInstances[chartId].destroy();
+                }
+                chartInstances = {};
+
+                // Render Summary Table
+                let tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-green-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase tracking-wider">Column</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase tracking-wider">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                `;
+                for (const col in data.summary) {
+                    tableHtml += `<tr class="hover:bg-green-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${col}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">`;
+                    for (const stat in data.summary[col]) {
+                        tableHtml += `<strong>${stat}:</strong> ${data.summary[col][stat]}<br>`;
+                    }
+                    tableHtml += `</td></tr>`;
+                }
+                tableHtml += `</tbody></table>`;
+                docSummaryTable.innerHTML = tableHtml;
+
+                // Render Charts dynamically
+                let chartIndex = 0;
+                for (const col in data.charts) {
+                    const chartId = `chart_${col.replace(/[^a-zA-Z0-9]/g, '_')}_${chartIndex}`;
+                    const chartType = data.charts[col].type;
+                    const chartData = data.charts[col].data;
+
+                    const chartContainer = document.createElement('div');
+                    // Use a fixed height for a consistent look
+                    chartContainer.className = "bg-white p-6 rounded-xl shadow-md border border-gray-100 h-[250px] md:h-[300px]";
+                    chartContainer.innerHTML = `
+                        <h5 class="text-xl font-semibold text-gray-800 mb-4">${col}</h5>
+                        <canvas id="${chartId}"></canvas>
+                    `;
+                    docCharts.appendChild(chartContainer);
+
+                    const ctx = document.getElementById(chartId).getContext('2d');
+                    
+                    const datasets = [{
+                        data: Object.values(chartData),
+                        backgroundColor: chartColors,
+                        hoverOffset: 4
+                    }];
+
+                    if (chartType === 'bar') {
+                        datasets[0].label = col;
+                        datasets[0].borderColor = '#10B981';
+                        datasets[0].borderWidth = 1;
+                    }
+
+                    chartInstances[chartId] = new Chart(ctx, {
+                        type: chartType,
+                        data: {
+                            labels: Object.keys(chartData),
+                            datasets: datasets
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: chartType === 'pie' ? true : false,
+                                    position: 'bottom'
+                                }
                             },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
+                            scales: chartType === 'bar' ? {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'rgba(200, 200, 200, 0.2)',
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false,
                                     }
                                 }
+                            } : {}
+                        }
+                    });
+                    chartIndex++;
+                }
+            }
+
+            // Simulate document analysis with dummy data for demonstration
+            // NOTE: A real document analyzer would require server-side processing.
+            analyzeDocBtn.addEventListener('click', () => {
+                if (docFile.files.length === 0) {
+                    return; 
+                }
+                showAnalysisLoader(true);
+                docResults.classList.add('hidden');
+
+                const dummyData = {
+                    summary: {
+                        'Crop Type': {
+                            'Distinct Values': 4,
+                            'Most Common': 'Maize'
+                        },
+                        'Yield (Tons/Acre)': {
+                            'Mean': '5.2',
+                            'Standard Dev.': '1.1'
+                        },
+                        'Soil pH': {
+                            'Mean': '6.5',
+                            'Range': '5.8 - 7.2'
+                        }
+                    },
+                    charts: {
+                        'Crop Type Distribution': {
+                            type: 'pie',
+                            data: {
+                                'Maize': 45,
+                                'Wheat': 30,
+                                'Beans': 15,
+                                'Other': 10
                             }
-                        });
+                        },
+                        'Yield Distribution': {
+                            type: 'bar',
+                            data: {
+                                'Field A': 5.8,
+                                'Field B': 4.5,
+                                'Field C': 6.1,
+                                'Field D': 5.0
+                            }
+                        }
                     }
-                });
-            </script>
-        {% endif %}
-    {% endif %}
-</div>
+                };
 
-<div class="text-center mt-5">
-    <a href="/" class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate__animated animate__fadeInUp" style="font-size: 1.2rem; font-weight: 600;">
-        ← Back to Home
-    </a>
-</div>
+                setTimeout(() => {
+                    showAnalysisLoader(false);
+                    renderDocAnalysis(dummyData);
+                }, 1500); // Simulate network delay
+            });
 
-<footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32;">
-    &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
-</footer>
+            // --- Image Analysis with Gemini API ---
+            analyzeImageBtn.addEventListener('click', () => {
+                if (imageFile.files.length === 0) {
+                    // Display an error message to the user
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = "p-4 bg-red-100 text-red-800 rounded-lg shadow-md mb-4";
+                    messageContainer.textContent = "Please select an image file to analyze.";
+                    imageResults.innerHTML = '';
+                    imageResults.appendChild(messageContainer);
+                    imageResults.classList.remove('hidden');
+                    return; 
+                }
+                showAnalysisLoader(true);
+                imageResults.classList.add('hidden');
 
-<script>
-    function showLoader() {
-        document.getElementById("loader").style.display = "flex";
-    }
-</script>
+                const file = imageFile.files[0];
+                const reader = new FileReader();
+
+                reader.onload = async (e) => {
+                    analyzedImage.src = e.target.result;
+                    const base64Data = e.target.result.split(',')[1];
+                    const mimeType = file.type;
+
+                    const prompt = "Analyze this image and provide a detailed description of the agricultural content, including any visible plant health issues, crops, or landscape features. Respond in a concise and clear manner, focusing on actionable information for a farmer.";
+                    
+                    try {
+                        const response = await getApiResponse(prompt, base64Data, mimeType);
+                        imageDescription.textContent = response;
+                        imageResults.classList.remove('hidden');
+                    } catch (error) {
+                        console.error('API Error:', error);
+                        imageDescription.textContent = "Sorry, an error occurred while analyzing the image. Please try again later.";
+                        imageResults.classList.remove('hidden');
+                    } finally {
+                        showAnalysisLoader(false);
+                    }
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            /**
+             * Asynchronous function to call the Gemini API with exponential backoff.
+             * @param {string} prompt The text prompt to send to the model.
+             * @param {string} base64Data The base64-encoded image data.
+             * @param {string} mimeType The MIME type of the image.
+             * @returns {Promise<string>} The generated text from the API.
+             */
+            async function getApiResponse(prompt, base64Data, mimeType, retries = 3, delay = 1000) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
+                        ]
+                    }]
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    const text = result.candidates[0].content.parts[0].text;
+                    return text;
+                } catch (error) {
+                    if (retries > 0 && error.message.includes('429')) {
+                        console.log(`Retrying after ${delay / 1000}s...`);
+                        await new Promise(res => setTimeout(res, delay));
+                        return getApiResponse(prompt, base64Data, mimeType, retries - 1, delay * 2);
+                    }
+                    throw error;
+                }
+            }
+
+            // --- Chatbot Logic ---
+            chatbotIcon.addEventListener('click', () => {
+                chatbotContainer.classList.toggle('hidden');
+            });
+
+            closeChatbotBtn.addEventListener('click', () => {
+                chatbotContainer.classList.add('hidden');
+            });
+
+            function addMessage(sender, text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chatbot-message', sender === 'user' ? 'user-message' : 'bot-message');
+                messageDiv.textContent = text;
+                chatbotBody.appendChild(messageDiv);
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            }
+
+            sendMessageBtn.addEventListener('click', handleUserMessage);
+            chatbotInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleUserMessage();
+                }
+            });
+
+            async function handleUserMessage() {
+                const userMessage = chatbotInput.value.trim();
+                if (userMessage) {
+                    addMessage('user', userMessage);
+                    chatbotInput.value = '';
+
+                    const loadingDots = document.createElement('div');
+                    loadingDots.className = 'bot-message chat-loading-dots';
+                    loadingDots.innerHTML = '<span></span><span></span><span></span>';
+                    chatbotBody.appendChild(loadingDots);
+                    chatbotBody.scrollTop = chatbotBody.scrollHeight;
+
+                    chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+
+                    try {
+                        const payload = { contents: chatHistory };
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA`;
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const result = await response.json();
+                        const botResponse = result.candidates[0].content.parts[0].text;
+                        
+                        chatHistory.push({ role: 'model', parts: [{ text: botResponse }] });
+
+                        loadingDots.remove();
+                        addMessage('bot', botResponse);
+                    } catch (error) {
+                        loadingDots.remove();
+                        console.error('Error fetching chat response:', error);
+                        addMessage('bot', 'Sorry, I am unable to respond right now. Please try again later.');
+                    }
+                }
+            }
+
+            // --- Mobile Menu Logic ---
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const closeMobileMenu = document.getElementById('closeMobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+            function toggleMobileMenu() {
+                mobileMenu.classList.toggle('open');
+                mobileMenuOverlay.style.display = mobileMenu.classList.contains('open') ? 'block' : 'none';
+            }
+
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+            closeMobileMenu.addEventListener('click', toggleMobileMenu);
+            mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+        });
+    </script>
 </body>
 </html>

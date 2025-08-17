@@ -1,0 +1,5 @@
+date,category,description,amount,payment_method
+2025-01-01,Groceries,Supermarket run,120.5,Credit Card
+2025-01-02,Bills,Electricity bill,85,Bank Transfer
+2025-01-03,Entertainment,Movie tickets,35,Debit Card
+2025-01-04,Groceries,Snacks,22.75,Credit Card
