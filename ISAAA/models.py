@@ -1,91 +1,87 @@
-from extensions import db
-from flask_login import UserMixin
-
 from datetime import datetime
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin
 from extensions import db
-class User(db.Model, UserMixin):
-    __tablename__ = "users"
 
-    # --- Core Fields ---
-    id = db.Column(db.String(100), primary_key=True) 
+
+# ===========================
+# User Model
+# ===========================
+class User(db.Model, UserMixin):
+    """
+    SQLAlchemy model for the 'users' table.
+    Stores local copy of user data linked to Firebase UID.
+    """
+    __tablename__ = 'users'   # ✅ plural is conventional
+
+    # Firebase Authentication UID as the primary key
+    id = db.Column(db.String(128), primary_key=True)
+
+    # User details
+    fullname = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=True) 
     email = db.Column(db.String(120), unique=True, nullable=False)
-    fullname = db.Column(db.String(200), nullable=True)
-    phone = db.Column(db.String(50), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     id_number = db.Column(db.String(50), nullable=True)
-    home_address = db.Column(db.String(300), nullable=True)
-    country = db.Column(db.String(100), nullable=True)
-    county = db.Column(db.String(100), nullable=True)
+    home_address = db.Column(db.String(200), nullable=True)
+    country = db.Column(db.String(50), nullable=True)
+    county = db.Column(db.String(50), nullable=True)
+
+    # Firestore-synced fields
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime, default=datetime.utcnow)
+    streak_count = db.Column(db.Integer, default=1)
 
-    # --- Constructor method to fix the TypeError ---
-    def __init__(self, id, username, email, fullname=None, phone=None, id_number=None, home_address=None, country=None, county=None, password=None):
-        self.id = id
-        self.username = username
-        self.email = email
-        self.fullname = fullname
-        self.phone = phone
-        self.id_number = id_number
-        self.home_address = home_address
-        self.country = country
-        self.county = county
-        self.password = password
+    # 🔑 Password column (optional if Firebase handles auth)
+    password = db.Column(db.String(200), nullable=True)
 
-    # --- Flask-Login integration ---
-    def get_id(self):
-        """Flask-Login requires returning a string ID (Firebase UID)."""
-        return str(self.id)
+    # Relationships
+    notes = db.relationship(
+        "CommunityNote",
+        back_populates="author",
+        lazy=True,
+        cascade="all, delete"
+    )
+    comments = db.relationship(
+        "Comment",
+        back_populates="author",
+        lazy=True,
+        cascade="all, delete"
+    )
 
     def __repr__(self):
         return f"<User {self.username}>"
 
-    # --- Utilities ---
-    @staticmethod
-    def get_current_user_id():
-        """Return the currently logged-in user’s ID as string (or None)."""
-        return current_user.id if current_user.is_authenticated else None
 
-    def to_dict(self):
-        """Serialize User model into dictionary format."""
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-            "fullname": self.fullname,
-            "phone": self.phone,
-            "id_number": self.id_number,
-            "home_address": self.home_address,
-            "country": self.country,
-            "county": self.county,
-            "is_admin": self.is_admin,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-        }
+# ===========================
+# Community Notes
+# ===========================
 class CommunityNote(db.Model):
-    __tablename__ = 'communitynote'
+    __tablename__ = 'communitynotes'
 
     id = db.Column(db.Integer, primary_key=True)
     note = db.Column(db.Text, nullable=False)
     tags = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    upvotes = db.Column(db.Integer, default=0)  # ✅ Added
-    verified = db.Column(db.Boolean, default=False)  # ✅ Added
-    reposted_from = db.Column(db.Integer, nullable=True)  # ✅ Added
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    upvotes = db.Column(db.Integer, default=0)
+    verified = db.Column(db.Boolean, default=False)
+    reposted_from = db.Column(db.Integer, nullable=True)
 
+    # FK to users.id (Firebase UID)
+    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
+
+    # ✅ Relationships
+    author = db.relationship("User", back_populates="notes")
     comments = db.relationship(
-        'Comment',
-        backref='note',
-        cascade='all, delete',
-        lazy=True
+        "Comment",
+        back_populates="parent_note",
+        lazy=True,
+        cascade="all, delete-orphan"
     )
 
     def __repr__(self):
         return f"<CommunityNote {self.id} - {self.note[:20]}>"
-
 
     @staticmethod
     def create(note_text, tags, user_id):
@@ -95,42 +91,70 @@ class CommunityNote(db.Model):
         return note
 
 
+# ===========================
+# Comments
+# ===========================
 class Comment(db.Model):
-    __tablename__ = 'comment'
+    __tablename__ = 'comments'
 
     id = db.Column(db.Integer, primary_key=True)
-    note_id = db.Column(db.Integer, db.ForeignKey('communitynote.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    note_id = db.Column(db.Integer, db.ForeignKey('communitynotes.id'), nullable=False)
+    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # ✅ Relationships (no duplicate backref names)
+    parent_note = db.relationship("CommunityNote", back_populates="comments")
+    author = db.relationship("User", back_populates="comments")
+
+    def __repr__(self):
+        return f"<Comment {self.id} by User {self.user_id}>"
+
     @staticmethod
     def create(note_id, user_id, text):
-        comment = Comment(note_id=note_id, user_id=user_id, text=text)
-        db.session.add(comment)
-        db.session.commit()
-        return comment
+        try:
+            comment = Comment(note_id=note_id, user_id=user_id, text=text)
+            db.session.add(comment)
+            db.session.commit()
+            return comment
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 
-# Helper functions
-def get_user_by_id(user_id):
-    return db.session.get(User, user_id)
+# ===========================
+# Helper Functions
+# ===========================
+def add_user(uid, username, password=None, email=None, fullname=None):
+    """Create a new user in the local database with Firebase UID."""
+    user = User(
+        id=uid,
+        username=username,
+        email=email,
+        fullname=fullname
+    )
+    if password:  # Optional, since Firebase handles auth
+        setattr(user, "password", password)
 
-
-def get_user(username):
-    return db.session.execute(
-        db.select(User).filter_by(username=username)
-    ).scalar_one_or_none()
-
-
-def add_user(username, password, email=None, fullname=None):
-    user = User(username=username, password=password, email=email, fullname=fullname)
     db.session.add(user)
     db.session.commit()
     return user
 
 
+def get_user_by_id(user_id):
+    """Fetch a user by Firebase UID."""
+    return db.session.get(User, user_id)
+
+
+def get_user(username):
+    """Fetch a user by username."""
+    return db.session.execute(
+        db.select(User).filter_by(username=username)
+    ).scalar_one_or_none()
+
+
 def get_user_by_email(email):
+    """Fetch a user by email."""
     return db.session.execute(
         db.select(User).filter_by(email=email)
     ).scalar_one_or_none()

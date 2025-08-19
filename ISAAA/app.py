@@ -1,15 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 from flask_cors import CORS
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 import os
 import re
 import requests
 import json
+import uuid
 from datetime import datetime, timedelta
-# import firebase_db # type: ignore
 from sqlalchemy import desc
-from flask_login import current_user, login_required
 
 # Firebase Admin
 import firebase_admin
@@ -18,6 +18,9 @@ from firebase_admin import credentials, auth, firestore
 # Local imports
 from extensions import db
 from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_user, get_user_by_email
+
+# Database
+from flask_sqlalchemy import SQLAlchemy
 
 # Google Generative AI
 import google.generativeai as genai
@@ -35,59 +38,45 @@ app.secret_key = 'supersecretkey'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-
-# --- Flask-Login Setup ---
-login_manager = LoginManager(app)
+# --- Flask-Login Initialization ---
+login_manager = LoginManager()
+login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# --- SQLAlchemy Configuration ---
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)            # ✅ use db from extensions.py
+migrate = Migrate(app, db)  # ✅ attach Flask-Migrate
+
+# Create tables if not exist
+with app.app_context():
+    db.create_all()
+# --- Firebase Initialization ---
+if not firebase_admin._apps:
+    try:
+        cred = credentials.Certificate("firebase-service-account.json")
+        firebase_admin.initialize_app(cred)
+        print("Firebase Admin SDK initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing Firebase Admin SDK: {e}")
+
+# Firestore client
+firestore_db = firestore.client()
+FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
+
+# --- Flask-Login User Loader ---
 @login_manager.user_loader
 def load_user(user_id):
     """
-    Flask-Login hook to reload the user object from the user ID stored in the session.
-    Looks up the user in Firestore and returns a User model instance.
+    Flask-Login hook to reload the user object from the session.
+    Uses Firebase UID as the lookup key in the local SQLAlchemy DB.
     """
-    try:
-        # Fetch from Firestore
-        doc_ref = firestore_db.collection("users").document(user_id)
-        doc = doc_ref.get()
+    return User.query.get(user_id)
 
-        if not doc.exists:
-            return None
 
-        data = doc.to_dict()
-
-        # Map Firestore data into SQLAlchemy User model
-        user = User(
-            uid=user_id,
-            username=data.get("username"),
-            email=data.get("email"),
-            fullname=data.get("fullname"),
-            phone=data.get("phone"),
-            id_number=data.get("id_number"),
-            home_address=data.get("home_address"),
-            country=data.get("country"),
-            county=data.get("county"),
-            is_admin=data.get("is_admin", False),
-            created_at=data.get("created_at"),
-        )
-
-        return user
-
-    except Exception as e:
-        print(f"Error loading user {user_id}: {e}")
-        return None
-
-# --- Firebase Initialization ---
-if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase-service-account.json")
-    firebase_admin.initialize_app(cred)
-firebase_db = firestore.client()
-FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"  # Your Firebase Web API Key
-
-# --- Routes ---
+# ----------------- ROUTES -----------------
 
 @app.route('/')
 def home():
@@ -97,33 +86,33 @@ def home():
 def about():
     return render_template('about.html')
 
+
 # --- Chatbot API ---
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message')
     if not user_message:
         return jsonify({"error": "No message provided"}), 400
+
     try:
         prompt = f"You are AgriTrue, an expert agricultural AI. Respond to the user's query concisely and only about farming. User's query: {user_message}"
         response = model.generate_content(prompt)
-        response_text = ""
-        for part in response.candidates[0].content.parts:
-            if hasattr(part, 'text'):
-                response_text += part.text
+        response_text = "".join([part.text for part in response.candidates[0].content.parts if hasattr(part, 'text')])
+
         if not response_text:
             response_text = "I'm sorry, I couldn't generate a response this time. Please try a different query."
+
         return jsonify({"reply": response_text})
     except Exception as e:
-        print(f"Error during API call: {e}")
+        print(f"Error during AI call: {e}")
         return jsonify({"error": "Server error. Could not get response."}), 500
-
-# --- Registration Route ---
 # --- Registration Route ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Register user in Firebase Auth + Firestore + SQLAlchemy"""
     if request.method == 'POST':
         fullname = request.form.get('fullname', '').strip()
-        username = request.form.get('username', '').strip().lower()
+        username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
         confirm_password = request.form.get('confirm_password', '').strip()
@@ -133,109 +122,91 @@ def register():
         country = request.form.get('country', '').strip()
         county = request.form.get('county', '').strip()
 
-        errors = []
-
-        # --- Required fields validation ---
-        if not fullname: errors.append("Full name is required.")
-        if not username: errors.append("Username is required.")
-        if not email: errors.append("Email is required.")
-        if not password: errors.append("Password is required.")
-        if not confirm_password: errors.append("Confirm password is required.")
-        if not country: errors.append("Country is required.")
-
-        # --- Email format ---
-        if email and not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            errors.append("Invalid email format.")
-
-        # --- Password validation ---
-        if password != confirm_password:
-            errors.append("Passwords do not match.")
-        if password and (len(password) < 6 or not re.search(r"[A-Za-z]", password) or not re.search(r"[0-9]", password)):
-            errors.append("Password must be at least 6 chars and include letters & numbers.")
-
-        # --- Phone formatting ---
-        formatted_phone = None
-        phone_for_auth = None  # Firebase Auth ≤15 digits
-        if phone:
-            phone_digits = re.sub(r"[^\d]", "", phone)
-            country_code_map = {
-                'kenya': '+254', 'uganda': '+256', 'tanzania': '+255',
-                'ghana': '+233', 'nigeria': '+234', 'south-africa': '+27',
-                'zambia': '+260', 'zimbabwe': '+263', 'rwanda': '+250',
-                'malawi': '+265', 'ethiopia': '+251', 'egypt': '+20',
-                'morocco': '+212', 'algeria': '+213', 'tunisia': '+216'
-            }
-            code = country_code_map.get(country.lower(), '+000')
-            if phone_digits.startswith('0'):
-                phone_digits = phone_digits[1:]
-            formatted_phone = code + phone_digits
-
-            if len(formatted_phone) <= 15:
-                phone_for_auth = formatted_phone  # Firebase-valid
-            # Always store full phone in DB, no limit
-
-        # --- Check duplicate email ---
-        try:
-            auth.get_user_by_email(email)
-            errors.append("Email already registered. Please log in.")
-        except auth.UserNotFoundError:
-            pass
-
-        # --- Check duplicate username ---
-        users_ref = firebase_db.collection("users")
-        if users_ref.where("username", "==", username).get():
-            errors.append("Username already exists. Please choose another.")
-
-        # --- If errors exist, flash and redirect ---
-        if errors:
-            for error in errors:
-                flash(error, "error")
+        # --- Validation ---
+        if not all([fullname, username, email, password, confirm_password]):
+            flash("Please fill in all required fields.", "error")
             return redirect(url_for('register'))
 
-        # --- Create user in Firebase Auth ---
+        if password != confirm_password:
+            flash("Passwords do not match.", "error")
+            return redirect(url_for('register'))
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.", "error")
+            return redirect(url_for('register'))
+
+        if phone and not re.match(r"^\+\d{1,14}$", phone):
+            flash("Invalid phone number. Use international format (e.g., +260971234567).", "error")
+            return redirect(url_for('register'))
+
+        # ✅ SQLAlchemy 2.0: use select() instead of query.filter_by
+        existing_user = db.session.execute(
+            db.select(User).filter_by(username=username)
+        ).scalar_one_or_none()
+        if existing_user:
+            flash("Username already exists.", "error")
+            return redirect(url_for('register'))
+
         try:
+            # 1. Create Firebase Auth User
             firebase_user = auth.create_user(
                 email=email,
                 password=password,
-                display_name=username,
-                phone_number=phone_for_auth  # only if valid
+                display_name=fullname,
+                phone_number=phone if phone else None
             )
-        except Exception as e:
-            flash(f"Error creating account: {str(e)}", "error")
+            uid = firebase_user.uid
+
+            # 2. Firestore Data
+            user_data = {
+                "fullname": fullname,
+                "username": username,
+                "email": email,
+                "phone": phone,
+                "id_number": id_number,
+                "home_address": home_address,
+                "country": country,
+                "county": county,
+                "is_admin": False,
+                "created_at": datetime.utcnow().isoformat(),
+                "last_login": datetime.utcnow().isoformat(),
+                "streak_count": 1
+            }
+            firestore_db.collection("users").document(uid).set(user_data)
+
+            # 3. Local DB
+            new_user = User(
+                id=uid,
+                fullname=fullname,
+                username=username,
+                email=email,
+                phone=phone,
+                id_number=id_number,
+                home_address=home_address,
+                country=country,
+                county=county
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash("✅ Registration successful! Welcome.", "success")
+            return redirect(url_for('community_notes'))
+
+        except firebase_admin._auth_utils.EmailAlreadyExistsError:
+            flash("Email already registered. Please log in.", "error")
             return redirect(url_for('register'))
-
-        # --- Save user info in Firestore ---
-        user_doc = {
-            "fullname": fullname,
-            "username": username,
-            "email": email,
-            "phone": formatted_phone,  # full phone any length
-            "id_number": id_number,
-            "home_address": home_address,
-            "country": country,
-            "county": county,
-            "uid": firebase_user.uid,
-            "streak_count": 1,
-            "last_login": datetime.utcnow().isoformat()
-        }
-        firebase_db.collection("users").document(firebase_user.uid).set(user_doc)
-        print(User.__table__)
-
-        # --- Auto-login with proper User model ---
-        user = User(id=firebase_user.uid, username=username, email=email)
-        login_user(user)
-
-        flash("✅ Account created successfully! Welcome to AgriTrue.", "success")
-        return redirect(url_for('community_notes'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"⚠️ Internal error: {str(e)}", "error")
+            return redirect(url_for('register'))
 
     return render_template('register.html')
 
 
-
-# --- Login Route ---
 # --- Login Route ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Login using Firebase REST API for password authentication."""
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
@@ -244,67 +215,78 @@ def login():
             flash("Please enter both email and password.", "error")
             return redirect(url_for('login'))
 
-        login_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
-        payload = {"email": email, "password": password, "returnSecureToken": True}
-        headers = {"Content-Type": "application/json"}
-        res = requests.post(login_url, data=json.dumps(payload), headers=headers)
-        result = res.json()
+        try:
+            # Firebase REST API for signInWithPassword
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+            payload = {"email": email, "password": password, "returnSecureToken": True}
+            res = requests.post(url, data=payload)
+            res_data = res.json()
 
-        if "error" in result:
-            flash("Invalid email or password.", "error")
-            return redirect(url_for('login'))
+            if "error" in res_data:
+                flash("Invalid email or password.", "error")
+                return redirect(url_for('login'))
 
-        uid = result.get("localId")
-        firebase_user = auth.get_user(uid)
+            uid = res_data["localId"]
 
-        # --- Fetch all user data from Firestore first ---
-        user_ref = firebase_db.collection("users").document(uid)
-        user_doc = user_ref.get()
-        if not user_doc.exists:
-            # Handle case where user exists in Auth but not Firestore
-            flash("User data not found. Please contact support.", "error")
-            return redirect(url_for('login'))
-        
-        user_data = user_doc.to_dict()
-        
-        # --- Update streak and other logic ---
-        today = datetime.utcnow().date()
-        streak = user_data.get("streak_count", 1)
-        last_login = user_data.get("last_login")
-        if last_login:
-            last_login_date = datetime.fromisoformat(last_login).date()
+            # Firestore User Data
+            user_ref = firestore_db.collection("users").document(uid)
+            user_doc = user_ref.get()
+            if not user_doc.exists:
+                flash("User profile missing. Contact support.", "error")
+                return redirect(url_for('login'))
+
+            user_data = user_doc.to_dict()
+
+            # --- Streak Update ---
+            today = datetime.utcnow().date()
+            streak = user_data.get("streak_count", 1)
+            last_login = user_data.get("last_login")
+
+            last_login_date = datetime.fromisoformat(last_login).date() if isinstance(last_login, str) else last_login.date()
+
             if last_login_date == today - timedelta(days=1):
                 streak += 1
             elif last_login_date < today - timedelta(days=1):
                 streak = 1
-        
-        user_ref.update({"streak_count": streak, "last_login": datetime.utcnow().isoformat()})
 
-        # --- Create user with complete data from Firestore ---
-        # Note: We use the SQLAlchemy constructor which maps keywords to columns
-        user = User(
-            id=uid,
-            username=user_data.get('username'),
-            email=user_data.get('email'),
-            fullname=user_data.get('fullname'),
-            phone=user_data.get('phone'),
-            id_number=user_data.get('id_number'),
-            home_address=user_data.get('home_address'),
-            country=user_data.get('country'),
-            county=user_data.get('county'),
-            is_admin=user_data.get('is_admin', False),
-            created_at=datetime.fromisoformat(user_data.get('created_at')) if user_data.get('created_at') else None
-        )
-        
-        login_user(user)
+            user_ref.update({
+                "streak_count": streak,
+                "last_login": datetime.utcnow().isoformat()
+            })
 
-        flash(f"✅ Logged in successfully! Current streak: {streak} day(s).", "success")
-        return redirect(url_for('community_notes'))
+            # --- Local DB Sync ---
+            user = db.session.get(User, uid)   # ✅ fixed for SQLAlchemy 2.0
+            if not user:
+                user = User(
+                    id=uid,
+                    fullname=user_data.get('fullname'),
+                    username=user_data.get('username'),
+                    email=user_data.get('email'),
+                    phone=user_data.get('phone'),
+                    id_number=user_data.get('id_number'),
+                    home_address=user_data.get('home_address'),
+                    country=user_data.get('country'),
+                    county=user_data.get('county'),
+                    is_admin=user_data.get('is_admin', False),
+                    created_at=datetime.fromisoformat(user_data.get('created_at'))
+                )
+                db.session.add(user)
+                db.session.commit()
+
+            login_user(user)
+
+            flash(f"✅ Logged in! Current streak: {streak} days.", "success")
+            return redirect(url_for('community_notes'))
+
+        except Exception as e:
+            flash(f"⚠️ Login failed: {str(e)}", "error")
+            return redirect(url_for('login'))
 
     return render_template('login.html')
-# --- Protected Notes Page ---
+
+   
 @app.route('/community-notes', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def community_notes():
     if request.method == 'POST':
         note = request.form.get('note', '').strip()
@@ -325,7 +307,8 @@ def community_notes():
     notes = CommunityNote.query.order_by(desc(CommunityNote.timestamp)).all()
     enriched = []
     for n in notes:
-        comments = Comment.query.filter_by(note_id=n.id).order_by(Comment.timestamp.asc()).all()
+        comments = Comment.query.filter_by(note_id=n.id).order_by(Comment.created_at.asc()).all()
+
         enriched.append({
             "id": n.id,
             "content": n.note,
@@ -564,6 +547,7 @@ def analyze_video(filepath):
 
 # Analyzer Route
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
+@login_required
 def ml_analyzer():
     analysis_result = None
     chart_data = {}
@@ -1069,32 +1053,6 @@ def know_your_land():
 
 #streak
 # streak_backend_flask.py
-
-
-# User model
-class User(UserMixin, db.Model):
-    """
-    Represents a user in the database with a simplified schema.
-    This model integrates with Flask-Login for user authentication.
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), nullable=False, unique=True)
-    password = db.Column(db.String(150), nullable=False)
-    region = db.Column(db.String(100), default='Unknown')
-    crops = db.Column(db.String(200), default='Maize, Beans')
-    last_login = db.Column(db.DateTime)
-    streak = db.Column(db.Integer, default=0)
-
-    def __repr__(self):
-        return f"User('{self.username}')"
-
-    # Required by Flask-Login for user authentication
-    def get_id(self):
-        return str(self.id)
-
-# Login route with streak update
-from flask import flash, redirect, render_template, url_for
-
 
 # Profile route
 @app.route('/profile')
