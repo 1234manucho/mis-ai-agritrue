@@ -168,6 +168,445 @@
             </p>
         </div>
     </div>
+    
+    <div class="container-fluid py-5"></div>
+    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
+        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
+            </span>
+            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
+            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
+                Hello! I am AgriTrue AI. How can I help you today?
+                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
+            </div>
+        </div>
+        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+                
+                 <input type="file" id="image-input" accept="image/*" style="display:none;">
+                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
+                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
+                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
+               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
+                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
+                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
+                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
+            </div>
+            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
+                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
+                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
+            </div>
+            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
+                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-phone-alt"></i>
+                </a>
+                <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-sms"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
+        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
+    </button>
+
+<style>
+    @keyframes slide-up {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
+    .dot-pulse {
+        position: relative;
+        width: 10px; height: 10px; border-radius: 50%;
+        background-color: #22c55e; color: #22c55e;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
+        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .dot-pulse::before, .dot-pulse::after {
+        content: ''; position: absolute; width: 10px; height: 10px;
+        border-radius: 50%; background-color: #22c55e;
+        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
+    }
+    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
+    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
+    @keyframes dot-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    }
+</style>
+
+<script>
+    window.onload = function() {
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeChatbotBtn = document.getElementById("close-chatbot");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const voiceInputBtn = document.getElementById("voice-input-btn");
+        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
+        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
+        const reportBtn = document.getElementById("report-btn"); // New button for Report
+        const messagesContainer = document.getElementById("chatbot-messages");
+        const headerText = document.getElementById("header-text");
+        const originalHeaderText = headerText.innerHTML;
+
+        const imageInput = document.getElementById("image-input");
+        const imageUploadBtn = document.getElementById("image-upload-btn");
+        const imagePreviewContainer = document.getElementById("image-preview-container");
+        const imagePreview = document.getElementById("image-preview");
+        const removeImageBtn = document.getElementById("remove-image-btn");
+        let uploadedImageBase64 = null;
+
+        // Helper functions for TTS
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+        function pcmToWav(pcm16, sampleRate) {
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+            view.setUint32(0, 0x46464952, true); // "RIFF"
+            view.setUint32(4, 36 + pcm16.length * 2, true);
+            view.setUint32(8, 0x45564157, true); // "WAVE"
+            view.setUint32(12, 0x20746d66, true); // "fmt "
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            view.setUint32(36, 0x61746164, true); // "data"
+            view.setUint32(40, pcm16.length * 2, true);
+            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
+            buffer.set(new Uint8Array(wavHeader), 0);
+            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
+            return new Blob([buffer], { type: "audio/wav" });
+        }
+        async function speakMessage(text) {
+            const audio = new Audio();
+            audio.src = '#';
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                }
+            };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    audio.src = audioUrl;
+                    audio.play();
+                } else {
+                    console.error("TTS response is not a valid audio format.");
+                }
+            } catch (error) {
+                console.error('Error with TTS:', error);
+            }
+        }
+
+        // Function to append a new message to the chat
+        function appendMessage(message, sender, imageBase64 = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.maxWidth = '80%';
+            messageDiv.style.padding = '10px 14px';
+            messageDiv.style.borderRadius = '18px';
+            messageDiv.style.lineHeight = '1.4';
+            messageDiv.style.fontSize = '0.95rem';
+            messageDiv.style.position = 'relative';
+
+            if (sender === 'user') {
+                messageDiv.style.backgroundColor = '#e2e8f0';
+                messageDiv.style.color = '#333';
+                messageDiv.style.alignSelf = 'flex-end';
+                messageDiv.style.borderBottomRightRadius = '4px';
+            } else {
+                messageDiv.style.backgroundColor = '#22c55e';
+                messageDiv.style.color = 'white';
+                messageDiv.style.alignSelf = 'flex-start';
+                messageDiv.style.borderBottomLeftRadius = '4px';
+            }
+
+            if (imageBase64) {
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${imageBase64}`;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '8px';
+                img.style.marginBottom = '8px';
+                messageDiv.appendChild(img);
+            }
+            const textNode = document.createTextNode(message);
+            messageDiv.appendChild(textNode);
+            messagesContainer.appendChild(messageDiv);
+
+            if (sender === 'bot') {
+                const ttsButton = document.createElement('button');
+                ttsButton.textContent = '🔊';
+                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
+                ttsButton.onclick = () => speakMessage(message);
+                messageDiv.appendChild(ttsButton);
+            }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function getGeminiTextResponse(prompt) {
+            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response at this time.";
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
+        }
+
+        async function getGeminiImageResponse(prompt, imageBase64) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
+                }]
+            };
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response for this image.";
+                } catch (error) {
+                    console.error('Error calling Gemini API with image:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
+        }
+
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            const hasImage = uploadedImageBase64 !== null;
+            if (message || hasImage) {
+                appendMessage(message, 'user', uploadedImageBase64);
+                userInput.value = '';
+                uploadedImageBase64 = null;
+                imagePreviewContainer.style.display = 'none';
+
+                const thinkingMessageDiv = document.createElement('div');
+                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+                thinkingMessageDiv.className = 'message bot-message';
+                thinkingMessageDiv.style.display = 'flex';
+                thinkingMessageDiv.style.alignItems = 'center';
+                thinkingMessageDiv.style.gap = '0.5rem';
+                messagesContainer.appendChild(thinkingMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                let botResponse;
+                if (hasImage) {
+                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
+                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
+                } else {
+                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
+                    // Special handling for greetings
+                    const lowerCaseMessage = message.toLowerCase();
+                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
+                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
+                    }
+                    botResponse = await getGeminiTextResponse(aiPrompt);
+                }
+
+                messagesContainer.removeChild(thinkingMessageDiv);
+                appendMessage(botResponse, 'bot');
+            }
+        }
+
+        // Function for the "Get Advice" feature
+        async function getAdvice() {
+            const problem = prompt("What is your crop and what problem are you seeing?");
+            if (!problem) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Function for the "Generate Report" feature
+        async function generateReport() {
+            const topic = prompt("What is the topic for your agricultural report?");
+            if (!topic) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Existing function to generate a farm fact
+        async function generateFarmFact() {
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            thinkingMessageDiv.style.display = 'flex';
+            thinkingMessageDiv.style.alignItems = 'center';
+            thinkingMessageDiv.style.gap = '0.5rem';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
+            const botResponse = await getGeminiTextResponse(factPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            voiceInputBtn.addEventListener('click', () => {
+                try {
+                    recognition.start();
+                    voiceInputBtn.innerHTML = '�';
+                    voiceInputBtn.style.backgroundColor = 'gray';
+                } catch (e) { console.error('Speech recognition start error:', e); }
+            });
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage();
+            };
+            recognition.onend = () => {
+                voiceInputBtn.innerHTML = '🎙️';
+                voiceInputBtn.style.backgroundColor = '#3b82f6';
+            };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
+            };
+        } else {
+            voiceInputBtn.style.display = 'none';
+            console.warn("Speech Recognition API not supported in this browser.");
+        }
+
+        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
+                    imagePreview.src = reader.result;
+                    imagePreviewContainer.style.display = 'block';
+                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageBtn.addEventListener('click', () => {
+            uploadedImageBase64 = null;
+            imagePreviewContainer.style.display = 'none';
+            userInput.placeholder = "Type a message...";
+            imageInput.value = '';
+        });
+
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
+        };
+        closeChatbotBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "block";
+            headerText.innerHTML = originalHeaderText;
+        };
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { sendMessage(); }
+        });
+        factBtn.addEventListener('click', generateFarmFact);
+        adviceBtn.addEventListener('click', getAdvice);
+        reportBtn.addEventListener('click', generateReport);
+    };
+</script>
  <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
         <div class="container mx-auto px-4">
