@@ -1,103 +1,859 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>USSD Simulation</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTrue USSD</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean, modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to bottom, #d4fcf8, #a8e6cf);
-            color: #333;
-            text-align: center;
-            padding: 30px;
-            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Light green background */
         }
-        h1 {
-            color: #1b5e20;
-            font-size: 3em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        .ussd-container {
+            width: 100%;
+            max-width: 420px;
+            height: 680px;
+            background: #fff;
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border: 8px solid #cbd5e1;
+            box-sizing: border-box;
         }
-        form {
-            margin-top: 30px;
-            display: inline-block;
-            background: #ffffff;
-            padding: 20px 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        .ussd-display {
+            background-color: #f0f4f8; /* Softer display background */
+            min-height: 24rem;
+            max-height: 24rem;
+            overflow-y: auto;
+            border-radius: 1rem;
+            padding: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #1a202c;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        input[type="text"] {
-            padding: 12px;
-            font-size: 1em;
-            width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
+        .ussd-input-container {
+            position: relative;
         }
-        input[type="text"]:focus {
-            border-color: #43a047;
+        .ussd-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
             outline: none;
-            box-shadow: 0 0 8px rgba(67, 160, 71, 0.5);
+            transition: border-color 0.2s;
+            font-size: 1rem;
+            color: #1a202c;
         }
-        button {
-            padding: 12px 25px;
-            background: #43a047;
+        .ussd-input:focus {
+            border-color: #34d399; /* Green-400 */
+        }
+        .voice-btn {
+            background-color: #10b981; /* Green-500 */
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .voice-btn:hover {
+            background-color: #059669; /* Green-600 */
+            transform: translateY(-2px);
+        }
+        .button-group button {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .button-group button:hover {
+            transform: translateY(-1px);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .hero-content {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Loader Styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Slideshow Styles */
+        #slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
+            z-index: 2;
+        }
+
+        /* Chatbot Styles */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #34d399;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 360px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        #chatbot-header {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: white;
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #chatbot-body {
+            padding: 16px;
+            background: #f0fdf4;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+        
+        #chatbot-input-container {
+            display: flex;
+            padding: 12px;
+            background: #ecfdf5;
+            border-top: 1px solid #d1fae5;
+        }
+        
+        #chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #send-message, #mic-button {
+            background: #34d399;
             color: white;
             border: none;
+            padding: 0 12px;
+            margin-left: 8px;
             border-radius: 8px;
-            font-size: 1em;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
         }
-        button:hover {
-            background: #388e3c;
-            transform: scale(1.05);
+        
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
         }
-        p {
-            font-size: 1.2em;
-            margin-top: 20px;
-            background: #e8f5e9;
-            display: inline-block;
-            padding: 15px 25px;
-            border-radius: 15px;
-            box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
+        
+        .user-message {
+            background: #34d399;
+            color: white;
+            margin-left: auto;
         }
-        .agri-image {
-            width: 150px;
-            margin-top: 30px;
-            animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+        
+        .bot-message {
+            background: #d1fae5;
+            color: black;
+            margin-right: auto;
         }
-        a {
-            text-decoration: none;
-            color: #2e7d32;
-            font-weight: bold;
-            transition: color 0.3s ease;
+
+        /* Hide default Bootstrap toggler on larger screens */
+        @media (min-width: 992px) {
+            .navbar-toggler {
+                display: none;
+            }
         }
-        a:hover {
-            color: #1b5e20;
+
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: #f0fdf4;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
         }
     </style>
 </head>
-<body>
-    <h1 class="animate_animated animate_fadeInDown">USSD Code Simulation</h1>
-    <form method="post">
-        <input type="hidden" name="session_level" value="{{ session_level }}">
-        <input type="text" name="ussd_code" placeholder="e.g., *456#" required>
-        <button type="submit">Submit</button>
-    </form>
-    {% if response %}
-        <p class="animate_animated animate_fadeInUp"><strong>Response:</strong><br>{{ response | safe }}</p>
-    {% endif %}
-    <br>
-    <a href="/">⬅ Back to Home</a>
-    <div>
-        <img src="https://cdn-icons-png.flaticon.com/512/2913/2913466.png" class="agri-image" alt="Farm Icon">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                   
+                </div>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
     </div>
+
+
+    <script>
+        // Loader Script
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("agritrue-loader");
+            setTimeout(() => {
+                loader.style.opacity = 0;
+                setTimeout(() => loader.style.display = "none", 50);
+            }, 1);
+        });
+
+        // Slideshow Script
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('#slideshow .slide');
+            let current = 0;
+            if (slides.length > 0) {
+                slides[current].classList.add('active');
+            }
+            setInterval(() => {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }, 5000); // Change slide every 5 seconds
+        });
+
+        // Mobile Menu Script
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
+        const mobileMenu = document.getElementById("mobileMenu");
+        const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+        mobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.add("show");
+            mobileMenuOverlay.classList.add("show");
+            document.body.style.overflow = "hidden";
+        });
+        
+        closeMobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        mobileMenuOverlay.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        // Chatbot Script
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeBtn = document.getElementById("close-chatbot");
+        const messagesDiv = document.getElementById("chatbot-messages");
+        const input = document.getElementById("chatbot-input");
+        const sendBtn = document.getElementById("send-message");
+        const micBtn = document.getElementById("mic-button");
+        const messages = [];
+
+        function appendMessage(text, isUser) {
+            const msg = document.createElement("div");
+            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
+            msg.textContent = text;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            appendMessage(text, true);
+            messages.push({ role: "user", content: text });
+            input.value = "";
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ messages })
+                });
+                const data = await res.json();
+                if (data.reply) {
+                    appendMessage(data.reply, false);
+                    messages.push({ role: "assistant", content: data.reply });
+                } else {
+                    appendMessage("No response from server.", false);
+                }
+            } catch (err) {
+                console.error(err);
+                appendMessage("Error connecting to the server.", false);
+            }
+        }
+        
+        sendBtn.onclick = sendMessage;
+        input.onkeydown = (e) => {
+            if (e.key === "Enter") sendMessage();
+        };
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+        };
+        closeBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "flex";
+        };
+        
+        // 🎤 Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                sendMessage();
+            };
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                appendMessage("Sorry, I didn't catch that.", false);
+            };
+            micBtn.onclick = () => {
+                recognition.start();
+            };
+        } else {
+            micBtn.disabled = true;
+            micBtn.title = "Speech Recognition not supported in this browser.";
+        }
+    </script>
+    <div class="ussd-container relative">
+        <div class="flex items-center justify-center p-4">
+            <h1 class="text-3xl font-bold text-green-700">AgriTrue USSD</h1>
+        </div>
+
+        <!-- USSD Screen -->
+        <div id="ussd-display" class="ussd-display flex-grow mb-4 shadow-inner">
+            <p class="text-gray-500 text-center mt-20">Tap a language to start...</p>
+        </div>
+
+        <!-- Voice Agent Controls -->
+        <div id="voice-controls" class="flex flex-col items-center justify-center space-y-2 mb-4">
+            <div class="text-sm text-gray-600">Select language:</div>
+            <div class="flex space-x-2">
+                <button id="lang-en" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">English</button>
+                <button id="lang-sw" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">Kiswahili</button>
+                <button id="lang-bk" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">Bukusu</button>
+            </div>
+            <div id="status-text" class="text-xs text-green-600 font-semibold italic hidden"></div>
+        </div>
+        
+        <!-- User Input -->
+        <form id="ussd-form" class="mt-auto">
+            <div class="ussd-input-container">
+                <input type="text" id="ussd-input" placeholder="Enter your choice..." class="ussd-input" required autofocus>
+            </div>
+            <div class="flex justify-between mt-4 space-x-2">
+                <button type="button" id="cancel-btn" class="flex-1 bg-red-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-red-600">Cancel</button>
+                <button type="submit" id="send-btn" class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-green-600 flex items-center justify-center space-x-2">
+                    <span id="button-text">Send</span>
+                    <span id="loading-spinner" class="spinner hidden"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Use a state machine to manage the USSD flow.
+        let ussdState = {
+            currentMenu: 'welcome',
+            lang: 'en-US'
+        };
+
+        const ussdDisplay = document.getElementById('ussd-display');
+        const ussdInput = document.getElementById('ussd-input');
+        const ussdForm = document.getElementById('ussd-form');
+        const cancelButton = document.getElementById('cancel-btn');
+        const sendButton = document.getElementById('send-btn');
+        const statusText = document.getElementById('status-text');
+
+        // Text-to-Speech (TTS) function
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = ussdState.lang;
+                window.speechSynthesis.speak(utterance);
+                statusText.textContent = `Speaking: "${text.substring(0, 40)}..."`;
+                statusText.classList.remove('hidden');
+                utterance.onend = () => {
+                    statusText.classList.add('hidden');
+                };
+            } else {
+                console.warn('Text-to-speech not supported in this browser.');
+            }
+        }
+
+        // Simulates a delayed response for realism
+        async function fakeBackendCall() {
+            return new Promise(resolve => setTimeout(resolve, 1500));
+        }
+
+        // Data structure to hold all USSD menus
+        const ussdMenus = {
+            welcome: {
+                text: "Welcome to AgriTrue. To continue in English, press 1. Kuendelea kwa Kiswahili, bonyeza 2. Kwa Bukusu, bonyeza 3.",
+                next: (input) => {
+                    if (input === '1') {
+                        ussdState.lang = 'en-US';
+                        return 'main';
+                    } else if (input === '2') {
+                        ussdState.lang = 'sw-KE';
+                        return 'main';
+                    } else if (input === '3') {
+                        ussdState.lang = 'en-US'; // Using English voice for Bukusu for demonstration
+                        return 'main';
+                    }
+                    return 'invalid_lang';
+                }
+            },
+            main: {
+                text: "Welcome to AgriTrue\n\n1. Verify my Pesticides\n2. Crop Pricing & Markets\n3. Integrated Pest Control (IPC)\n4. Soil Guide\n\nReply with 0 to Exit",
+                next: (input) => {
+                    switch (input) {
+                        case '1': return 'pesticide_verify_start';
+                        case '2': return 'crop_pricing_start';
+                        case '3': return 'ipc_start';
+                        case '4': return 'soil_guide_start';
+                        case '0': return 'exit';
+                        default: return 'main';
+                    }
+                }
+            },
+            pesticide_verify_start: {
+                text: "Verify my Pesticides\n\nPlease enter the Product Name, e.g., Tyrgiving:",
+                next: () => 'pesticide_reg_no'
+            },
+            pesticide_reg_no: {
+                text: "Please enter the Reg No. (e.g., Kephis pk.nz+ssc):",
+                next: (input) => 'pesticide_results' // In a real app, this would be validated
+            },
+            pesticide_results: {
+                text: (product, regNo) => `Product Name: ${product}\nReg No: ${regNo}\nStatus: Approved (valid till 12/2025)\nManufacturer: Agrochemicals Ltd.\n\nUSAGE/USED FOR: Maize, wheat, beans\nDosage: 200ml / acre\nSAFETY AND PRECAUTIONS: Wear gloves, mask. Avoid watery bodies.\n\nReply with * to report fake products.\nReply with # to go back to Main Menu.`,
+                next: (input) => {
+                    if (input === '*') { return 'report_fake'; }
+                    if (input === '#') { return 'main'; }
+                    return 'pesticide_results'; // Stay on this screen
+                }
+            },
+            report_fake: {
+                text: "Thank you for helping us fight fake products. We will investigate this report.",
+                next: () => 'exit'
+            },
+            // The rest of the menu items would follow this pattern...
+            crop_pricing_start: {
+                text: "Step 1: Select County\n\n1. Nairobi\n2. Nyeri\n3. Bungoma\n4. Kisumu\n5. Mombasa\n\nReply with # to go back.",
+                next: (input) => {
+                    if (input === '#') return 'main';
+                    return 'crop_pricing_crops';
+                }
+            },
+            crop_pricing_crops: {
+                text: (county) => `Step 2: Top Crops in ${county}\n\n1. Maize\n2. Tomatoes\n3. Beans\n4. Soyabeans\n\nReply with # to go back.`,
+                next: (input) => {
+                     if (input === '#') return 'crop_pricing_start';
+                     return 'crop_pricing_options';
+                }
+            },
+            crop_pricing_options: {
+                 text: (crop) => `Current Prices for ${crop}\n\n1. Current Prices\n2. Price Trends (Last 30 days)\n3. Best Markets to Sell\n4. Subscribe to Alerts\n5. Exit\n\nReply with # to go back.`,
+                 next: (input) => {
+                      if (input === '#') return 'crop_pricing_crops';
+                      if (input === '5') return 'exit';
+                      return 'crop_pricing_options';
+                 }
+            },
+            ipc_start: {
+                 text: "Step 1: Identify Pest/Disease\n\n1. Weeds, Mites, Snails & Slugs\n2. Molds, Fungi, Bacteria, Viruses\n3. Bugs, Rodents\n4. Insects, Mollusks, Birds, Chewing Insects\n5. Don’t Know\n\nReply with # to go back.",
+                 next: (input) => {
+                      if (input === '#') return 'main';
+                      if (input === '5') return 'ipc_dont_know';
+                      return 'ipc_details';
+                 }
+            },
+            ipc_dont_know: {
+                 text: "Describe the damage:\n\n1. Choose Language:\n  a. English\n  b. Kiswahili\n  c. Bukusu\n\nReply with # to go back.",
+                 next: (input) => {
+                     if (input === '#') return 'ipc_start';
+                     return 'ipc_diagnosis';
+                 }
+            },
+            ipc_diagnosis: {
+                text: "System is analyzing your request. Please wait for the diagnosis and recommendations...",
+                next: (input) => 'exit'
+            },
+            soil_guide_start: {
+                text: "Step 1: Select County\n\n1. Nakuru\n2. Embu\n3. Nairobi\n4. Turkana\n\nReply with # to go back.",
+                next: (input) => {
+                    if (input === '#') return 'main';
+                    return 'soil_guide_details';
+                }
+            },
+            soil_guide_details: {
+                text: (county) => `Soil Details for ${county} County\n\nDominant Soil: Volcanic, Clay Soil\nBest Pesticides: e.g. Glyphosate, 2,4-D\nDosage Adjustment: +10% for high purity\nPrecautions: Avoid Sulfonylurea (in high pH soils)\n\n📞 More Info / Helpline: +254 715 142 906\n\nReply with # to go back to Main Menu.`,
+                next: (input) => {
+                    if (input === '#') return 'main';
+                    return 'soil_guide_details';
+                }
+            },
+            exit: {
+                text: "Thank you for using AgriTrue. Goodbye!",
+                next: () => 'welcome'
+            },
+            invalid_lang: {
+                text: "Invalid choice. Please select a language to start.",
+                next: () => 'welcome'
+            },
+            invalid_input: {
+                text: "Invalid input. Please enter a valid option.",
+                next: (input) => ussdState.currentMenu
+            }
+        };
+
+        // Function to update the display and speak the text
+        function updateDisplay(menuKey, data = {}) {
+            let menu = ussdMenus[menuKey];
+            let displayText = typeof menu.text === 'function' ? menu.text(data) : menu.text;
+            ussdDisplay.textContent = displayText;
+            speak(displayText.replace(/\n/g, ' '));
+        }
+
+        // Main function to process user input
+        async function processInput() {
+            const input = ussdInput.value.trim();
+            if (!input) {
+                flashMessage("Please enter an option.", "text-red-500");
+                return;
+            }
+
+            sendButton.disabled = true;
+            sendButton.innerHTML = `<span id="loading-spinner" class="spinner"></span>`;
+
+            await fakeBackendCall();
+
+            let nextMenuKey;
+            
+            // Special handling for initial language selection
+            if (ussdState.currentMenu === 'welcome') {
+                nextMenuKey = ussdMenus.welcome.next(input);
+            } else {
+                let currentMenu = ussdMenus[ussdState.currentMenu];
+                nextMenuKey = currentMenu.next(input);
+            }
+            
+            ussdState.currentMenu = nextMenuKey;
+            ussdInput.value = '';
+
+            // Update display based on the new state
+            if (ussdState.currentMenu === 'pesticide_results') {
+                // Example data for the pesticide results
+                updateDisplay(ussdState.currentMenu, 'Tyrgiving', 'Kephis pk.nz+ssc');
+            } else if (ussdState.currentMenu === 'crop_pricing_crops') {
+                 // Example data for crop pricing
+                 updateDisplay(ussdState.currentMenu, 'Nairobi');
+            } else if (ussdState.currentMenu === 'crop_pricing_options') {
+                 // Example data for crop pricing options
+                 updateDisplay(ussdState.currentMenu, 'Maize');
+            } else if (ussdState.currentMenu === 'soil_guide_details') {
+                 // Example data for soil guide
+                 updateDisplay(ussdState.currentMenu, 'Nakuru');
+            } else {
+                 updateDisplay(ussdState.currentMenu);
+            }
+
+            sendButton.disabled = false;
+            sendButton.innerHTML = `<span id="button-text">Send</span>`;
+        }
+        
+        // Helper to show temporary messages
+        function flashMessage(message, colorClass) {
+            const originalText = statusText.textContent;
+            statusText.textContent = message;
+            statusText.classList.remove('hidden');
+            statusText.classList.remove('text-green-600');
+            statusText.classList.add(colorClass);
+
+            setTimeout(() => {
+                statusText.textContent = originalText;
+                statusText.classList.add('hidden');
+                statusText.classList.remove(colorClass);
+                statusText.classList.add('text-green-600');
+            }, 3000);
+        }
+
+        // Event Listeners
+        ussdForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            processInput();
+        });
+
+        // Language selection buttons
+        document.getElementById('lang-en').addEventListener('click', () => {
+            ussdState.lang = 'en-US';
+            ussdState.currentMenu = 'main';
+            updateDisplay(ussdState.currentMenu);
+            ussdInput.focus();
+        });
+        document.getElementById('lang-sw').addEventListener('click', () => {
+            ussdState.lang = 'sw-KE';
+            ussdState.currentMenu = 'main';
+            updateDisplay(ussdState.currentMenu);
+            ussdInput.focus();
+        });
+        document.getElementById('lang-bk').addEventListener('click', () => {
+            ussdState.lang = 'en-US'; // Using English voice for demonstration
+            ussdState.currentMenu = 'main';
+            updateDisplay(ussdState.currentMenu);
+            ussdInput.focus();
+        });
+
+        // Cancel button functionality
+        cancelButton.addEventListener('click', () => {
+            ussdState.currentMenu = 'exit';
+            updateDisplay(ussdState.currentMenu);
+            ussdInput.value = '';
+        });
+
+    </script>
 </body>
 </html>
