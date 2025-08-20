@@ -21,7 +21,7 @@ from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_u
 
 # Database
 from flask_sqlalchemy import SQLAlchemy
-import firebase_admin
+
 # Google Generative AI
 import google.generativeai as genai
 genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
