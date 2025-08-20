@@ -313,7 +313,7 @@
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                    <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                   
                 </div>
             </li>
         </ul>
@@ -330,6 +330,135 @@
             {% endif %}
         </div>
     </div>
+
+
+    <script>
+        // Loader Script
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("agritrue-loader");
+            setTimeout(() => {
+                loader.style.opacity = 0;
+                setTimeout(() => loader.style.display = "none", 50);
+            }, 1);
+        });
+
+        // Slideshow Script
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('#slideshow .slide');
+            let current = 0;
+            if (slides.length > 0) {
+                slides[current].classList.add('active');
+            }
+            setInterval(() => {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }, 5000); // Change slide every 5 seconds
+        });
+
+        // Mobile Menu Script
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
+        const mobileMenu = document.getElementById("mobileMenu");
+        const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+        mobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.add("show");
+            mobileMenuOverlay.classList.add("show");
+            document.body.style.overflow = "hidden";
+        });
+        
+        closeMobileMenuBtn.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        mobileMenuOverlay.addEventListener("click", () => {
+            mobileMenu.classList.remove("show");
+            mobileMenuOverlay.classList.remove("show");
+            document.body.style.overflow = "auto";
+        });
+
+        // Chatbot Script
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeBtn = document.getElementById("close-chatbot");
+        const messagesDiv = document.getElementById("chatbot-messages");
+        const input = document.getElementById("chatbot-input");
+        const sendBtn = document.getElementById("send-message");
+        const micBtn = document.getElementById("mic-button");
+        const messages = [];
+
+        function appendMessage(text, isUser) {
+            const msg = document.createElement("div");
+            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
+            msg.textContent = text;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            appendMessage(text, true);
+            messages.push({ role: "user", content: text });
+            input.value = "";
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ messages })
+                });
+                const data = await res.json();
+                if (data.reply) {
+                    appendMessage(data.reply, false);
+                    messages.push({ role: "assistant", content: data.reply });
+                } else {
+                    appendMessage("No response from server.", false);
+                }
+            } catch (err) {
+                console.error(err);
+                appendMessage("Error connecting to the server.", false);
+            }
+        }
+        
+        sendBtn.onclick = sendMessage;
+        input.onkeydown = (e) => {
+            if (e.key === "Enter") sendMessage();
+        };
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+        };
+        closeBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "flex";
+        };
+        
+        // 🎤 Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                sendMessage();
+            };
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                appendMessage("Sorry, I didn't catch that.", false);
+            };
+            micBtn.onclick = () => {
+                recognition.start();
+            };
+        } else {
+            micBtn.disabled = true;
+            micBtn.title = "Speech Recognition not supported in this browser.";
+        }
+    </script>
 
     <!-- Main Content Area -->
     <main class="min-h-screen pt-24 pb-12 px-4 bg-[#f0fdf4]">

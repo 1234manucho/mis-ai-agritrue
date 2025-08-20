@@ -1,85 +1,130 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{{ user.username }}'s Profile - AgriTrue</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS CDN for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLpvm+qL+2M+L2m3OqC5t+I6n3S9z1wI8i7mX1tN+tT+wT+gBf+eA+k+b+sW+k+l+v+pW+f+d+A+" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Google Font (Inter) for a clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f5f9f6;
-            color: #333;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', sans-serif;
         }
-        .profile-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 12px;
+        /* Custom animation for a subtle glow effect */
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0px 10px rgba(50, 205, 50, 0.4); }
+            50% { box-shadow: 0 0px 20px rgba(50, 205, 50, 0.8); }
         }
-        h1 {
-            text-align: center;
-            color: #2e7d32;
-        }
-        .info {
-            margin: 20px 0;
-        }
-        .label {
-            font-weight: bold;
-            color: #444;
-        }
-        .streak-box {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #e8f5e9;
-            text-align: center;
-            font-size: 18px;
-        }
-        .streak-box strong {
-            color: #2e7d32;
-        }
-        .highlight {
-            font-size: 20px;
-            font-weight: bold;
-            color: #d32f2f;
+        .glow-effect {
+            animation: glow 2s ease-in-out infinite;
         }
     </style>
 </head>
-<body>
-    <div class="profile-container">
-        <h1>{{ user.username }}'s Profile</h1>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <div class="profile-container w-full max-w-xl mx-auto p-6 md:p-8 mt-10 mb-8 bg-white rounded-xl shadow-lg border border-gray-200">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-green-700 mb-6 tracking-wide">
+            {{ user.username }}'s Profile
+        </h1>
 
-        <div class="info"><span class="label">Region:</span> {{ user.region }}</div>
-        <div class="info"><span class="label">Crops:</span> {{ user.crops }}</div>
+        <!-- User Information Section -->
+        <div class="space-y-4 mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-map-marker-alt text-gray-500 mr-3 text-xl"></i>
+                <span class="font-semibold text-gray-600">Region:</span>
+                <span class="ml-2 text-gray-800">{{ user.region }}</span>
+            </div>
+            <div class="flex items-center">
+                <i class="fas fa-seedling text-gray-500 mr-3 text-xl"></i>
+                <span class="font-semibold text-gray-600">Crops:</span>
+                <span class="ml-2 text-gray-800">{{ user.crops }}</span>
+            </div>
+        </div>
 
-        <div class="streak-box">
-            {% if user.streak|int >= 7 %}
-                <p class="highlight">🔥 Amazing! You're on a <strong>{{ user.streak }}</strong>-day streak!</p>
-            {% elif user.streak|int >= 3 %}
-                <p>🌿 Great progress! Keep going. Current streak: <strong>{{ user.streak }}</strong> days.</p>
+        <!-- Dynamic Streak Section with Rewards -->
+        <div class="text-center p-6 rounded-xl border border-dashed border-green-400 bg-green-50 shadow-inner">
+            {% set streak = user.streak_count|int %}
+            <div class="flex items-center justify-center space-x-3 mb-3">
+                <i class="fas fa-fire text-orange-500 text-3xl md:text-4xl"></i>
+                <span class="text-3xl md:text-5xl font-extrabold text-green-800">
+                    {{ streak }}
+                </span>
+                <span class="text-lg md:text-xl text-gray-700 font-medium">day streak</span>
+            </div>
+
+            {% if streak >= 1000 %}
+                <!-- 1000+ Day Tier: The "modern" reward -->
+                <div class="mt-4 p-4 bg-green-600 text-white rounded-lg shadow-md glow-effect">
+                    <p class="font-bold text-lg md:text-xl">🏆 1000-Day Milestone Unlocked!</p>
+                    <p class="mt-1">
+                        You've earned an **AgriTrue Premium Subscription** for a year!
+                    </p>
+                </div>
+            {% elif streak >= 100 %}
+                <!-- 100 Day Tier: Farm tool/pesticide/fertilizer -->
+                <div class="mt-4 p-4 bg-lime-500 text-white rounded-lg shadow-md">
+                    <p class="font-bold text-lg md:text-xl">🌟 100-Day Milestone Achieved!</p>
+                    <p class="mt-1">
+                        Claim your reward: a **Farm Tool, Pesticide, or Fertilizer** voucher!
+                    </p>
+                </div>
+            {% elif streak >= 7 %}
+                <!-- 7+ Day Tier -->
+                <p class="text-lg text-green-600 font-semibold mt-4">
+                    🔥 Amazing! Keep up the great work!
+                </p>
             {% else %}
-                <p>🌱 You're just starting! You've logged in <strong>{{ user.streak }}</strong> day(s).</p>
+                <!-- Starting Tier -->
+                <p class="text-md text-gray-600 mt-4">
+                    🌱 You're just getting started. Keep the streak going to unlock rewards!
+                </p>
             {% endif %}
         </div>
+
     </div>
-      <div class="text-center mt-5">
+
+    <!-- Back to Home Button -->
+    {% if not username %}
+    <div class="text-center mt-5 mb-10">
         <a
           href="/"
-          class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
-          style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
+          class="inline-block px-8 py-3 bg-green-500 text-white font-semibold rounded-full shadow-lg hover:bg-green-600 transition-colors duration-300 transform hover:scale-105"
         >
-          ← Back to Home
+          <i class="fas fa-home mr-2"></i> Back to Home
         </a>
     </div>
+    {% endif %}
     
-    <footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
-        &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed text-sm">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400 text-sm"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400 text-sm"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400 text-sm"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
     </footer>
     
 </body>

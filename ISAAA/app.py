@@ -276,7 +276,7 @@ def login():
             login_user(user)
 
             flash(f"✅ Logged in! Current streak: {streak} days.", "success")
-            return redirect(url_for('community_notes'))
+            return redirect(url_for('home'))
 
         except Exception as e:
             flash(f"⚠️ Login failed: {str(e)}", "error")
@@ -329,7 +329,13 @@ def post_comment(note_id):
             flash("Note not found.", "error")
             return redirect(url_for('community_notes'))
 
-        new_comment = Comment(content=content, note_id=note_id, timestamp=datetime.utcnow())
+        new_comment = Comment(
+    text=content,              # ✅ must match model field
+    note_id=note_id,
+    user_id=current_user.id,   # ✅ required since Comment has user_id FK
+    created_at=datetime.utcnow()
+)
+
         db.session.add(new_comment)
         db.session.commit()
         flash("Comment added!", "success")
@@ -1054,97 +1060,147 @@ def know_your_land():
 #streak
 # streak_backend_flask.py
 
-# Profile route
+
+# The updated profile route
 @app.route('/profile')
+@login_required
 def profile():
+    """
+    Renders the user's profile page.
+
+    The @login_required decorator ensures only authenticated users
+    can access this page. The current_user object is automatically
+    provided by Flask-Login and contains the user's information.
+    """
+    return render_template('profile.html', user=current_user)
+
+# This route handles both displaying the profile edit form (GET) and processing
+# the form submission (POST).
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
     if 'user_id' not in session:
+        flash('Please log in to edit your profile.')
         return redirect(url_for('login'))
 
     user = User.query.get(session['user_id'])
     if not user:
-        session.pop('user_id', None)
+        flash('User not found.')
         return redirect(url_for('login'))
 
-    # Pass user object to template
-    return render_template('profile.html', user=user)
+    # If the request method is POST, it means the user has submitted the form.
+    if request.method == 'POST':
+        # Retrieve all form data from the request.
+        new_username = request.form.get('username')
+        new_fullname = request.form.get('fullname')
+        new_email = request.form.get('email')
+        new_phone = request.form.get('phone')
+        new_country = request.form.get('country')
+        new_password = request.form.get('password')
 
-# Edit profile route
-@app.route('/edit_profile', methods=['GET', 'POST'])
-def edit_profile():
+        # Check for username uniqueness if it has changed.
+        # This prevents another user from taking the current user's username.
+        if new_username and new_username != user.username:
+            existing_user = User.query.filter_by(username=new_username).first()
+            if existing_user:
+                flash('Username already taken. Please choose another one.')
+                return redirect(url_for('edit_profile'))
+            user.username = new_username
+
+        # Update other profile fields with the submitted data.
+        user.fullname = new_fullname
+        user.email = new_email
+        user.phone = new_phone
+        user.country = new_country
+        
+        # Handle password change securely.
+        # The password field is optional, so we only update it if a new value is provided.
+        if new_password:
+            user.password_hash = generate_password_hash(new_password)
+
+        try:
+            db.session.commit()
+            flash('Profile updated successfully!')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An error occurred: {e}')
+
+        # Redirect to the main profile page after a successful update.
+        return redirect(url_for('profile'))
+
+    # If the request method is GET, just render the template with the current user's data.
+    return render_template('edit_profile.html', user=user)
+
+# Route for handling avatar uploads.
+# This remains a separate function as it's a distinct task.
+@app.route('/upload_avatar', methods=['POST'])
+def upload_avatar():
+    """Handles the upload of a new user avatar."""
     if 'user_id' not in session:
+        flash('Please log in to upload an avatar.')
         return redirect(url_for('login'))
 
     user = User.query.get(session['user_id'])
-
-    if request.method == 'POST':
-        new_username = request.form['username']
-
-        # Check if the new username is taken by another user
-        existing_user = User.query.filter_by(username=new_username).first()
-        if existing_user and existing_user.id != user.id:
-            flash('Username already taken. Please choose another one.')
-            return redirect(url_for('edit_profile'))
-
-        user.username = new_username
-        user.region = request.form['region']
-        user.crops = request.form['crops']
-        db.session.commit()
-
-        flash('Profile updated successfully.')
-        return redirect(url_for('profile'))
-
-    return render_template('edit_profile.html', user=user)
-
-# Folder where uploaded avatars will be stored
-UPLOAD_FOLDER = 'static/avatars'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 2MB limit
-
-# Allowed file extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-# Check if the file has an allowed extension
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Route for avatar upload
-@app.route('/upload_avatar', methods=['POST'])
-def upload_avatar():
-    if 'user_id' not in session:
+    if not user:
+        flash('User not found.')
         return redirect(url_for('login'))
-
+    
     if 'avatar' not in request.files:
-        flash('No file part')
+        flash('No file part.')
         return redirect(url_for('edit_profile'))
 
     file = request.files['avatar']
 
     if file.filename == '':
-        flash('No selected file')
+        flash('No selected file.')
         return redirect(url_for('edit_profile'))
 
     if file and allowed_file(file.filename):
+        # Create the avatars directory if it doesn't exist.
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+            
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        filepath = os.path.join(upload_folder, filename)
         file.save(filepath)
 
-        # Save avatar filename to user's profile
-        user = User.query.get(session['user_id'])
-        user.avatar = filename
+        # Update the user's avatar URL in the database.
+        user.avatar_url = url_for('static', filename=f'avatars/{filename}')
         db.session.commit()
 
         flash('Avatar uploaded successfully!')
-        return redirect(url_for('edit_profile'))
-
-    flash('Invalid file type. Allowed types: png, jpg, jpeg, gif')
+    else:
+        flash('Invalid file type. Allowed types: png, jpg, jpeg, gif.')
+        
     return redirect(url_for('edit_profile'))
-
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 # --- Main Run ---
+# --- Main streak route for logged-in users and public profiles ---
+@app.route('/streak')
+@app.route('/streak/<username>')
+def streak(username=None):
+    """
+    Displays the user's streak page.
+    If a username is provided in the URL, it shows that user's public profile.
+    Otherwise, it shows the logged-in user's profile.
+    """
+    if username:
+        # Public view: Try to find the user by username
+        user_to_show = User.query.filter_by(username=username).first()
+        if not user_to_show:
+            flash("Sorry, that user does not exist.", "error")
+            return redirect(url_for('index')) # Redirect to a home page or error page
+    else:
+        # Private view: Check if a user is logged in
+        if not current_user.is_authenticated:
+            flash("You must be logged in to view your profile.", "info")
+            return redirect(url_for('login'))
+        user_to_show = current_user
 
+    return render_template('streak.html', user=user_to_show)
 if __name__ == '__main__':
    
     app.run(debug=True)

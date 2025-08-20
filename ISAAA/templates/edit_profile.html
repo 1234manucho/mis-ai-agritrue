@@ -2,337 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My AgriTrue Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile | AgriTrue</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLpvm+qL+2M+L2m3OqC5t+I6n3S9z1wI8i7mX1tN+tT+wT+gBf+eA+k+b+sW+k+l+v+pW+f+d+A+" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
-            font-family: 'Quicksand', 'Segoe UI', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(120deg, #e6ffe6 0%, #f0fff4 100%);
-            margin: 0;
-            padding: 0;
+            min-height: 100vh;
         }
-        .profile-box {
-            max-width: 750px;
-            margin: 50px auto 30px auto;
-            background: rgba(255,255,255,0.98);
-            border-radius: 28px;
-            padding: 38px 36px 30px 36px;
-            box-shadow: 0 8px 32px rgba(72, 187, 120, 0.18), 0 1.5px 8px rgba(56,161,105,0.08);
-            position: relative;
-            border: 2px solid #c6f6d5;
+        .input-group label {
+            transition: color 0.2s;
         }
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 18px;
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            color: #38a169;
         }
-        .profile-avatar {
-            width: 68px;
-            height: 68px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #48bb78 60%, #38a169 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.7rem;
-            color: #fff;
-            border: 3px solid #e6fffa;
-            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.16);
+        /* Custom modal animation */
+        .modal-content-transition {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: translateY(-20px);
+            opacity: 0;
         }
-        .profile-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #22543d;
-            margin: 0;
-        }
-        .streak-bar {
-            background: linear-gradient(90deg, #48bb78 60%, #38a169 100%);
-            height: 36px;
-            border-radius: 18px;
-            margin-bottom: 24px;
-            color: white;
-            text-align: center;
-            font-weight: bold;
-            line-height: 36px;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 10px rgba(72, 187, 120, 0.13);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
-        }
-        .btn-edit {
-            background: linear-gradient(90deg, #48bb78 60%, #38a169 100%);
-            color: white;
-            border: none;
-            padding: 11px 28px;
-            border-radius: 12px;
-            font-size: 1.08rem;
-            cursor: pointer;
-            margin-bottom: 22px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            transition: background 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.09);
-        }
-        .btn-edit:hover {
-            background: linear-gradient(90deg, #38a169 60%, #22543d 100%);
-            box-shadow: 0 4px 16px rgba(56,161,105,0.15);
-        }
-        .section {
-            margin-bottom: 26px;
-        }
-        .proverb-section {
-            background: linear-gradient(90deg, #e6fffa 60%, #c6f6d5 100%);
-            border-radius: 14px;
-            padding: 18px 20px 10px 20px;
-            margin-bottom: 28px;
-            box-shadow: 0 1px 6px rgba(56, 178, 172, 0.07);
-        }
-        .proverb {
-            font-style: italic;
-            color: #22543d;
-            background: #e6fffa;
-            padding: 13px 18px;
-            border-left: 5px solid #38b2ac;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 1.08rem;
-        }
-        #farm-card {
-            background: linear-gradient(120deg, #f0fff4 80%, #c6f6d5 100%);
-            border: 1.5px solid #c6f6d5;
-            padding: 20px 24px;
-            border-radius: 16px;
-            box-shadow: 0 1px 8px rgba(72, 187, 120, 0.08);
-            margin-bottom: 18px;
-        }
-        #farm-card h3 {
-            color: #22543d;
-            font-family: 'Montserrat', sans-serif;
-            margin-top: 0;
-        }
-        #farm-card p {
-            margin: 7px 0;
-            font-size: 1.03rem;
-        }
-        .agri-boost {
-            background: linear-gradient(90deg, #f0fff4 60%, #c6f6d5 100%);
-            border-radius: 12px;
-            padding: 16px 20px;
-            box-shadow: 0 1px 6px rgba(72, 187, 120, 0.08);
-            color: #22543d;
-            font-size: 1.07rem;
-        }
-        .share-section {
-            text-align: center;
-        }
-        .back-home {
-            display: block;
-            width: fit-content;
-            margin: 38px auto 0 auto;
-            background: linear-gradient(90deg, #38a169 60%, #22543d 100%);
-            color: #fff;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 1.13rem;
-            padding: 12px 36px;
-            border-radius: 30px;
-            text-decoration: none;
-            box-shadow: 0 2px 10px rgba(56,161,105,0.12);
-            transition: background 0.2s;
-        }
-        .back-home:hover {
-            background: linear-gradient(90deg, #22543d 60%, #38a169 100%);
-        }
-        footer {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            font-size: 1rem;
-            font-weight: 500;
-            text-align: center;
-            padding: 18px 0 14px 0;
-            margin-top: 40px;
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-            box-shadow: 0 -2px 8px rgba(72, 187, 120, 0.07);
-        }
-        /* Modal styling */
-        #editProfileModal {
-            display:none;
-            position:fixed;
-            top:0; left:0; width:100vw; height:100vh;
-            background:rgba(0,0,0,0.32);
-            z-index:1000;
-        }
-        #editProfileModal .modal-content {
-            background:white;
-            max-width:420px;
-            margin:80px auto;
-            padding:32px 26px 22px 26px;
-            border-radius:18px;
-            box-shadow:0 8px 32px rgba(72,187,120,0.25);
-            position:relative;
-        }
-        #editProfileModal label {
-            font-weight: 600;
-            color: #22543d;
-            margin-bottom: 5px;
-            display: block;
-        }
-        #editProfileModal input[type="text"] {
-            width:100%;
-            margin-bottom:14px;
-            padding:9px 10px;
-            border-radius:7px;
-            border:1.5px solid #c6f6d5;
-            font-size: 1rem;
-            background: #f7fafc;
-            transition: border 0.2s;
-        }
-        #editProfileModal input[type="text"]:focus {
-            border: 1.5px solid #38a169;
-            outline: none;
-        }
-        #editProfileModal .modal-actions {
-            text-align:right;
-            margin-top: 8px;
-        }
-        #editProfileModal .modal-actions button {
-            background:#e2e8f0;
-            color:#2d3748;
-            border:none;
-            padding:8px 16px;
-            border-radius:8px;
-            margin-right:8px;
-            cursor:pointer;
-            font-weight: 600;
-            font-family: 'Quicksand', sans-serif;
-        }
-        #editProfileModal .modal-actions .btn-edit {
-            margin-right: 0;
-        }
-        @media (max-width: 600px) {
-            .profile-box { padding: 16px 4vw; }
-            #farm-card { padding: 12px 6vw; }
-            .proverb-section { padding: 10px 4vw 6px 4vw; }
+        .modal-content-transition.is-active {
+            transform: translateY(0);
+            opacity: 1;
         }
     </style>
 </head>
-<body>
-    <div class="profile-box">
-        <div class="profile-header">
-            <form id="avatarForm" action="{{ url_for('upload_avatar') }}" method="POST" enctype="multipart/form-data" style="margin:0;">
-                <label for="avatarInput" style="cursor:pointer;">
-                    <div class="profile-avatar" id="profileAvatar">
-                        {% if user.avatar_url %}
-                            <img src="{{ user.avatar_url }}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-                        {% else %}
-                            👤
-                        {% endif %}
+<body class="flex items-center justify-center p-4 sm:p-6 md:p-10">
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div id="modalContent" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-gray-200 modal-content-transition">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-green-900">Edit Your Profile</h3>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form action="{{ url_for('update_profile') }}" method="POST">
+                <!-- Username -->
+                <div class="mb-4 input-group relative">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div class="relative">
+                        <input type="text" id="username" name="username" value="{{ user.username }}" placeholder=" " required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
-                    <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;" onchange="document.getElementById('avatarForm').submit();">
-                </label>
+                </div>
+
+                <!-- Full Name -->
+                <div class="mb-4 input-group relative">
+                    <label for="fullname" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <div class="relative">
+                        <input type="text" id="fullname" name="fullname" value="{{ user.fullname }}" placeholder=" " required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-address-card absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Email -->
+                <div class="mb-4 input-group relative">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <div class="relative">
+                        <input type="email" id="email" name="email" value="{{ user.email }}" placeholder=" " required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Phone Number -->
+                <div class="mb-4 input-group relative">
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <div class="relative">
+                        <input type="tel" id="phone" name="phone" value="{{ user.phone }}" placeholder=" " required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Country -->
+                <div class="mb-4 input-group relative">
+                    <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <div class="relative">
+                        <input type="text" id="country" name="country" value="{{ user.country }}" placeholder=" " required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-globe absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Password (Optional) -->
+                <div class="mb-6 input-group relative">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password (optional)</label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" placeholder=" " class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors placeholder-transparent">
+                        <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Leave blank to keep your current password.</p>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" id="cancelBtn" class="bg-gray-200 text-gray-700 font-medium py-2 px-6 rounded-full hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button type="submit" class="bg-green-500 text-white font-medium py-2 px-6 rounded-full hover:bg-green-600 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+                </div>
             </form>
-            <div>
-                <h2 class="profile-title">Welcome, {{ username }}</h2>
-                <div style="font-size:1rem; color:#38a169; font-weight:600;">AgriTrue Member</div>
-            </div>
-        </div>
-        
-        <div class="streak-bar">
-            GreenGrow Streak: {{ streak }} 🌿
-        </div>
-        <!-- Edit Profile Button -->
-        <button class="btn-edit" id="editProfileBtn" type="button">✏ Edit Profile</button>
-        <!-- Edit Profile Modal -->
-        <div id="editProfileModal">
-            <div class="modal-content">
-                <h3 style="margin-top:0; color:#22543d; font-family:'Montserrat',sans-serif;">Edit Profile</h3>
-                <form action="{{ url_for('edit_profile') }}" method="POST">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" value="{{ username }}" required>
-                    <label for="region">Region:</label>
-                    <input type="text" id="region" name="region" value="{{ region }}" required>
-                    <label for="crops">Preferred Crops:</label>
-                    <input type="text" id="crops" name="crops" value="{{ crops }}" required>
-                    <div class="modal-actions">
-                        <button type="button" id="closeModalBtn">Cancel</button>
-                        <button type="submit" class="btn-edit" style="background:linear-gradient(90deg,#38a169 60%,#48bb78 100%);color:#fff;padding:10px 26px;border-radius:10px;font-size:1rem;font-family:'Montserrat',sans-serif;font-weight:600;box-shadow:0 2px 8px rgba(72,187,120,0.13);transition:background 0.2s;">💾 Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <script>
-            document.getElementById('editProfileBtn').onclick = function() {
-                document.getElementById('editProfileModal').style.display = 'block';
-            };
-            document.getElementById('closeModalBtn').onclick = function() {
-                document.getElementById('editProfileModal').style.display = 'none';
-            };
-            document.getElementById('editProfileModal').onclick = function(e) {
-                if (e.target === this) this.style.display = 'none';
-            };
-        </script>
-
-        <div id="farm-card" class="section">
-            <h3>🚜 My Farm</h3>
-            <p><strong>Region:</strong> {{ region }}</p>
-            <p><strong>Preferred Crops:</strong> {{ crops }}</p>
-        </div>
-
-        <div class="proverb-section section">
-            <h3 style="color:#22543d; margin-bottom:10px;">📜 African Proverb of the Day</h3>
-            <div style="overflow:hidden; white-space:nowrap;">
-                <span class="proverb" style="display:inline-block; animation:scrollProverb 16s linear infinite;">
-                    “Wisdom is like a baobab tree; no one individual can embrace it.”
-                </span>
-                <span class="proverb" style="display:inline-block; animation:scrollProverb 16s linear infinite 8s;">
-                    "The best time to plant a tree was 20 years ago. The second best time is now." 🌳
-                </span>
-            </div>
-            <style>
-                @keyframes scrollProverb {
-                    0% { transform: translateX(100%);}
-                    100% { transform: translateX(-120%);}
-                }
-            </style>
-        </div>
-
-        {% if user.streak >= 7 %}
-        <div class="section agri-boost">
-            <h3 style="margin-top:0;">🎁 Agri Boost Unlocked!</h3>
-            <p>You've earned a fertilizer discount voucher! 🌾</p>
-        </div>
-        {% endif %}
-
-        <div class="section share-section">
-            <button onclick="shareFarm()" class="btn-edit">📤 Share My Farm</button>
         </div>
     </div>
-
+    
+    <!-- This button is just to demonstrate the modal. In your app, you would link this to the main profile page. -->
+    <button id="openModalBtn" class="bg-green-500 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+        Open Edit Profile
+    </button>
+    
+    <!-- JavaScript for Modal Functionality -->
     <script>
-        function shareFarm() {
-            html2canvas(document.getElementById('farm-card')).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'my_farm_card.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
+        const modal = document.getElementById('editProfileModal');
+        const modalContent = document.getElementById('modalContent');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        function openModal() {
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100');
+            modalContent.classList.add('is-active');
         }
+
+        function closeModal() {
+            modalContent.classList.remove('is-active');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Open modal on button click
+        openBtn.addEventListener('click', openModal);
+
+        // Close modal when close button is clicked
+        closeBtn.addEventListener('click', closeModal);
+
+        // Close modal when cancel button is clicked
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <a href="/" class="back-home">
-        ← Back to Home
-    </a>
-    <footer>
-        &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+   <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
     </footer>
 </body>
 </html>

@@ -1,152 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgriTrue - My GreenGrow Profile</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Outfit', sans-serif;
-      margin: 0;
-      background: linear-gradient(#e0f8e9, #ffffff);
-      color: #2e4d2c;
-      padding: 0;
-    }
-    .profile-container {
-      max-width: 900px;
-      margin: auto;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .profile-card {
-      background: #ffffff;
-      border-radius: 1.5rem;
-      padding: 2rem;
-      box-shadow: 0 4px 20px rgba(46, 77, 44, 0.2);
-      width: 100%;
-      text-align: center;
-    }
-    .avatar {
-      width: 100px;
-      height: 100px;
-      background: url('https://cdn-icons-png.flaticon.com/512/1995/1995522.png') no-repeat center;
-      background-size: cover;
-      border-radius: 50%;
-      margin-bottom: 1rem;
-    }
-    .streak-meter {
-      margin-top: 2rem;
-      position: relative;
-    }
-
-    /* 🔥 Green Fire Effect */
-    .green-fire {
-      position: relative;
-      width: 100%;
-      height: 60px;
-      background: radial-gradient(circle at center, #b6f7c1 0%, transparent 70%);
-      border-radius: 30px;
-      overflow: hidden;
-    }
-
-    .green-fire::before, .green-fire::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      background: radial-gradient(circle at center, rgba(0, 255, 0, 0.6) 0%, transparent 80%);
-      animation: greenFlame 2s infinite ease-in-out;
-      z-index: 1;
-    }
-
-    .green-fire::after {
-      background: radial-gradient(circle at center, rgba(50, 255, 100, 0.4) 0%, transparent 80%);
-      animation-delay: 1s;
-    }
-
-    @keyframes greenFlame {
-      0% {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.2) translateY(-10px);
-        opacity: 0.7;
-      }
-      100% {
-        transform: scale(1) translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .potato {
-      margin-top: 1rem;
-      height: 60px;
-      animation: bounce 1.2s infinite cubic-bezier(.28,.84,.42,1);
-      display: inline-block;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0);}
-      20% { transform: translateY(-30px);}
-      40% { transform: translateY(-50px);}
-      60% { transform: translateY(-30px);}
-      80% { transform: translateY(-10px);}
-    }
-
-    .info {
-      margin-top: 2rem;
-      text-align: left;
-    }
-
-    .badge {
-      background-color: #d4edda;
-      padding: 0.5rem 1rem;
-      border-radius: 1rem;
-      margin-right: 0.5rem;
-      font-weight: bold;
-      display: inline-block;
-      margin-top: 0.5rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>AgriTrue | User Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLpvm+qL+2M+L2m3OqC5t+I6n3S9z1wI8i7mX1tN+tT+wT+gBf+eA+k+b+sW+k+l+v+pW+f+d+A+" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        .card-bg {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .primary-btn {
+            background-color: #10b981;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .primary-btn:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+        .shadow-custom {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+        .fire-icon {
+            filter: drop-shadow(0 2px 2px rgba(239, 68, 68, 0.5));
+        }
+        .profile-picture-container {
+            position: relative;
+            width: 128px;
+            height: 128px;
+        }
+        .profile-picture-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #10b981;
+            color: white;
+            padding: 8px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: background-color 0.3s;
+        }
+        .profile-picture-edit-btn:hover {
+            background-color: #059669;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
 </head>
-<body>
-  <div class="profile-container">
-    <div class="profile-card">
-      <div class="avatar"></div>
-      <h2>Welcome back, Farmer!! 🌾</h2>
-      <div class="streak-meter">
-        <div class="green-fire"></div>
-        <img class="potato" src="https://cdn-icons-png.flaticon.com/512/590/590685.png" alt="Bouncing Potato">
-        <p><strong>GreenGrow Streak:</strong> 7 Days 🔥</p>
-      </div>
-      <div class="info">
-        <p><strong>Last Activity:</strong> Verified a pesticide QR in Kiambu County</p>
-        <p><strong>Top Crops:</strong> Maize, Tomatoes, Beans</p>
-        <p><strong>Achievements:</strong></p>
-        <span class="badge">🌟 Consistent Farmer</span>
-        <span class="badge">🔍 AgriTruth Seeker</span>
-        <span class="badge">🎓 Knowledge Sprouter</span>
-      </div>
+<body class="flex flex-col min-h-screen">
+   <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar" style="background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3" style="flex-wrap: wrap;">
+            <a class="flex items-center space-x-2" href="/" style="min-width: 120px;">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6" style="flex: 1; justify-content: flex-end;">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none" style="margin-left:auto;">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);z-index:49;display:none;"></div>
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu lg:hidden" style="position:fixed;top:0;right:0;width:90vw;max-width:350px;height:100vh;background:#fff;z-index:50;box-shadow:-2px 0 12px rgba(34,197,94,0.15);padding:2rem 1.5rem;display:none;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-5" style="border-bottom:1px solid #e5e7eb;padding-bottom:1rem;">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700" style="background:none;border:none;">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2" style="gap:0.5rem;">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard" style="display:flex;align-items:center;">
+                    <i class="fas fa-tachometer-alt mr-3"></i>Info Graphics
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about" style="display:flex;align-items:center;">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land" style="display:flex;align-items:center;">
+                    <i class="fas fa-map-marked-alt mr-3"></i>Know Your Land
+                </a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')" style="display:flex;align-items:center;justify-content:space-between;">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2" style="gap:0.25rem;">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                    <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                </div>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4" style="gap:0.75rem;">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile" style="width:100%;">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin" style="width:100%;">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout" style="width:100%;">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login" style="width:100%;">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register" style="width:100%;">Register</a>
+            {% endif %}
+        </div>
     </div>
-  </div>
-        <div class="text-center mt-5">
-        <a
-          href="/"
-          class="btn btn-success btn-lg px-5 py-2 shadow-lg rounded-pill animate_animated animate_fadeInUp"
-          style="font-size: 1.2rem; font-weight: 600; text-transform: uppercase;"
-        >
-          ← Back to Home
-        </a>
+    <script>
+        // Mobile menu toggling
+        document.getElementById('mobileMenuBtn').onclick = function() {
+            document.getElementById('mobileMenu').style.display = 'block';
+            document.getElementById('mobileMenuOverlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        };
+        document.getElementById('closeMobileMenu').onclick = function() {
+            document.getElementById('mobileMenu').style.display = 'none';
+            document.getElementById('mobileMenuOverlay').style.display = 'none';
+            document.body.style.overflow = '';
+        };
+        document.getElementById('mobileMenuOverlay').onclick = function() {
+            document.getElementById('mobileMenu').style.display = 'none';
+            document.getElementById('mobileMenuOverlay').style.display = 'none';
+            document.body.style.overflow = '';
+        };
+    </script>
+
+    <!-- Main Container -->
+    <div class="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div class="card-bg w-full max-w-2xl mx-auto rounded-3xl shadow-custom p-6 sm:p-8 lg:p-12">
+            <div class="flex flex-col items-center text-center">
+                <!-- User Avatar with Edit Button -->
+                <div class="profile-picture-container mb-6">
+                    <img id="profile-picture" src="https://placehold.co/128x128/9CA3AF/ffffff?text={{ user.username[0]|upper }}" class="w-full h-full rounded-full border-4 border-white shadow-md object-cover" alt="Profile Picture">
+                    <button id="edit-profile-pic-btn" class="profile-picture-edit-btn" aria-label="Edit profile picture">
+                        <i class="fas fa-camera text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Username -->
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">
+                    {{ user.username }}
+                </h1>
+                
+                <!-- Full Name -->
+                <p class="text-sm text-gray-500 font-medium mb-8">{{ user.fullname }}</p>
+
+            </div>
+
+            <hr class="border-gray-200 my-8">
+
+            <!-- Profile Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Email Address -->
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-envelope text-lg text-green-500"></i>
+                    <p class="text-gray-700"><span class="font-bold">Email:</span> {{ user.email }}</p>
+                </div>
+                <!-- Home Address -->
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-home text-lg text-green-500"></i>
+                    <p class="text-gray-700"><span class="font-bold">Home Address:</span> {{ user.home_address }}</p>
+                </div>
+                <!-- Phone Number -->
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-phone-alt text-lg text-green-500"></i>
+                    <p class="text-gray-700"><span class="font-bold">Phone:</span> {{ user.phone }}</p>
+                </div>
+                <!-- Country with Flag -->
+                <div class="flex items-center space-x-3">
+                    <img src="https://flagcdn.com/w40/{{ user.country_code|lower }}.png" 
+                         alt="{{ user.country }} flag"
+                         class="w-8 h-6 rounded-md shadow-md border border-gray-200"
+                         onerror="this.onerror=null;this.src='https://placehold.co/32x24/E5E7EB/A0A0A0?text=Flag'" />
+                    <p class="text-gray-700"><span class="font-bold">Country:</span> {{ user.country }}</p>
+                </div>
+            </div>
+
+            <!-- Streak Section -->
+            <div class="text-center bg-green-50 rounded-xl p-6 mb-8 border border-green-200">
+                <div class="flex items-center justify-center mb-2">
+                    <i class="fas fa-fire text-3xl text-red-500 fire-icon mr-3"></i>
+                    <p class="text-4xl font-extrabold text-green-700">{{ user.streak_count }}</p>
+                    <p class="text-lg font-semibold text-gray-600 ml-2">day streak</p>
+                </div>
+                <p class="text-sm text-gray-500">
+                    You've logged in for {{ user.streak_count }} consecutive days! Keep it up.
+                </p>
+            </div>
+            
+            <!-- CTA Button -->
+            <div class="text-center">
+                <a href="{{ url_for('community_notes') }}" class="primary-btn inline-block px-12 py-4 rounded-full font-bold text-white shadow-lg tracking-wide">
+                    Go to Community Notes
+                </a>
+            </div>
+        </div>
     </div>
-    
-    <footer class="text-center py-4 mt-5" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">
-        &copy; 2025 <strong>AgriTrue</strong>. Empowering informed agriculture 🌱
+
+    <!-- Profile Picture Edit Modal -->
+    <div id="profile-pic-modal" class="modal-overlay flex justify-center items-center">
+        <div class="modal-content w-full max-w-sm p-8 text-center shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4">Edit Profile Picture</h2>
+            <p class="text-gray-600 mb-6">Choose an image from your device to upload.</p>
+            <input type="file" id="image-upload" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
+            <div class="flex justify-end space-x-4 mt-8">
+                <button id="close-modal-btn" class="px-6 py-2 rounded-full font-bold text-gray-600 border border-gray-300 transition-colors hover:bg-gray-100">Cancel</button>
+                <button id="upload-image-btn" class="px-6 py-2 rounded-full font-bold text-white bg-green-500 transition-colors hover:bg-green-600">Upload</button>
+            </div>
+        </div>
+    </div>
+      <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editButton = document.getElementById('edit-profile-pic-btn');
+            const modal = document.getElementById('profile-pic-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const uploadImageBtn = document.getElementById('upload-image-btn');
+
+            // Open the modal
+            editButton.addEventListener('click', () => {
+                modal.style.display = 'flex';
+            });
+
+            // Close the modal
+            closeModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Handle the upload button click
+            uploadImageBtn.addEventListener('click', () => {
+                const fileInput = document.getElementById('image-upload');
+                const file = fileInput.files[0];
+                if (file) {
+                    // In a real application, you would send this file to the server.
+                    console.log('File selected for upload:', file.name);
+                    alert("Profile picture upload is not yet implemented on the backend. A new route is needed to handle file uploads.");
+                    modal.style.display = 'none';
+                } else {
+                    alert("Please select a file to upload.");
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
