@@ -558,6 +558,8 @@
             micBtn.title = "Speech Recognition not supported in this browser.";
         }
     </script>
+  
+    <!-- The USSD Simulator Interface -->
     <div class="ussd-container relative">
         <div class="flex items-center justify-center p-4">
             <h1 class="text-3xl font-bold text-green-700">AgriTrue USSD</h1>
@@ -565,28 +567,20 @@
 
         <!-- USSD Screen -->
         <div id="ussd-display" class="ussd-display flex-grow mb-4 shadow-inner">
-            <p class="text-gray-500 text-center mt-20">Tap a language to start...</p>
+            <!-- Content will be injected here by JavaScript -->
         </div>
 
-        <!-- Voice Agent Controls -->
-        <div id="voice-controls" class="flex flex-col items-center justify-center space-y-2 mb-4">
-            <div class="text-sm text-gray-600">Select language:</div>
-            <div class="flex space-x-2">
-                <button id="lang-en" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">English</button>
-                <button id="lang-sw" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">Kiswahili</button>
-                <button id="lang-bk" class="voice-btn text-white font-medium py-2 px-4 rounded-full shadow-md">Bukusu</button>
-            </div>
-            <div id="status-text" class="text-xs text-green-600 font-semibold italic hidden"></div>
-        </div>
-        
+        <!-- Voice Status -->
+        <div id="status-text" class="text-center text-sm text-green-600 font-semibold italic hidden mb-4"></div>
+
         <!-- User Input -->
         <form id="ussd-form" class="mt-auto">
             <div class="ussd-input-container">
                 <input type="text" id="ussd-input" placeholder="Enter your choice..." class="ussd-input" required autofocus>
             </div>
             <div class="flex justify-between mt-4 space-x-2">
-                <button type="button" id="cancel-btn" class="flex-1 bg-red-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-red-600">Cancel</button>
-                <button type="submit" id="send-btn" class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-green-600 flex items-center justify-center space-x-2">
+                <button type="button" id="cancel-btn" class="flex-1 bg-red-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-red-600 transition-colors">Cancel</button>
+                <button type="submit" id="send-btn" class="flex-1 bg-green-500 text-white font-semibold py-3 rounded-full shadow-md hover:bg-green-600 flex items-center justify-center space-x-2 transition-colors">
                     <span id="button-text">Send</span>
                     <span id="loading-spinner" class="spinner hidden"></span>
                 </button>
@@ -595,10 +589,11 @@
     </div>
 
     <script>
-        // Use a state machine to manage the USSD flow.
+        // State machine to manage the USSD flow and data
         let ussdState = {
             currentMenu: 'welcome',
-            lang: 'en-US'
+            lang: 'en-US',
+            data: {} // Store temporary data like entered county or crop
         };
 
         const ussdDisplay = document.getElementById('ussd-display');
@@ -606,254 +601,362 @@
         const ussdForm = document.getElementById('ussd-form');
         const cancelButton = document.getElementById('cancel-btn');
         const sendButton = document.getElementById('send-btn');
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
         const statusText = document.getElementById('status-text');
 
-        // Text-to-Speech (TTS) function
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = ussdState.lang;
-                window.speechSynthesis.speak(utterance);
-                statusText.textContent = `Speaking: "${text.substring(0, 40)}..."`;
-                statusText.classList.remove('hidden');
-                utterance.onend = () => {
-                    statusText.classList.add('hidden');
-                };
+        // Helper function for exponential backoff during API retries
+        function exponentialBackoff(maxRetries = 5, baseDelay = 1000) {
+            let retries = 0;
+            return async (fn) => {
+                while (true) {
+                    try {
+                        const result = await fn();
+                        return result;
+                    } catch (error) {
+                        if (retries >= maxRetries) {
+                            console.error('Max retries reached:', error);
+                            throw error;
+                        }
+                        const delay = baseDelay * Math.pow(2, retries) + Math.random() * 100;
+                        console.warn(`Retry attempt ${retries + 1} of ${maxRetries}. Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        retries++;
+                    }
+                }
+            };
+        }
+
+        // Helper function to show a custom message box instead of alert()
+        function showMessageBox(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'message-box';
+            messageBox.innerHTML = `
+                <p class="text-lg font-semibold mb-4">${message}</p>
+                <button onclick="this.parentNode.remove()" class="bg-green-500 text-white px-6 py-2 rounded-full shadow-md hover:bg-green-600 transition-colors">OK</button>
+            `;
+            document.body.appendChild(messageBox);
+        }
+
+        // LLM call to get agricultural advice (text only)
+        async function askGemini(prompt) {
+            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
             } else {
-                console.warn('Text-to-speech not supported in this browser.');
+                throw new Error("Failed to get a response from the API.");
             }
         }
 
-        // Simulates a delayed response for realism
-        async function fakeBackendCall() {
-            return new Promise(resolve => setTimeout(resolve, 1500));
+        // Helper functions for TTS
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcm16, sampleRate = 16000) {
+            const numChannels = 1;
+            const bytesPerSample = 2;
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = pcm16.byteLength;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            let offset = 0;
+            // RIFF header
+            function writeString(str) {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset++, str.charCodeAt(i));
+                }
+            }
+
+            writeString('RIFF');
+            view.setUint32(offset, 36 + dataSize, true); offset += 4;
+            writeString('WAVE');
+            writeString('fmt ');
+            view.setUint32(offset, 16, true); offset += 4; // Subchunk1Size
+            view.setUint16(offset, 1, true); offset += 2; // AudioFormat (1=PCM)
+            view.setUint16(offset, numChannels, true); offset += 2; // NumChannels
+            view.setUint32(offset, sampleRate, true); offset += 4; // SampleRate
+            view.setUint32(offset, byteRate, true); offset += 4; // ByteRate
+            view.setUint16(offset, blockAlign, true); offset += 2; // BlockAlign
+            view.setUint16(offset, 16, true); offset += 2; // BitsPerSample
+            writeString('data');
+            view.setUint32(offset, dataSize, true); offset += 4;
+
+            // Write PCM data
+            for (let i = 0; i < pcm16.length; i++) {
+                view.setInt16(offset, pcm16[i], true);
+                offset += 2;
+            }
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        // TTS call to get audio from the LLM
+        async function speak(text, voiceName) {
+            statusText.textContent = 'Thinking and generating voice...';
+            statusText.classList.remove('hidden');
+
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } }
+                    }
+                }
+            };
+
+            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            const part = result?.candidates?.[0]?.content?.parts?.[0];
+            const audioData = part?.inlineData?.data;
+            const mimeType = part?.inlineData?.mimeType;
+
+            if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                const pcmData = base64ToArrayBuffer(audioData);
+                const pcm16 = new Int16Array(pcmData);
+                const wavBlob = pcmToWav(pcm16, sampleRate);
+                const audioUrl = URL.createObjectURL(wavBlob);
+                const audio = new Audio(audioUrl);
+
+                await new Promise(resolve => {
+                    audio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        resolve();
+                    };
+                    audio.onerror = (e) => {
+                        console.error('Audio playback error:', e);
+                        resolve();
+                    };
+                    audio.play();
+                });
+
+                statusText.classList.add('hidden');
+            } else {
+                console.error("Failed to get audio data from the API.");
+                statusText.textContent = 'Voice generation failed. Please try again.';
+                setTimeout(() => statusText.classList.add('hidden'), 3000);
+            }
         }
 
         // Data structure to hold all USSD menus
         const ussdMenus = {
             welcome: {
-                text: "Welcome to AgriTrue. To continue in English, press 1. Kuendelea kwa Kiswahili, bonyeza 2. Kwa Bukusu, bonyeza 3.",
+                text: "Welcome to AgriTrue: empowering informed agriculture. To continue in English, press 1. Kuendelea kwa Kiswahili, bonyeza 2.",
                 next: (input) => {
                     if (input === '1') {
                         ussdState.lang = 'en-US';
-                        return 'main';
+                        return 'main_menu';
                     } else if (input === '2') {
                         ussdState.lang = 'sw-KE';
-                        return 'main';
-                    } else if (input === '3') {
-                        ussdState.lang = 'en-US'; // Using English voice for Bukusu for demonstration
-                        return 'main';
+                        return 'main_menu';
                     }
-                    return 'invalid_lang';
-                }
+                    return 'invalid_input';
+                },
+                speak: () => "Welcome to AgriTrue: empowering informed agriculture. To continue in English, press 1. Kuendelea kwa Kiswahili, bonyeza 2."
             },
-            main: {
-                text: "Welcome to AgriTrue\n\n1. Verify my Pesticides\n2. Crop Pricing & Markets\n3. Integrated Pest Control (IPC)\n4. Soil Guide\n\nReply with 0 to Exit",
+            main_menu: {
+                text: "Hello, farmer! How can we help you today?\n\n1. Weather Forecast\n2. Crop & Pest Information\n3. Market Prices\n4. Ask a General Query\n\nReply with 0 to Exit",
                 next: (input) => {
                     switch (input) {
-                        case '1': return 'pesticide_verify_start';
-                        case '2': return 'crop_pricing_start';
-                        case '3': return 'ipc_start';
-                        case '4': return 'soil_guide_start';
+                        case '1': return 'weather_forecast_menu';
+                        case '2': return 'crop_pest_menu';
+                        case '3': return 'market_prices_menu';
+                        case '4': return 'general_query';
                         case '0': return 'exit';
-                        default: return 'main';
+                        default: return 'invalid_input';
+                    }
+                },
+                speak: () => {
+                    if (ussdState.lang === 'sw-KE') {
+                        return "Habari, mkulima! Tunaweza kukusaidia vipi leo?\n\n1. Utabiri wa hali ya hewa\n2. Taarifa za mazao na wadudu\n3. Bei za soko\n4. Uliza swali la jumla\n\nJibu kwa 0 ili kutoka";
+                    }
+                    return "Hello, farmer! How can we help you today? Press 1 for weather forecast. Press 2 for crop and pest information. Press 3 for market prices. Press 4 to ask a general query. Reply with 0 to exit.";
+                }
+            },
+            weather_forecast_menu: {
+                text: "Please enter your location (e.g., Nairobi, Kisumu):",
+                next: (input) => {
+                    ussdState.data.location = input;
+                    return 'weather_forecast_details';
+                },
+                speak: () => {
+                    if (ussdState.lang === 'sw-KE') {
+                        return "Tafadhali ingiza eneo lako, kwa mfano Nairobi au Kisumu.";
+                    }
+                    return "Please enter your location, for example Nairobi or Kisumu.";
+                }
+            },
+            weather_forecast_details: {
+                text: (location) => {
+                    // This would be an actual API call in a real app
+                    const forecast = `The weather in ${location} for the next 7 days is sunny with light showers. Perfect for planting!`;
+                    return `${forecast}\n\nPress # to go back to Main Menu.`;
+                },
+                next: (input) => (input === '#') ? 'main_menu' : 'invalid_input',
+                speak: (location) => {
+                    // Placeholder for a detailed voice response
+                    if (ussdState.lang === 'sw-KE') {
+                        return `Hali ya hewa katika ${location} kwa siku saba zijazo ni ya jua na mvua kidogo. Hali nzuri kwa upandaji!`;
+                    }
+                    return `The weather in ${location} for the next seven days is sunny with light showers. Perfect for planting!`;
+                }
+            },
+            general_query: {
+                text: "Please type your agricultural question:",
+                next: (input) => {
+                    ussdState.data.query = input;
+                    return 'general_query_response';
+                },
+                speak: () => {
+                    if (ussdState.lang === 'sw-KE') {
+                        return "Tafadhali andika swali lako la kilimo.";
+                    }
+                    return "Please type your agricultural question.";
+                }
+            },
+            general_query_response: {
+                text: "Analyzing your question. Please wait...",
+                next: (input) => (input === '#') ? 'main_menu' : 'invalid_input',
+                speak: async (query) => {
+                    try {
+                        // Use a conversational prompt for the LLM
+                        const prompt = `You are a helpful agricultural expert. The user's question is in ${ussdState.lang === 'sw-KE' ? 'Kiswahili' : 'English'}. Respond in the same language with useful, concise, and accurate advice. Question: "${query}"`;
+                        
+                        // Use the exponential backoff helper for the API call
+                        const responseText = await exponentialBackoff()(() => askGemini(prompt));
+                        
+                        // Speak the response text
+                        await speak(responseText, ussdState.lang === 'sw-KE' ? 'Kore' : 'Orus'); // Use different voices for different languages
+                        return `${responseText}\n\nPress # to go back.`;
+                    } catch (error) {
+                        console.error('API call failed:', error);
+                        const errorMessage = ussdState.lang === 'sw-KE' ? 'Samahani, imeshindwa kujibu. Tafadhali jaribu tena.' : 'Sorry, I was unable to answer. Please try again.';
+                        showMessageBox(errorMessage);
+                        return `${errorMessage}\n\nPress # to go back.`;
                     }
                 }
             },
-            pesticide_verify_start: {
-                text: "Verify my Pesticides\n\nPlease enter the Product Name, e.g., Tyrgiving:",
-                next: () => 'pesticide_reg_no'
-            },
-            pesticide_reg_no: {
-                text: "Please enter the Reg No. (e.g., Kephis pk.nz+ssc):",
-                next: (input) => 'pesticide_results' // In a real app, this would be validated
-            },
-            pesticide_results: {
-                text: (product, regNo) => `Product Name: ${product}\nReg No: ${regNo}\nStatus: Approved (valid till 12/2025)\nManufacturer: Agrochemicals Ltd.\n\nUSAGE/USED FOR: Maize, wheat, beans\nDosage: 200ml / acre\nSAFETY AND PRECAUTIONS: Wear gloves, mask. Avoid watery bodies.\n\nReply with * to report fake products.\nReply with # to go back to Main Menu.`,
-                next: (input) => {
-                    if (input === '*') { return 'report_fake'; }
-                    if (input === '#') { return 'main'; }
-                    return 'pesticide_results'; // Stay on this screen
-                }
-            },
-            report_fake: {
-                text: "Thank you for helping us fight fake products. We will investigate this report.",
-                next: () => 'exit'
-            },
-            // The rest of the menu items would follow this pattern...
-            crop_pricing_start: {
-                text: "Step 1: Select County\n\n1. Nairobi\n2. Nyeri\n3. Bungoma\n4. Kisumu\n5. Mombasa\n\nReply with # to go back.",
-                next: (input) => {
-                    if (input === '#') return 'main';
-                    return 'crop_pricing_crops';
-                }
-            },
-            crop_pricing_crops: {
-                text: (county) => `Step 2: Top Crops in ${county}\n\n1. Maize\n2. Tomatoes\n3. Beans\n4. Soyabeans\n\nReply with # to go back.`,
-                next: (input) => {
-                     if (input === '#') return 'crop_pricing_start';
-                     return 'crop_pricing_options';
-                }
-            },
-            crop_pricing_options: {
-                 text: (crop) => `Current Prices for ${crop}\n\n1. Current Prices\n2. Price Trends (Last 30 days)\n3. Best Markets to Sell\n4. Subscribe to Alerts\n5. Exit\n\nReply with # to go back.`,
-                 next: (input) => {
-                      if (input === '#') return 'crop_pricing_crops';
-                      if (input === '5') return 'exit';
-                      return 'crop_pricing_options';
-                 }
-            },
-            ipc_start: {
-                 text: "Step 1: Identify Pest/Disease\n\n1. Weeds, Mites, Snails & Slugs\n2. Molds, Fungi, Bacteria, Viruses\n3. Bugs, Rodents\n4. Insects, Mollusks, Birds, Chewing Insects\n5. Don’t Know\n\nReply with # to go back.",
-                 next: (input) => {
-                      if (input === '#') return 'main';
-                      if (input === '5') return 'ipc_dont_know';
-                      return 'ipc_details';
-                 }
-            },
-            ipc_dont_know: {
-                 text: "Describe the damage:\n\n1. Choose Language:\n  a. English\n  b. Kiswahili\n  c. Bukusu\n\nReply with # to go back.",
-                 next: (input) => {
-                     if (input === '#') return 'ipc_start';
-                     return 'ipc_diagnosis';
-                 }
-            },
-            ipc_diagnosis: {
-                text: "System is analyzing your request. Please wait for the diagnosis and recommendations...",
-                next: (input) => 'exit'
-            },
-            soil_guide_start: {
-                text: "Step 1: Select County\n\n1. Nakuru\n2. Embu\n3. Nairobi\n4. Turkana\n\nReply with # to go back.",
-                next: (input) => {
-                    if (input === '#') return 'main';
-                    return 'soil_guide_details';
-                }
-            },
-            soil_guide_details: {
-                text: (county) => `Soil Details for ${county} County\n\nDominant Soil: Volcanic, Clay Soil\nBest Pesticides: e.g. Glyphosate, 2,4-D\nDosage Adjustment: +10% for high purity\nPrecautions: Avoid Sulfonylurea (in high pH soils)\n\n📞 More Info / Helpline: +254 715 142 906\n\nReply with # to go back to Main Menu.`,
-                next: (input) => {
-                    if (input === '#') return 'main';
-                    return 'soil_guide_details';
+            invalid_input: {
+                text: "Invalid selection. Please try again or press 0 to exit.",
+                next: () => 'main_menu',
+                speak: () => {
+                    if (ussdState.lang === 'sw-KE') {
+                        return "Umechagua nambari isiyo sahihi. Tafadhali jaribu tena au bonyeza 0 ili kutoka.";
+                    }
+                    return "Invalid selection. Please try again or press 0 to exit.";
                 }
             },
             exit: {
                 text: "Thank you for using AgriTrue. Goodbye!",
-                next: () => 'welcome'
+                next: () => 'welcome',
+                speak: () => {
+                    if (ussdState.lang === 'sw-KE') {
+                        return "Asante kwa kutumia AgriTrue. Kwaheri!";
+                    }
+                    return "Thank you for using AgriTrue. Goodbye!";
+                }
             },
-            invalid_lang: {
-                text: "Invalid choice. Please select a language to start.",
-                next: () => 'welcome'
-            },
-            invalid_input: {
-                text: "Invalid input. Please enter a valid option.",
-                next: (input) => ussdState.currentMenu
-            }
         };
 
-        // Function to update the display and speak the text
-        function updateDisplay(menuKey, data = {}) {
-            let menu = ussdMenus[menuKey];
+        // Main function to update the USSD display and handle voice output
+        async function updateUssdDisplay(menuKey, data = null) {
+            const menu = ussdMenus[menuKey];
             let displayText = typeof menu.text === 'function' ? menu.text(data) : menu.text;
-            ussdDisplay.textContent = displayText;
-            speak(displayText.replace(/\n/g, ' '));
-        }
 
-        // Main function to process user input
-        async function processInput() {
-            const input = ussdInput.value.trim();
-            if (!input) {
-                flashMessage("Please enter an option.", "text-red-500");
-                return;
+            // Handle the dynamic general query response
+            if (menuKey === 'general_query_response') {
+                statusText.textContent = 'Analyzing your question...';
+                statusText.classList.remove('hidden');
+                // Temporarily show a loading message
+                ussdDisplay.innerHTML = `<div class="text-center mt-20">${displayText}</div>`;
+                sendButton.disabled = true;
+
+                // Call the speak function and get the actual text to display
+                const actualText = await menu.speak(ussdState.data.query);
+                displayText = actualText;
+                
+                sendButton.disabled = false;
             }
 
-            sendButton.disabled = true;
-            sendButton.innerHTML = `<span id="loading-spinner" class="spinner"></span>`;
-
-            await fakeBackendCall();
-
-            let nextMenuKey;
-            
-            // Special handling for initial language selection
-            if (ussdState.currentMenu === 'welcome') {
-                nextMenuKey = ussdMenus.welcome.next(input);
-            } else {
-                let currentMenu = ussdMenus[ussdState.currentMenu];
-                nextMenuKey = currentMenu.next(input);
-            }
-            
-            ussdState.currentMenu = nextMenuKey;
+            // Update the display with the final text
+            ussdDisplay.innerHTML = displayText.replace(/\n/g, '<br>');
+            ussdState.currentMenu = menuKey;
             ussdInput.value = '';
-
-            // Update display based on the new state
-            if (ussdState.currentMenu === 'pesticide_results') {
-                // Example data for the pesticide results
-                updateDisplay(ussdState.currentMenu, 'Tyrgiving', 'Kephis pk.nz+ssc');
-            } else if (ussdState.currentMenu === 'crop_pricing_crops') {
-                 // Example data for crop pricing
-                 updateDisplay(ussdState.currentMenu, 'Nairobi');
-            } else if (ussdState.currentMenu === 'crop_pricing_options') {
-                 // Example data for crop pricing options
-                 updateDisplay(ussdState.currentMenu, 'Maize');
-            } else if (ussdState.currentMenu === 'soil_guide_details') {
-                 // Example data for soil guide
-                 updateDisplay(ussdState.currentMenu, 'Nakuru');
-            } else {
-                 updateDisplay(ussdState.currentMenu);
+            
+            // Speak the menu text unless it's a dynamic response handled above
+            if (menuKey !== 'general_query_response' && menu.speak) {
+                await speak(typeof menu.speak === 'function' ? menu.speak(data) : menu.speak, ussdState.lang === 'sw-KE' ? 'Kore' : 'Orus');
             }
-
-            sendButton.disabled = false;
-            sendButton.innerHTML = `<span id="button-text">Send</span>`;
-        }
-        
-        // Helper to show temporary messages
-        function flashMessage(message, colorClass) {
-            const originalText = statusText.textContent;
-            statusText.textContent = message;
-            statusText.classList.remove('hidden');
-            statusText.classList.remove('text-green-600');
-            statusText.classList.add(colorClass);
-
-            setTimeout(() => {
-                statusText.textContent = originalText;
-                statusText.classList.add('hidden');
-                statusText.classList.remove(colorClass);
-                statusText.classList.add('text-green-600');
-            }, 3000);
         }
 
-        // Event Listeners
-        ussdForm.addEventListener('submit', (e) => {
+        // Event listener for form submission
+        ussdForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            processInput();
+            const input = ussdInput.value.trim();
+            if (!input) return;
+
+            // Show loading state
+            buttonText.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            sendButton.disabled = true;
+
+            const currentMenu = ussdMenus[ussdState.currentMenu];
+            const nextMenuKey = currentMenu.next(input);
+            
+            // Store data if needed for the next state
+            if (ussdState.currentMenu === 'weather_forecast_menu') {
+                ussdState.data.location = input;
+            } else if (ussdState.currentMenu === 'general_query') {
+                 ussdState.data.query = input;
+            }
+
+            await updateUssdDisplay(nextMenuKey, ussdState.data.location || ussdState.data.query);
+
+            // Reset loading state
+            buttonText.classList.remove('hidden');
+            loadingSpinner.classList.add('hidden');
+            sendButton.disabled = false;
         });
 
-        // Language selection buttons
-        document.getElementById('lang-en').addEventListener('click', () => {
-            ussdState.lang = 'en-US';
-            ussdState.currentMenu = 'main';
-            updateDisplay(ussdState.currentMenu);
-            ussdInput.focus();
-        });
-        document.getElementById('lang-sw').addEventListener('click', () => {
-            ussdState.lang = 'sw-KE';
-            ussdState.currentMenu = 'main';
-            updateDisplay(ussdState.currentMenu);
-            ussdInput.focus();
-        });
-        document.getElementById('lang-bk').addEventListener('click', () => {
-            ussdState.lang = 'en-US'; // Using English voice for demonstration
-            ussdState.currentMenu = 'main';
-            updateDisplay(ussdState.currentMenu);
-            ussdInput.focus();
-        });
-
-        // Cancel button functionality
+        // Event listener for the Cancel button
         cancelButton.addEventListener('click', () => {
-            ussdState.currentMenu = 'exit';
-            updateDisplay(ussdState.currentMenu);
-            ussdInput.value = '';
+            updateUssdDisplay('welcome');
         });
 
+        // Initialize the app with the welcome screen
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUssdDisplay('welcome');
+        });
     </script>
 </body>
 </html>
