@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import desc
 
 # Firebase Admin
-import firebase_admin
-from firebase_admin import credentials, auth, firestore
+# import firebase_admin
+# from firebase_admin import credentials, auth, firestore
 
 # Local imports
 from extensions import db
