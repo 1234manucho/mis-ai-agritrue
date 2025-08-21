@@ -17,3 +17,4 @@ gunicorn==22.0.0
 flask-migrate
 # requirements.txt
 google-generativeai
+firebase-admin
