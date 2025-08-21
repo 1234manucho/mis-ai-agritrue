@@ -30,7 +30,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 # OpenAI
 import openai
 openai.api_key = "your_openai_api_key"
-
+import firebase_admin
 # --- App Configuration ---
 app = Flask(__name__)
 CORS(app)
@@ -53,18 +53,18 @@ migrate = Migrate(app, db)  # ✅ attach Flask-Migrate
 # Create tables if not exist
 with app.app_context():
     db.create_all()
-# --- Firebase Initialization ---
-if not firebase_admin._apps:
-    try:
-        cred = credentials.Certificate("firebase-service-account.json")
-        firebase_admin.initialize_app(cred)
-        print("Firebase Admin SDK initialized successfully.")
-    except Exception as e:
-        print(f"Error initializing Firebase Admin SDK: {e}")
+# # --- Firebase Initialization ---
+# if not firebase_admin._apps:
+#     try:
+#         cred = credentials.Certificate("firebase-service-account.json")
+#         firebase_admin.initialize_app(cred)
+#         print("Firebase Admin SDK initialized successfully.")
+#     except Exception as e:
+#         print(f"Error initializing Firebase Admin SDK: {e}")
 
-# Firestore client
-firestore_db = firestore.client()
-FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
+# # Firestore client
+# firestore_db = firestore.client()
+# FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
 # --- Flask-Login User Loader ---
 @login_manager.user_loader
