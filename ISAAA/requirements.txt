@@ -6,7 +6,7 @@ Werkzeug==3.0.3
 openai==1.51.2
 twilio==9.3.1
 SpeechRecognition==3.11.0
-pyaudio==0.2.14
+# pyaudio==0.2.14
 opencv-python==4.10.0.84
 # firebase-admin==6.5.0
 pandas==2.2.2
