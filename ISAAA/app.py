@@ -17,7 +17,7 @@ from extensions import db
 # from firebase_admin import credentials, auth, firestore
 
 # Local imports
-from extensions import db
+from ISAAA.extensions import db
 from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_user, get_user_by_email
 
 # Database
@@ -54,26 +54,11 @@ migrate = Migrate(app, db)  # ✅ attach Flask-Migrate
 # Create tables if not exist
 with app.app_context():
     db.create_all()
-# # --- Firebase Initialization ---
-# if not firebase_admin._apps:
-#     try:
-#         cred = credentials.Certificate("firebase-service-account.json")
-#         firebase_admin.initialize_app(cred)
-#         print("Firebase Admin SDK initialized successfully.")
-#     except Exception as e:
-#         print(f"Error initializing Firebase Admin SDK: {e}")
-
-# # Firestore client
-# firestore_db = firestore.client()
-# FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
 # --- Flask-Login User Loader ---
 @login_manager.user_loader
 def load_user(user_id):
-    """
-    Flask-Login hook to reload the user object from the session.
-    Uses Firebase UID as the lookup key in the local SQLAlchemy DB.
-    """
+   
     return User.query.get(user_id)
 
 
