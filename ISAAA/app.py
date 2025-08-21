@@ -10,6 +10,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from sqlalchemy import desc
+from extensions import db
 
 # Firebase Admin
 # import firebase_admin
