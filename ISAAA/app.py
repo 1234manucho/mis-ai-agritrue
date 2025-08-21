@@ -17,7 +17,6 @@ from extensions import db
 # from firebase_admin import credentials, auth, firestore
 
 # Local imports
-from ISAAA.extensions import db
 from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_user, get_user_by_email
 
 # Database
@@ -32,6 +31,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 import openai
 openai.api_key = "your_openai_api_key"
 import firebase_admin
+
 # --- App Configuration ---
 app = Flask(__name__)
 CORS(app)
@@ -48,8 +48,8 @@ login_manager.login_view = 'login'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db.init_app(app)            # ✅ use db from extensions.py
-migrate = Migrate(app, db)  # ✅ attach Flask-Migrate
+db.init_app(app)
+migrate = Migrate(app, db)
 
 # Create tables if not exist
 with app.app_context():
@@ -58,10 +58,7 @@ with app.app_context():
 # --- Flask-Login User Loader ---
 @login_manager.user_loader
 def load_user(user_id):
-   
     return User.query.get(user_id)
-
-
 # ----------------- ROUTES -----------------
 
 @app.route('/')
