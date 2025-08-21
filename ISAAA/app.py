@@ -11,7 +11,8 @@ import uuid
 from datetime import datetime, timedelta
 from sqlalchemy import desc
 from extensions import db
-
+import os
+import json
 # Firebase Admin
 # import firebase_admin
 # from firebase_admin import credentials, auth, firestore
@@ -27,7 +28,8 @@ from flask_sqlalchemy import SQLAlchemy
 import google.generativeai as genai
 genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
 model = genai.GenerativeModel('gemini-1.5-flash')
-
+import firebase_admin
+from firebase_admin import credentials, auth, firestore
 # OpenAI
 import openai
 openai.api_key = "your_openai_api_key"
