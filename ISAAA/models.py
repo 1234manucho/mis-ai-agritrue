@@ -25,7 +25,8 @@ class User(db.Model, UserMixin):
     home_address = db.Column(db.String(200), nullable=True)
     country = db.Column(db.String(50), nullable=True)
     county = db.Column(db.String(50), nullable=True)
-
+    # Add this line to fix the error
+    diagnostics = db.relationship("Diagnostic", back_populates="user", lazy=True)
     # Firestore-synced fields
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -179,7 +180,7 @@ class DiagnosticResult(db.Model):
 
     # Relationships
     user = db.relationship("User", back_populates="diagnostics")
-
+    
     def __repr__(self):
         return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
 
@@ -213,4 +214,3 @@ def add_diagnostic_result(user_id, image_url, diagnosis_name, diagnosis_type, ca
         return new_result
     except Exception as e:
         db.session.rollback()
-        raise e
