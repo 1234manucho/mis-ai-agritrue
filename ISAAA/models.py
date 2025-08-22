@@ -158,3 +158,59 @@ def get_user_by_email(email):
     return db.session.execute(
         db.select(User).filter_by(email=email)
     ).scalar_one_or_none()
+
+
+
+# ===========================
+# Diagnostic Results
+# ===========================
+class DiagnosticResult(db.Model):
+    __tablename__ = 'diagnostics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    diagnosis_name = db.Column(db.String(100), nullable=False)
+    diagnosis_type = db.Column(db.String(50), nullable=False)  # 'plant', 'animal'
+    cause = db.Column(db.Text, nullable=False)
+    treatment = db.Column(db.Text, nullable=False)
+    confidence_score = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship("User", back_populates="diagnostics")
+
+    def __repr__(self):
+        return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
+
+
+# ===========================
+# Helper Functions
+# ===========================
+def get_diagnostic_results(user_id):
+    """
+    Fetch all diagnostic results for a given user.
+    """
+    return db.session.execute(
+        db.select(DiagnosticResult).filter_by(user_id=user_id)
+    ).scalars().all()
+def add_diagnostic_result(user_id, image_url, diagnosis_name, diagnosis_type, cause, treatment, confidence_score):
+    """
+    Adds a new diagnostic result to the database.
+    """
+    try:
+        new_result = DiagnosticResult(
+            user_id=user_id,
+            image_url=image_url,
+            diagnosis_name=diagnosis_name,
+            diagnosis_type=diagnosis_type,
+            cause=cause,
+            treatment=treatment,
+            confidence_score=confidence_score
+        )
+        db.session.add(new_result)
+        db.session.commit()
+        return new_result
+    except Exception as e:
+        db.session.rollback()
+        raise e
