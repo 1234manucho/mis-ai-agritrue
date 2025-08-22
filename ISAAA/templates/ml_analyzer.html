@@ -228,10 +228,12 @@
 </head>
 <body class="bg-[#f0fdf4] font-['Inter']">
 
+
     <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
             <a class="flex items-center space-x-2" href="/">
+                <!-- Placeholder image for the logo -->
                 <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
                 <span class="text-white text-2xl font-bold">AgriTrue</span>
             </a>
@@ -242,38 +244,19 @@
                     <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
                             <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
                         </div>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
-                            {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
-                {% endif %}
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                <a href="#" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="#" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
             </div>
 
             <!-- Mobile Toggler Button -->
@@ -292,15 +275,15 @@
         </div>
         <ul class="flex flex-col space-y-2">
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
             </li>
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#">
                     <i class="fas fa-info-circle mr-3"></i>About Us
                 </a>
             </li>
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="#"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
             </li>
             <li class="relative">
                 <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
@@ -308,157 +291,19 @@
                     <i class="fas fa-chevron-down text-xs"></i>
                 </a>
                 <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Streak</a>
                 </div>
             </li>
         </ul>
         <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="#">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="#">Register</a>
         </div>
     </div>
-
-
-    <script>
-        // Loader Script
-        window.addEventListener("load", () => {
-            const loader = document.getElementById("agritrue-loader");
-            setTimeout(() => {
-                loader.style.opacity = 0;
-                setTimeout(() => loader.style.display = "none", 50);
-            }, 1);
-        });
-
-        // Slideshow Script
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('#slideshow .slide');
-            let current = 0;
-            if (slides.length > 0) {
-                slides[current].classList.add('active');
-            }
-            setInterval(() => {
-                slides[current].classList.remove('active');
-                current = (current + 1) % slides.length;
-                slides[current].classList.add('active');
-            }, 5000); // Change slide every 5 seconds
-        });
-
-        // Mobile Menu Script
-        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-        const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
-        const mobileMenu = document.getElementById("mobileMenu");
-        const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
-
-        mobileMenuBtn.addEventListener("click", () => {
-            mobileMenu.classList.add("show");
-            mobileMenuOverlay.classList.add("show");
-            document.body.style.overflow = "hidden";
-        });
-        
-        closeMobileMenuBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("show");
-            mobileMenuOverlay.classList.remove("show");
-            document.body.style.overflow = "auto";
-        });
-
-        mobileMenuOverlay.addEventListener("click", () => {
-            mobileMenu.classList.remove("show");
-            mobileMenuOverlay.classList.remove("show");
-            document.body.style.overflow = "auto";
-        });
-
-        // Chatbot Script
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeBtn = document.getElementById("close-chatbot");
-        const messagesDiv = document.getElementById("chatbot-messages");
-        const input = document.getElementById("chatbot-input");
-        const sendBtn = document.getElementById("send-message");
-        const micBtn = document.getElementById("mic-button");
-        const messages = [];
-
-        function appendMessage(text, isUser) {
-            const msg = document.createElement("div");
-            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
-            msg.textContent = text;
-            messagesDiv.appendChild(msg);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            appendMessage(text, true);
-            messages.push({ role: "user", content: text });
-            input.value = "";
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages })
-                });
-                const data = await res.json();
-                if (data.reply) {
-                    appendMessage(data.reply, false);
-                    messages.push({ role: "assistant", content: data.reply });
-                } else {
-                    appendMessage("No response from server.", false);
-                }
-            } catch (err) {
-                console.error(err);
-                appendMessage("Error connecting to the server.", false);
-            }
-        }
-        
-        sendBtn.onclick = sendMessage;
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") sendMessage();
-        };
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-        };
-        closeBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "flex";
-        };
-        
-        // 🎤 Speech Recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                input.value = transcript;
-                sendMessage();
-            };
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-                appendMessage("Sorry, I didn't catch that.", false);
-            };
-            micBtn.onclick = () => {
-                recognition.start();
-            };
-        } else {
-            micBtn.disabled = true;
-            micBtn.title = "Speech Recognition not supported in this browser.";
-        }
-    </script>
 
     <!-- Main Content Area -->
     <main class="min-h-screen pt-24 pb-12 px-4 bg-[#f0fdf4]">
@@ -617,10 +462,29 @@
             const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
             let chartInstances = {};
             let chatHistory = [];
-            const apiKey = ""; 
+            
+            // The API key is provided automatically by the canvas environment
+            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA"; 
+
+            // --- Utility Functions ---
+            function showAnalysisLoader(isLoading) {
+                analysisLoader.style.display = isLoading ? 'flex' : 'none';
+                analyzeImageBtn.disabled = isLoading;
+                analyzeDocBtn.disabled = isLoading;
+            }
+
+            function resetUI() {
+                docResults.classList.add('hidden');
+                imageResults.classList.add('hidden');
+                imageDescription.textContent = '';
+                analyzedImage.src = '';
+                docSummaryTable.innerHTML = '';
+                docCharts.innerHTML = '';
+            }
 
             // --- Tab Switching Logic ---
             function showTab(tabToShow) {
+                resetUI();
                 if (tabToShow === 'doc') {
                     docTabBtn.classList.add('border-green-500', 'text-green-700');
                     docTabBtn.classList.remove('border-transparent', 'text-gray-500');
@@ -628,8 +492,6 @@
                     imageTabBtn.classList.remove('border-green-500', 'text-green-700');
                     docAnalyzer.style.display = 'block';
                     imageAnalyzer.style.display = 'none';
-                    docResults.classList.add('hidden'); // Hide results when switching tabs
-                    imageResults.classList.add('hidden');
                 } else {
                     imageTabBtn.classList.add('border-green-500', 'text-green-700');
                     imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
@@ -637,332 +499,324 @@
                     docTabBtn.classList.remove('border-green-500', 'text-green-700');
                     imageAnalyzer.style.display = 'block';
                     docAnalyzer.style.display = 'none';
-                    imageResults.classList.add('hidden'); // Hide results when switching tabs
-                    docResults.classList.add('hidden');
                 }
             }
-
-            // Attach event listeners for tab clicks
-            docTabBtn.addEventListener('click', () => showTab('doc'));
-            imageTabBtn.addEventListener('click', () => showTab('image'));
-
-            // Set the initial tab to Image Analyzer
-            showTab('image');
-
-            // --- Analysis Logic (Simulated for Docs, Live for Images) ---
-            function showAnalysisLoader(isLoading) {
-                analysisLoader.style.display = isLoading ? 'flex' : 'none';
-            }
-
-            function renderDocAnalysis(data) {
-                docResults.classList.remove('hidden');
-
-                // Clear previous content and destroy old chart instances to prevent memory leaks
-                docSummaryTable.innerHTML = '';
-                docCharts.innerHTML = '';
-                for (const chartId in chartInstances) {
-                    chartInstances[chartId].destroy();
-                }
-                chartInstances = {};
-
-                // Render Summary Table
-                let tableHtml = `
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-green-100">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase tracking-wider">Column</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold text-green-800 uppercase tracking-wider">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                `;
-                for (const col in data.summary) {
-                    tableHtml += `<tr class="hover:bg-green-50 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${col}</td>
-                        <td class="px-6 py-4 text-sm text-gray-700">`;
-                    for (const stat in data.summary[col]) {
-                        tableHtml += `<strong>${stat}:</strong> ${data.summary[col][stat]}<br>`;
-                    }
-                    tableHtml += `</td></tr>`;
-                }
-                tableHtml += `</tbody></table>`;
-                docSummaryTable.innerHTML = tableHtml;
-
-                // Render Charts dynamically
-                let chartIndex = 0;
-                for (const col in data.charts) {
-                    const chartId = `chart_${col.replace(/[^a-zA-Z0-9]/g, '_')}_${chartIndex}`;
-                    const chartType = data.charts[col].type;
-                    const chartData = data.charts[col].data;
-
-                    const chartContainer = document.createElement('div');
-                    // Use a fixed height for a consistent look
-                    chartContainer.className = "bg-white p-6 rounded-xl shadow-md border border-gray-100 h-[250px] md:h-[300px]";
-                    chartContainer.innerHTML = `
-                        <h5 class="text-xl font-semibold text-gray-800 mb-4">${col}</h5>
-                        <canvas id="${chartId}"></canvas>
-                    `;
-                    docCharts.appendChild(chartContainer);
-
-                    const ctx = document.getElementById(chartId).getContext('2d');
-                    
-                    const datasets = [{
-                        data: Object.values(chartData),
-                        backgroundColor: chartColors,
-                        hoverOffset: 4
-                    }];
-
-                    if (chartType === 'bar') {
-                        datasets[0].label = col;
-                        datasets[0].borderColor = '#10B981';
-                        datasets[0].borderWidth = 1;
-                    }
-
-                    chartInstances[chartId] = new Chart(ctx, {
-                        type: chartType,
-                        data: {
-                            labels: Object.keys(chartData),
-                            datasets: datasets
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: chartType === 'pie' ? true : false,
-                                    position: 'bottom'
-                                }
-                            },
-                            scales: chartType === 'bar' ? {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: 'rgba(200, 200, 200, 0.2)',
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false,
-                                    }
-                                }
-                            } : {}
-                        }
-                    });
-                    chartIndex++;
-                }
-            }
-
-            // Simulate document analysis with dummy data for demonstration
-            // NOTE: A real document analyzer would require server-side processing.
-            analyzeDocBtn.addEventListener('click', () => {
-                if (docFile.files.length === 0) {
-                    return; 
-                }
-                showAnalysisLoader(true);
-                docResults.classList.add('hidden');
-
-                const dummyData = {
-                    summary: {
-                        'Crop Type': {
-                            'Distinct Values': 4,
-                            'Most Common': 'Maize'
-                        },
-                        'Yield (Tons/Acre)': {
-                            'Mean': '5.2',
-                            'Standard Dev.': '1.1'
-                        },
-                        'Soil pH': {
-                            'Mean': '6.5',
-                            'Range': '5.8 - 7.2'
-                        }
-                    },
-                    charts: {
-                        'Crop Type Distribution': {
-                            type: 'pie',
-                            data: {
-                                'Maize': 45,
-                                'Wheat': 30,
-                                'Beans': 15,
-                                'Other': 10
-                            }
-                        },
-                        'Yield Distribution': {
-                            type: 'bar',
-                            data: {
-                                'Field A': 5.8,
-                                'Field B': 4.5,
-                                'Field C': 6.1,
-                                'Field D': 5.0
-                            }
-                        }
-                    }
-                };
-
-                setTimeout(() => {
-                    showAnalysisLoader(false);
-                    renderDocAnalysis(dummyData);
-                }, 1500); // Simulate network delay
-            });
 
             // --- Image Analysis with Gemini API ---
-            analyzeImageBtn.addEventListener('click', () => {
-                if (imageFile.files.length === 0) {
-                    // Display an error message to the user
-                    const messageContainer = document.createElement('div');
-                    messageContainer.className = "p-4 bg-red-100 text-red-800 rounded-lg shadow-md mb-4";
-                    messageContainer.textContent = "Please select an image file to analyze.";
-                    imageResults.innerHTML = '';
-                    imageResults.appendChild(messageContainer);
-                    imageResults.classList.remove('hidden');
-                    return; 
-                }
+            async function analyzeImage(file) {
                 showAnalysisLoader(true);
                 imageResults.classList.add('hidden');
 
-                const file = imageFile.files[0];
-                const reader = new FileReader();
-
-                reader.onload = async (e) => {
-                    analyzedImage.src = e.target.result;
-                    const base64Data = e.target.result.split(',')[1];
-                    const mimeType = file.type;
-
-                    const prompt = "Analyze this image and provide a detailed description of the agricultural content, including any visible plant health issues, crops, or landscape features. Respond in a concise and clear manner, focusing on actionable information for a farmer.";
-                    
-                    try {
-                        const response = await getApiResponse(prompt, base64Data, mimeType);
-                        imageDescription.textContent = response;
-                        imageResults.classList.remove('hidden');
-                    } catch (error) {
-                        console.error('API Error:', error);
-                        imageDescription.textContent = "Sorry, an error occurred while analyzing the image. Please try again later.";
-                        imageResults.classList.remove('hidden');
-                    } finally {
-                        showAnalysisLoader(false);
-                    }
-                };
-
-                reader.readAsDataURL(file);
-            });
-
-            /**
-             * Asynchronous function to call the Gemini API with exponential backoff.
-             * @param {string} prompt The text prompt to send to the model.
-             * @param {string} base64Data The base64-encoded image data.
-             * @param {string} mimeType The MIME type of the image.
-             * @returns {Promise<string>} The generated text from the API.
-             */
-            async function getApiResponse(prompt, base64Data, mimeType, retries = 3, delay = 1000) {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inlineData: { mimeType: mimeType, data: base64Data } }
-                        ]
-                    }]
-                };
-
                 try {
-                    const response = await fetch(apiUrl, {
+                    // Read the file as a Data URL (base64)
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = error => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+
+                    // Display the uploaded image
+                    analyzedImage.src = `data:image/jpeg;base64,${base64}`;
+
+                    // Construct the prompt for the Gemini model
+                    const prompt = "Analyze this image and describe the scene. If it's related to agriculture, provide a detailed analysis of the crops, soil health, or any visible issues like pests or disease. If it's a non-agricultural image, simply provide a detailed description. Provide a concise summary and a detailed analysis.";
+
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: file.type,
+                                        data: base64
+                                    }
+                                }
+                            ]
+                        }]
+                    };
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                    // Send the request to the Gemini API
+                    const response = await fetchWithRetry(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error(`API request failed with status: ${response.status}`);
-                    }
-                    
+
                     const result = await response.json();
+                    
+                    // Extract the text from the response
                     const text = result.candidates[0].content.parts[0].text;
-                    return text;
+                    
+                    // Display the results
+                    imageDescription.textContent = text;
+                    imageResults.classList.remove('hidden');
+
                 } catch (error) {
-                    if (retries > 0 && error.message.includes('429')) {
-                        console.log(`Retrying after ${delay / 1000}s...`);
-                        await new Promise(res => setTimeout(res, delay));
-                        return getApiResponse(prompt, base64Data, mimeType, retries - 1, delay * 2);
-                    }
-                    throw error;
+                    console.error("Image analysis failed:", error);
+                    imageDescription.textContent = "Analysis failed. Please try again with a different image.";
+                    imageResults.classList.remove('hidden');
+                } finally {
+                    showAnalysisLoader(false);
                 }
             }
 
+            // --- Mock Document Analysis (No real API call) ---
+            async function analyzeDocument(file) {
+                showAnalysisLoader(true);
+                docResults.classList.add('hidden');
+
+                const fileName = file.name;
+
+                // Simulate a delay for processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Generate mock data
+                const mockData = [
+                    { metric: "Document Type", value: file.type },
+                    { metric: "File Name", value: fileName },
+                    { metric: "Estimated Size", value: `${(file.size / 1024).toFixed(2)} KB` },
+                    { metric: "Keywords", value: "agriculture, harvest, yield, climate, soil" }
+                ];
+
+                const mockMetrics = [
+                    { name: "Yield (ton/ha)", data: [1.5, 2.1, 1.8, 2.5, 2.3] },
+                    { name: "Moisture (%)", data: [12.5, 11.2, 13.0, 10.8, 11.5] },
+                    { name: "Soil pH", data: [6.5, 6.8, 6.1, 7.0, 6.7] }
+                ];
+
+                // Render the summary table
+                const tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${mockData.map(d => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${d.metric}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.value}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                docSummaryTable.innerHTML = tableHtml;
+
+                // Render the charts
+                docCharts.innerHTML = mockMetrics.map((m, i) => `
+                    <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
+                        <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
+                        <canvas id="chart-${i}"></canvas>
+                    </div>
+                `).join('');
+
+                // Create the Chart.js instances
+                mockMetrics.forEach((m, i) => {
+                    const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+                    if (chartInstances[`chart-${i}`]) {
+                        chartInstances[`chart-${i}`].destroy();
+                    }
+                    chartInstances[`chart-${i}`] = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Plot 1', 'Plot 2', 'Plot 3', 'Plot 4', 'Plot 5'],
+                            datasets: [{
+                                label: m.name,
+                                data: m.data,
+                                backgroundColor: chartColors[i % chartColors.length],
+                                borderColor: chartColors[i % chartColors.length],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                });
+
+                docResults.classList.remove('hidden');
+                showAnalysisLoader(false);
+            }
+
+            // --- Event Listeners for Analysis Buttons ---
+            analyzeImageBtn.addEventListener('click', () => {
+                const file = imageFile.files[0];
+                if (file) {
+                    analyzeImage(file);
+                } else {
+                    alert("Please select an image file to analyze.");
+                }
+            });
+
+            analyzeDocBtn.addEventListener('click', () => {
+                const file = docFile.files[0];
+                if (file) {
+                    analyzeDocument(file);
+                } else {
+                    alert("Please select a document file to analyze.");
+                }
+            });
+
             // --- Chatbot Logic ---
-            chatbotIcon.addEventListener('click', () => {
-                chatbotContainer.classList.toggle('hidden');
-            });
+            async function sendMessage() {
+                const text = chatbotInput.value.trim();
+                if (!text) return;
+                
+                // Add user message to UI and history
+                appendMessage(text, true);
+                chatHistory.push({ role: "user", parts: [{ text: text }] });
+                chatbotInput.value = "";
 
-            closeChatbotBtn.addEventListener('click', () => {
-                chatbotContainer.classList.add('hidden');
-            });
+                // Show loading dots
+                const loadingDots = appendLoadingDots();
 
-            function addMessage(sender, text) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('chatbot-message', sender === 'user' ? 'user-message' : 'bot-message');
-                messageDiv.textContent = text;
-                chatbotBody.appendChild(messageDiv);
+                try {
+                    const payload = { contents: chatHistory };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    // Remove loading dots
+                    loadingDots.remove();
+
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const reply = result.candidates[0].content.parts[0].text;
+                        appendMessage(reply, false);
+                        chatHistory.push({ role: "model", parts: [{ text: reply }] });
+                    } else {
+                        appendMessage("Sorry, I could not get a response. Please try again.", false);
+                    }
+                } catch (err) {
+                    loadingDots.remove();
+                    console.error("Chatbot API error:", err);
+                    appendMessage("Error connecting to the AI. Please try again.", false);
+                }
+            }
+
+            // Helper function to append messages to the chat body
+            function appendMessage(text, isUser) {
+                const msg = document.createElement("div");
+                msg.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? 'user-message bg-green-200 text-gray-900' : 'bot-message bg-gray-100 text-gray-800'}`;
+                msg.textContent = text;
+                chatbotBody.appendChild(msg);
                 chatbotBody.scrollTop = chatbotBody.scrollHeight;
             }
 
-            sendMessageBtn.addEventListener('click', handleUserMessage);
-            chatbotInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleUserMessage();
-                }
-            });
+            // Helper function to show loading dots
+            function appendLoadingDots() {
+                const loadingContainer = document.createElement("div");
+                loadingContainer.className = "bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 text-gray-800 chat-loading-dots";
+                loadingContainer.innerHTML = '<span></span><span></span><span></span>';
+                chatbotBody.appendChild(loadingContainer);
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+                return loadingContainer;
+            }
 
-            async function handleUserMessage() {
-                const userMessage = chatbotInput.value.trim();
-                if (userMessage) {
-                    addMessage('user', userMessage);
-                    chatbotInput.value = '';
-
-                    const loadingDots = document.createElement('div');
-                    loadingDots.className = 'bot-message chat-loading-dots';
-                    loadingDots.innerHTML = '<span></span><span></span><span></span>';
-                    chatbotBody.appendChild(loadingDots);
-                    chatbotBody.scrollTop = chatbotBody.scrollHeight;
-
-                    chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
-
+            // --- Exponential Backoff for API Calls ---
+            async function fetchWithRetry(url, options, maxRetries = 5) {
+                let lastError = null;
+                for (let i = 0; i < maxRetries; i++) {
                     try {
-                        const payload = { contents: chatHistory };
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA`;
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        const result = await response.json();
-                        const botResponse = result.candidates[0].content.parts[0].text;
-                        
-                        chatHistory.push({ role: 'model', parts: [{ text: botResponse }] });
-
-                        loadingDots.remove();
-                        addMessage('bot', botResponse);
+                        const response = await fetch(url, options);
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`Server error: ${response.status}`);
+                        }
+                        return response;
                     } catch (error) {
-                        loadingDots.remove();
-                        console.error('Error fetching chat response:', error);
-                        addMessage('bot', 'Sorry, I am unable to respond right now. Please try again later.');
+                        lastError = error;
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
+                throw lastError;
             }
 
-            // --- Mobile Menu Logic ---
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            const mobileMenu = document.getElementById('mobileMenu');
-            const closeMobileMenu = document.getElementById('closeMobileMenu');
-            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-
-            function toggleMobileMenu() {
-                mobileMenu.classList.toggle('open');
-                mobileMenuOverlay.style.display = mobileMenu.classList.contains('open') ? 'block' : 'none';
+            // --- Speech Recognition ---
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    chatbotInput.value = transcript;
+                    // Automatically send the message after recognition
+                    sendMessage();
+                };
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error:", event.error);
+                    appendMessage("Sorry, I didn't catch that. Please try typing.", false);
+                };
+                micButton.addEventListener('click', () => {
+                    recognition.start();
+                });
+            } else {
+                micButton.style.display = 'none'; // Hide mic button if not supported
             }
 
-            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-            closeMobileMenu.addEventListener('click', toggleMobileMenu);
-            mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+            // --- General UI Event Listeners ---
+            docTabBtn.addEventListener('click', () => showTab('doc'));
+            imageTabBtn.addEventListener('click', () => showTab('image'));
+            sendMessageBtn.addEventListener('click', sendMessage);
+            chatbotInput.addEventListener('keydown', (e) => {
+                if (e.key === "Enter") sendMessage();
+            });
+
+            // Chatbot visibility controls
+            chatbotIcon.addEventListener('click', () => {
+                chatbotContainer.classList.remove('hidden');
+                chatbotIcon.classList.add('hidden');
+            });
+            closeChatbotBtn.addEventListener('click', () => {
+                chatbotContainer.classList.add('hidden');
+                chatbotIcon.classList.remove('hidden');
+            });
+
+            // Mobile menu logic fix
+            const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+            const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
+            const mobileMenu = document.getElementById("mobileMenu");
+            const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+            mobileMenuBtn.addEventListener("click", () => {
+                mobileMenu.classList.add("open");
+                mobileMenuOverlay.style.display = "block";
+                document.body.style.overflow = "hidden";
+            });
+            
+            closeMobileMenuBtn.addEventListener("click", () => {
+                mobileMenu.classList.remove("open");
+                mobileMenuOverlay.style.display = "none";
+                document.body.style.overflow = "auto";
+            });
+
+            mobileMenuOverlay.addEventListener("click", () => {
+                mobileMenu.classList.remove("open");
+                mobileMenuOverlay.style.display = "none";
+                document.body.style.overflow = "auto";
+            });
+
+            // Loader script
+            window.addEventListener("load", () => {
+                const loader = document.getElementById("agritrue-loader");
+                setTimeout(() => {
+                    loader.style.opacity = 0;
+                    setTimeout(() => loader.style.display = "none", 500);
+                }, 1000);
+            });
+
+            // Set initial tab
+            showTab('image');
         });
     </script>
 </body>
