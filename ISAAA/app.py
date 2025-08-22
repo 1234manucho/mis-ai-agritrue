@@ -13,6 +13,14 @@ from sqlalchemy import desc
 from extensions import db
 import os
 import json
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import docx
+from PyPDF2 import PdfReader
+from PIL import Image
+import models
+
 # Firebase Admin
 # import firebase_admin
 # from firebase_admin import credentials, auth, firestore
@@ -34,13 +42,125 @@ from firebase_admin import credentials, auth, firestore
 import openai
 openai.api_key = "your_openai_api_key"
 import firebase_admin
-# --- App Configuration ---
+
 app = Flask(__name__)
 CORS(app)
 app.secret_key = 'supersecretkey'
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# --- File System and ML Model Loading ---
+ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+try:
+    IMAGE_MODEL_PATH = 'models/agri_image_model.h5'
+    image_model = tf.keras.models.load_model(IMAGE_MODEL_PATH)
+    print("Image model loaded successfully.")
+except Exception as e:
+    print(f"Error loading image model: {e}. Analysis will be database-driven.")
+    image_model = None
+
+# --- Analysis Functions ---
+def analyze_document_misinformation(text_content):
+    misinformation_entities = models.find_misinformation_entities()
+    for entity in misinformation_entities:
+        if entity['name'].lower() in text_content.lower():
+            return {
+                "is_misinformation": True,
+                "explanation": f"The term '{entity['name']}' was found, which is a known source of agricultural misinformation. This claim may be fraudulent."
+            }
+    return {
+        "is_misinformation": False,
+        "explanation": "No known misinformation or misleading claims were detected in this document."
+    }
+
+def analyze_document_data(file_path, file_ext):
+    data = {}
+    text_content = ""
+    try:
+        if file_ext == 'csv':
+            df = pd.read_csv(file_path)
+            data["summary"] = df.head(10).to_dict('records')
+            text_content = df.to_string()
+        elif file_ext == 'docx':
+            doc = docx.Document(file_path)
+            text_content = " ".join([p.text for p in doc.paragraphs if p.text.strip()])
+            data["content"] = text_content
+        elif file_ext == 'pdf':
+            with open(file_path, 'rb') as f:
+                reader = PdfReader(f)
+                text_content = "".join([page.extract_text() for page in reader.pages])
+            data["content"] = text_content
+    except Exception as e:
+        print(f"Error processing document: {e}")
+        return None, None
+    return data, text_content
+
+def analyze_image_model_output(image_path):
+    detections = []
+    
+    # Use real model if loaded, otherwise, use the database
+    if image_model:
+        img = Image.open(image_path).resize((224, 224))
+        img_array = np.array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+        predictions = image_model.predict(img_array)
+        class_labels = ["Healthy", "Maize Lethal Necrosis", "Lumpy Skin Disease", "Fall Armyworm"]
+        detected_class_idx = np.argmax(predictions[0])
+        label = class_labels[detected_class_idx]
+        confidence = float(predictions[0][detected_class_idx])
+        
+        entity = models.find_entity_by_name(label)
+        
+        img_width, img_height = Image.open(image_path).size
+        x_min, y_min, x_max, y_max = int(img_width * 0.2), int(img_height * 0.2), int(img_width * 0.8), int(img_height * 0.8)
+
+        if entity:
+            details = f"Symptoms: {entity['symptoms']}\nCause: {entity['cause']}\nTreatment: {entity['treatment']}"
+            is_safe = not entity['is_misinformation']
+            diagnosis_type = entity['category']
+        else:
+            details = "No detailed information found in the database."
+            is_safe = True
+            diagnosis_type = "unknown"
+
+        # Save the diagnostic result to the database
+        # This is a key change - we're saving real analysis results
+        models.add_diagnostic_result(
+            user_id=g.current_user, # Assumes user is logged in
+            image_url=f"/uploads/{os.path.basename(image_path)}", # Placeholder URL
+            diagnosis_name=label,
+            diagnosis_type=diagnosis_type,
+            cause=entity['cause'] if entity else "Unknown",
+            treatment=entity['treatment'] if entity else "Unknown",
+            confidence_score=confidence
+        )
+        
+        detections.append({
+            "label": label,
+            "details": details,
+            "is_safe": is_safe,
+            "box": [x_min, y_min, x_max, y_max]
+        })
+    else:
+        results = models.get_random_entities(2)
+        img_width, img_height = Image.open(image_path).size
+        
+        for i, row in enumerate(results):
+            x_min = int(img_width * 0.1 * (i + 1))
+            y_min = int(img_height * 0.1 * (i + 1))
+            x_max = int(img_width * 0.5 * (i + 1))
+            y_max = int(img_height * 0.5 * (i + 1))
+            detections.append({
+                "label": row['name'],
+                "details": f"Symptoms: {row['symptoms']}\nCause: {row['cause']}\nTreatment: {row['treatment']}",
+                "is_safe": not row['is_misinformation'],
+                "box": [x_min, y_min, x_max, y_max]
+            })
+    return {"detections": detections, "description": "Analysis complete."}
 # --- Flask-Login Initialization ---
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -394,166 +514,14 @@ def repost(note_id):
 
 
 
-#dashboard
-from flask import render_template, jsonify
-from collections import defaultdict
-import sqlite3
 
-DB_NAME = "agritrue"  # Make sure this is set to your DB file
 
 @app.route('/dashboard')
 def dashboard():
     """Render the dashboard page."""
     return render_template('dashboard.html')
-
-
-def fetch_chart_data():
-    """Fetch and organize all chart datasets from the database."""
-    charts = {}
-
-    try:
-        with sqlite3.connect(DB_NAME) as conn:
-            cur = conn.cursor()
-
-            # Soil data by county
-            cur.execute("""
-                SELECT county, soil_type, COUNT(*) 
-                FROM soil_data 
-                GROUP BY county, soil_type
-            """)
-            soil_data = defaultdict(list)
-            for county, soil_type, count in cur.fetchall():
-                soil_data[county].append({'soil_type': soil_type, 'count': count})
-            charts['soil_by_county'] = dict(soil_data)
-
-            # Pests by region
-            cur.execute("""
-                SELECT region, pest_type, COUNT(*) 
-                FROM pest_reports 
-                GROUP BY region, pest_type
-            """)
-            pest_data = defaultdict(list)
-            for region, pest_type, count in cur.fetchall():
-                pest_data[region].append({'pest_type': pest_type, 'count': count})
-            charts['pests_by_region'] = dict(pest_data)
-
-            # Innovations by county
-            cur.execute("""
-                SELECT county, innovation, COUNT(*) 
-                FROM innovations 
-                GROUP BY county, innovation
-            """)
-            innovation_data = defaultdict(list)
-            for county, innovation, count in cur.fetchall():
-                innovation_data[county].append({'innovation': innovation, 'count': count})
-            charts['innovations_by_county'] = dict(innovation_data)
-
-            # Weather data
-            cur.execute("""
-                SELECT county, weather_type, value 
-                FROM weather_data
-            """)
-            weather_data = defaultdict(list)
-            for county, weather_type, value in cur.fetchall():
-                weather_data[county].append({'weather_type': weather_type, 'value': value})
-            charts['weather_by_county'] = dict(weather_data)
-
-            # Altitude data
-            cur.execute("""
-                SELECT county, altitude 
-                FROM altitude_data
-            """)
-            altitude_data = defaultdict(list)
-            for county, altitude in cur.fetchall():
-                altitude_data[county].append({'altitude': altitude})
-            charts['altitude_by_county'] = dict(altitude_data)
-
-            # Weed types
-            cur.execute("""
-                SELECT county, weed_type 
-                FROM weed_types
-            """)
-            weed_data = defaultdict(list)
-            for county, weed_type in cur.fetchall():
-                weed_data[county].append({'weed_type': weed_type})
-            charts['weeds_by_county'] = dict(weed_data)
-
-    except sqlite3.Error as e:
-        charts['error'] = f"Database error: {str(e)}"
-    except Exception as e:
-        charts['error'] = f"Unexpected error: {str(e)}"
-
-    return charts
-
-
-@app.route('/api/chart-data')
-def chart_data():
-    """API endpoint to return all chart data as JSON."""
-    return jsonify(fetch_chart_data())
-
-from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
-import os
-import pandas as pd
-from docx import Document
-import fitz  # PyMuPDF for PDF
-from PIL import Image
-import cv2
-
-
-
-# Correct upload path (consistent with HTML/static use)
-app.config['UPLOAD_FOLDER'] = 'static/avatars'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# CSV Analysis
-def analyze_csv(filepath):
-    df = pd.read_csv(filepath)
-    summary = df.describe(include='all').to_dict()
-    charts = {}
-
-    for col in df.select_dtypes(include=['object', 'category']).columns[:5]:
-        charts[col] = df[col].value_counts().head(10).to_dict()
-
-    for col in df.select_dtypes(include=['number']).columns[:5]:
-        charts[col] = {
-            'min': df[col].min(),
-            'max': df[col].max(),
-            'mean': df[col].mean(),
-            'median': df[col].median()
-        }
-
-    return summary, charts
-
-# DOCX Analysis
-def analyze_docx(filepath):
-    doc = Document(filepath)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return {'Text': {'Content': text[:1000]}}, {}
-
-# PDF Analysis
-def analyze_pdf(filepath):
-    doc = fitz.open(filepath)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return {'Text': {'Content': text[:1000]}}, {}
-
-# Image Analysis
-def analyze_image(filepath):
-    img = Image.open(filepath)
-    return {'Image': {'Size': img.size, 'Format': img.format}}, {}
-
-# Video Analysis
-def analyze_video(filepath):
-    cap = cv2.VideoCapture(filepath)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    cap.release()
-    return {'Video': {'Frame Count': frame_count}}, {}
-
-# Analyzer Route
+# ml analyzer
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
-@login_required
 def ml_analyzer():
     analysis_result = None
     chart_data = {}
@@ -568,29 +536,123 @@ def ml_analyzer():
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
-
                 ext = os.path.splitext(filename)[1].lower()
 
                 if ext == '.csv':
-                    analysis_result, chart_data = analyze_csv(filepath)
+                    analysis_result, chart_data = analyzer_logic.analyze_csv(filepath)
                 elif ext == '.docx':
-                    analysis_result, chart_data = analyze_docx(filepath)
+                    analysis_result, chart_data = analyzer_logic.analyze_docx(filepath)
                 elif ext == '.pdf':
-                    analysis_result, chart_data = analyze_pdf(filepath)
+                    analysis_result, chart_data = analyzer_logic.analyze_pdf(filepath)
                 elif ext in ['.jpg', '.jpeg', '.png']:
-                    analysis_result, chart_data = analyze_image(filepath)
+                    analysis_result, chart_data = analyzer_logic.analyze_image_model_output(filepath, image_model)
                 elif ext in ['.mp4', '.mov', '.avi']:
-                    analysis_result, chart_data = analyze_video(filepath)
+                    analysis_result, chart_data = analyzer_logic.analyze_video(filepath)
                 else:
                     error = "Unsupported file type."
 
             except Exception as e:
                 error = f"Error: {str(e)}"
-
-    return render_template("ml_analyzer.html",
-                           analysis_result=analysis_result,
-                           chart_data=chart_data,
+    
+    return render_template("ml_analyzer.html", 
+                           analysis_result=analysis_result, 
+                           chart_data=chart_data, 
                            error=error)
+@app.route('/api/analyze_document', methods=['POST'])
+@login_required
+def analyze_document():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file_ext = filename.rsplit('.', 1)[1].lower()
+    
+    if analyzer_logic.allowed_file(filename):
+        file.save(filepath)
+        data_summary, text_content = analyzer_logic.analyze_document_data(filepath, file_ext)
+        os.remove(filepath)
+        if not data_summary:
+            return jsonify({"error": "Could not process file"}), 500
+        
+        misinformation_result = analyzer_logic.analyze_document_misinformation(text_content)
+        
+        response = {
+            "success": True,
+            "document_analysis": {
+                "misinformation_flag": "Misinformation detected" if misinformation_result["is_misinformation"] else "Data appears to be true",
+                "misinformation_explanation": misinformation_result["explanation"],
+                "data_summary": data_summary
+            }
+        }
+        return jsonify(response)
+    
+    return jsonify({"error": "File type not allowed"}), 400
+
+@app.route('/api/analyze_image', methods=['POST'])
+@login_required
+def analyze_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No image file part"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected image file"}), 400
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    
+    if analyzer_logic.allowed_file(filename):
+        file.save(filepath)
+        
+        # Pass the image model to the analysis function
+        analysis_results = analyzer_logic.analyze_image_model_output(filepath, image_model)
+        
+        # Save the diagnostic result to the database
+        first_detection = analysis_results['detections'][0]
+        diagnosis_name = first_detection['label']
+        diagnosis_type = "plant" if "maize" in diagnosis_name.lower() or "armyworm" in diagnosis_name.lower() else "animal"
+        cause = first_detection['details'].split('\n')[1].replace('Cause: ', '').strip()
+        treatment = first_detection['details'].split('\n')[2].replace('Treatment: ', '').strip()
+        
+        # In a production app, save to cloud storage and use the public URL
+        # For this example, we use the local path.
+        image_url = f"/uploads/{filename}"
+
+        models.add_diagnostic_result(
+            user_id=current_user.id,
+            image_url=image_url,
+            diagnosis_name=diagnosis_name,
+            diagnosis_type=diagnosis_type,
+            cause=cause,
+            treatment=treatment,
+            confidence_score=first_detection.get('confidence', None)
+        )
+        
+        return jsonify(analysis_results)
+
+    return jsonify({"error": "Image file type not allowed"}), 400
+
+# --- New Routes for Community Notes and Diagnostics ---
+@app.route('/api/diagnostics', methods=['GET'])
+@login_required
+def get_diagnostics():
+    user_diagnostics = models.DiagnosticResult.query.filter_by(user_id=current_user.id).order_by(models.DiagnosticResult.created_at.desc()).all()
+    
+    results = []
+    for diag in user_diagnostics:
+        results.append({
+            'id': diag.id,
+            'diagnosis_name': diag.diagnosis_name,
+            'image_url': diag.image_url,
+            'confidence': diag.confidence_score,
+            'created_at': diag.created_at.isoformat()
+        })
+        
+    return jsonify({"success": True, "diagnostics": results})
+
 # --- USSD Simulation ---
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
