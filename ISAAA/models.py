@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask_login import UserMixin
-from ISAAA.extensions import db
+from extensions import db
 
 
 
