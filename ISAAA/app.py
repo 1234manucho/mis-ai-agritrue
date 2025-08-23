@@ -47,7 +47,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Store Firebase API key in app config
+    # Firebase API key stored in app config
     app.config['FIREBASE_API_KEY'] = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
     # ------------------- EXTENSIONS -------------------
