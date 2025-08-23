@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -17,20 +17,20 @@ import docx
 from PyPDF2 import PdfReader
 from PIL import Image
 
-# Local imports
+# ------------------- LOCAL IMPORTS -------------------
 from extensions import db, migrate
 from models import CommunityNote, Comment, User, DiagnosticResult
 
-# Firebase
+# ------------------- FIREBASE -------------------
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 
-# Google Generative AI
+# ------------------- GOOGLE GENERATIVE AI -------------------
 import google.generativeai as genai
 genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# OpenAI
+# ------------------- OPENAI -------------------
 import openai
 openai.api_key = "your_openai_api_key"
 
@@ -47,6 +47,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # Store Firebase API key in app config
+    app.config['FIREBASE_API_KEY'] = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
+
     # ------------------- EXTENSIONS -------------------
     db.init_app(app)
     migrate.init_app(app, db)
@@ -60,7 +63,7 @@ def create_app():
     def load_user(user_id):
         return User.query.get(user_id)
 
-    # ------------------- FIREBASE -------------------
+    # ------------------- FIREBASE INITIALIZATION -------------------
     if not firebase_admin._apps:
         try:
             cred = credentials.Certificate("firebase-service-account.json")
@@ -69,14 +72,13 @@ def create_app():
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
 
+    # Firestore client
     global firestore_db
     firestore_db = firestore.client()
-    FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
     return app
 
-
-# Create app instance for CLI tools like flask db migrate
+# ------------------- CREATE APP -------------------
 app = create_app()
 
 # ------------------- FILE UTILS -------------------
