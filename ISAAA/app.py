@@ -71,6 +71,9 @@ def create_app():
             print("Firebase Admin SDK initialized successfully.")
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
+# Firestore client
+firestore_db = firestore.client()
+FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
     # Firestore
     global firestore_db
