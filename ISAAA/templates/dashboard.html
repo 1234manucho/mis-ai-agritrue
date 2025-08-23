@@ -65,7 +65,7 @@
                         </div>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Info Graphics</a>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
                 <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
                 <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
                 {% if current_user.is_authenticated %}
@@ -107,7 +107,7 @@
         </div>
         <ul class="flex flex-col space-y-2">
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Info Graphics</a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
             </li>
             <li>
                 <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
@@ -149,31 +149,49 @@
 
   <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
     <!-- Quick Stats Section -->
-    <section id="stats" class="max-w-7xl mx-auto my-12 pt-8">
-      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Quick Agricultural Stats</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-        <div class="card p-6">
-          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-seedling"></i></div>
-          <h3 class="text-4xl font-extrabold text-gray-800">12.5M</h3>
-          <p class="text-gray-500 mt-1">Hectares Cultivated</p>
-        </div>
-        <div class="card p-6">
-          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-tractor"></i></div>
-          <h3 class="text-4xl font-extrabold text-gray-800">75%</h3>
-          <p class="text-gray-500 mt-1">Farm Productivity Increase</p>
-        </div>
-        <div class="card p-6">
-          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-water"></i></div>
-          <h3 class="text-4xl font-extrabold text-gray-800">30%</h3>
-          <p class="text-gray-500 mt-1">Water Usage Reduction</p>
-        </div>
-        <div class="card p-6">
-          <div class="text-green-600 text-4xl mb-2"><i class="fas fa-globe-americas"></i></div>
-          <h3 class="text-4xl font-extrabold text-gray-800">20+</h3>
-          <p class="text-gray-500 mt-1">Countries Supported</p>
-        </div>
-      </div>
-    </section>
+    <section id="stats" style="max-width:1200px; margin:60px auto; padding-top:40px; font-family:Arial, sans-serif;">
+  <!-- Heading -->
+  <h2 style="font-size:28px; font-weight:700; text-align:center; color:#065f46; margin-bottom:25px; line-height:1.4;">
+    Tracing farm data to uncover accurate results.<br>
+    <span style="font-size:18px; font-weight:400; color:#374151;">
+      This is where farmers upload their documents for farm agriculture, livestock, or poultry to share with others.
+    </span>
+  </h2>
+
+  <!-- Stats Grid -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:24px; text-align:center;">
+    
+    <!-- Card 1 -->
+    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
+      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-seedling"></i></div>
+      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">12.5M</h3>
+      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Hectares Cultivated</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
+      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-tractor"></i></div>
+      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">75%</h3>
+      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Farm Productivity Increase</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
+      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-water"></i></div>
+      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">30%</h3>
+      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Water Usage Reduction</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
+      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-globe-americas"></i></div>
+      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">20+</h3>
+      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Countries Supported</p>
+    </div>
+
+  </div>
+</section>
+
 
     <!-- NEW: Farm Documents & Images Section -->
     <section id="upload-docs" class="max-w-4xl mx-auto my-12 pt-8">
