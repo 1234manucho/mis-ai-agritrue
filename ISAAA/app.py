@@ -46,8 +46,6 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # Firebase API key stored in app config
     app.config['FIREBASE_API_KEY'] = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
     # ------------------- EXTENSIONS -------------------
@@ -72,13 +70,13 @@ def create_app():
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
 
-    # Firestore client
+    # Firestore client (global for simplicity)
     global firestore_db
     firestore_db = firestore.client()
 
     return app
 
-# ------------------- CREATE APP -------------------
+# ------------------- CREATE APP INSTANCE -------------------
 app = create_app()
 
 # ------------------- FILE UTILS -------------------
@@ -95,6 +93,11 @@ try:
 except Exception as e:
     print(f"Error loading image model: {e}. Analysis will be database-driven.")
     image_model = None
+
+# ------------------- FIREBASE API KEY HELPER -------------------
+def get_firebase_api_key():
+    """Access Firebase API key from Flask config safely."""
+    return current_app.config.get('FIREBASE_API_KEY')
 
 
 # ----------------- ROUTES -----------------
@@ -222,8 +225,6 @@ def register():
             return redirect(url_for('register'))
 
     return render_template('register.html')
-
-
 # --- Login Route ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -237,10 +238,16 @@ def login():
             return redirect(url_for('login'))
 
         try:
+            # Get Firebase API key from app config
+            firebase_api_key = current_app.config.get('FIREBASE_API_KEY')
+            if not firebase_api_key:
+                raise ValueError("Firebase API key is not configured.")
+
             # Firebase REST API for signInWithPassword
-            url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+            url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_api_key}"
             payload = {"email": email, "password": password, "returnSecureToken": True}
-            res = requests.post(url, data=payload)
+            headers = {"Content-Type": "application/json"}
+            res = requests.post(url, data=json.dumps(payload), headers=headers)
             res_data = res.json()
 
             if "error" in res_data:
@@ -263,7 +270,11 @@ def login():
             streak = user_data.get("streak_count", 1)
             last_login = user_data.get("last_login")
 
-            last_login_date = datetime.fromisoformat(last_login).date() if isinstance(last_login, str) else last_login.date()
+            last_login_date = (
+                datetime.fromisoformat(last_login).date()
+                if isinstance(last_login, str)
+                else last_login.date()
+            )
 
             if last_login_date == today - timedelta(days=1):
                 streak += 1
@@ -276,7 +287,7 @@ def login():
             })
 
             # --- Local DB Sync ---
-            user = db.session.get(User, uid)   # ✅ fixed for SQLAlchemy 2.0
+            user = db.session.get(User, uid)   # ✅ SQLAlchemy 2.0
             if not user:
                 user = User(
                     id=uid,
@@ -295,7 +306,6 @@ def login():
                 db.session.commit()
 
             login_user(user)
-
             flash(f"✅ Logged in! Current streak: {streak} days.", "success")
             return redirect(url_for('home'))
 
