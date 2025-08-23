@@ -1,20 +1,38 @@
 from datetime import datetime
 from flask_login import UserMixin
-from extensions import db
+from ISAAA.extensions import db
 
 
 
+
+# ===========================
+# Diagnostic Results
+# ===========================
+class DiagnosticResult(db.Model):
+    __tablename__ = 'diagnostics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    diagnosis_name = db.Column(db.String(100), nullable=False)
+    diagnosis_type = db.Column(db.String(50), nullable=False)  # 'plant', 'animal'
+    cause = db.Column(db.Text, nullable=False)
+    treatment = db.Column(db.Text, nullable=False)
+    confidence_score = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # ✅ Fix: properly paired relationship
+    user = db.relationship("User", back_populates="diagnostics")
+
+    def __repr__(self):
+        return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
 
 
 # ===========================
 # User Model
 # ===========================
 class User(db.Model, UserMixin):
-    """
-    SQLAlchemy model for the 'users' table.
-    Stores local copy of user data linked to Firebase UID.
-    """
-    __tablename__ = 'users'   # ✅ plural is conventional
+    __tablename__ = 'users'
 
     # Firebase Authentication UID as the primary key
     id = db.Column(db.String(128), primary_key=True)
@@ -38,7 +56,14 @@ class User(db.Model, UserMixin):
     # 🔑 Password column (optional if Firebase handles auth)
     password = db.Column(db.String(200), nullable=True)
 
-    # Relationships
+    # ✅ Fix: add diagnostics relationship
+    diagnostics = db.relationship(
+        "DiagnosticResult",
+        back_populates="user",
+        lazy=True,
+        cascade="all, delete"
+    )
+
     notes = db.relationship(
         "CommunityNote",
         back_populates="author",
@@ -161,28 +186,6 @@ def get_user_by_email(email):
         db.select(User).filter_by(email=email)
     ).scalar_one_or_none()
 
-
-# ===========================
-# Diagnostic Results
-# ===========================
-class DiagnosticResult(db.Model):
-    __tablename__ = 'diagnostics'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
-    image_url = db.Column(db.String(500), nullable=False)
-    diagnosis_name = db.Column(db.String(100), nullable=False)
-    diagnosis_type = db.Column(db.String(50), nullable=False)  # 'plant', 'animal'
-    cause = db.Column(db.Text, nullable=False)
-    treatment = db.Column(db.Text, nullable=False)
-    confidence_score = db.Column(db.Float, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationships
-    user = db.relationship("User", back_populates="diagnostics")
-
-    def __repr__(self):
-        return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
 
 
 # ===========================
