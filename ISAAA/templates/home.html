@@ -374,11 +374,14 @@
     <header class="relative w-full min-h-screen pt-[56px] lg:pt-[72px]">
         <div id="slideshow" class="absolute inset-0">
             <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" class="slide active">
+            <img src="{{ url_for('static', filename='images/milk.jpg') }}" class="slide">
             <img src="{{ url_for('static', filename='images/final1.jpg') }}" class="slide">
             <img src="{{ url_for('static', filename='images/pic3.jpeg') }}" class="slide">
+            <img src="{{ url_for('static', filename='images/bee1.jpg') }}" class="slide">
             <img src="{{ url_for('static', filename='images/final5.jpg') }}" class="slide">
             <img src="{{ url_for('static', filename='images/vital1.jpg') }}" class="slide">
             <img src="{{ url_for('static', filename='images/final4.jpg') }}" class="slide">
+            <img src="{{ url_for('static', filename='images/pigs.jpg') }}" class="slide">
 
         </div>
         <div class="dark-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-black/80 z-10"></div>
@@ -403,6 +406,98 @@
             </div>
         </div>
     </header>
+    <!-- why choose amsa -->
+     <!-- Why Choose AgriTrue Section -->
+<section id="why-choose" style="max-width:1000px; margin:50px auto; font-family:Arial, sans-serif; text-align:center;">
+  
+  <!-- Button -->
+  <button 
+    onclick="document.getElementById('why-content').style.display = 
+             document.getElementById('why-content').style.display === 'none' ? 'block' : 'none';" 
+    style="background-color:#90ee90; border:none; padding:14px 28px; font-size:18px; font-weight:bold; 
+           border-radius:8px; cursor:pointer; transition:all 0.3s ease; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
+    🌱 Why Choose AgriTrue
+  </button>
+
+  <!-- Hidden Content -->
+  <div id="why-content" style="display:none; margin-top:30px; text-align:left; background:#ffffff; padding:30px; 
+                               border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+    
+    <!-- Headline -->
+    <h2 style="font-size:26px; font-weight:700; color:#065f46; margin-bottom:15px;">
+      Reliable. Localized. Empowering.
+    </h2>
+
+    <!-- Content Grid -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+      <!-- 1: Combat Misinformation -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">🌍 Combating Misinformation</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          AI-driven tools like extensions, chatbots, and trust codes detect misleading claims 
+          (e.g., false fertilizer labels or weather reports). Farmers access only accurate, 
+          trustworthy info to make better decisions.
+        </p>
+      </div>
+
+      <!-- 2: Precision Insights -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">📊 Precision Insights for Every Plot</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          Tools like ML Analyzer & Know Your Land provide localized soil, fertility, and 
+          micro-climate insights—empowering farmers with data-backed planting and irrigation strategies.
+        </p>
+      </div>
+
+      <!-- 3: Visual Progress -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">📸 Visualize Farm Progress</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          The Farm Truth tool converts farmer-submitted images & logs into interactive charts 
+          and dashboards, making farm growth measurable and transparent.
+        </p>
+      </div>
+
+      <!-- 4: Multi-channel Access -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">📱 Built for Connectivity</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          Web, mobile, USSD, and even offline tools ensure inclusivity. Farmers with 
+          limited internet access can still benefit fully from AgriTrue’s features.
+        </p>
+      </div>
+
+      <!-- 5: Boost Productivity -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">🌾 Boost Productivity & Reduce Waste</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          Real-time AI diagnostics minimize input waste and maximize harvest outcomes—
+          similar to PlantVillage & Virtual Agronomist successes in Kenya.
+        </p>
+      </div>
+
+      <!-- 6: Transparency -->
+      <div style="padding:15px;">
+        <h3 style="font-size:18px; font-weight:600; color:#047857; margin-bottom:6px;">🤝 Trust Through Transparency</h3>
+        <p style="color:#374151; font-size:14px; line-height:1.5;">
+          Community notes, trust markers, and expert validation build a knowledge-sharing 
+          ecosystem where accurate farm information thrives.
+        </p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center; margin-top:25px;">
+      <a href="#tools" 
+         style="background:#047857; color:#fff; padding:12px 24px; border-radius:8px; 
+                font-size:16px; font-weight:600; text-decoration:none; transition:background 0.3s;">
+        🚜 Explore AgriTrue Tools
+      </a>
+    </div>
+  </div>
+</section>
+    <!-- Chatbot Icon -->
     <div class="container-fluid py-5"></div>
     <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
         <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
