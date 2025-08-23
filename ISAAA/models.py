@@ -1,28 +1,10 @@
 from datetime import datetime
 from flask_login import UserMixin
-from extensions import db
+from ISAAA.extensions import db
 
-# ===========================
-# Diagnostic Results
-# ===========================
-class DiagnosticResult(db.Model):
-    __tablename__ = 'diagnostics'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(128), db.ForeignKey('users.id'), nullable=False)
-    image_url = db.Column(db.String(500), nullable=False)
-    diagnosis_name = db.Column(db.String(100), nullable=False)
-    diagnosis_type = db.Column(db.String(50), nullable=False)  # 'plant', 'animal'
-    cause = db.Column(db.Text, nullable=False)
-    treatment = db.Column(db.Text, nullable=False)
-    confidence_score = db.Column(db.Float, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationships
-    user = db.relationship("User", back_populates="diagnostics")
 
-    def __repr__(self):
-        return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
 
 # ===========================
 # User Model
@@ -46,14 +28,6 @@ class User(db.Model, UserMixin):
     home_address = db.Column(db.String(200), nullable=True)
     country = db.Column(db.String(50), nullable=True)
     county = db.Column(db.String(50), nullable=True)
-
-    # 🔗 Correct relationship (match DiagnosticResult, not Diagnostic)
-    diagnostics = db.relationship(
-        "DiagnosticResult",
-        back_populates="user",
-        lazy=True,
-        cascade="all, delete"
-    )
 
     # Firestore-synced fields
     is_admin = db.Column(db.Boolean, default=False)
@@ -188,7 +162,6 @@ def get_user_by_email(email):
     ).scalar_one_or_none()
 
 
-
 # ===========================
 # Diagnostic Results
 # ===========================
@@ -207,7 +180,7 @@ class DiagnosticResult(db.Model):
 
     # Relationships
     user = db.relationship("User", back_populates="diagnostics")
-    
+
     def __repr__(self):
         return f"<DiagnosticResult {self.id} - {self.diagnosis_name}>"
 
