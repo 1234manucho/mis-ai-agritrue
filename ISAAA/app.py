@@ -19,9 +19,7 @@ from PIL import Image
 
 # Local imports
 from extensions import db, migrate
-
 from models import CommunityNote, Comment, User, DiagnosticResult
-
 
 # Firebase
 import firebase_admin
@@ -36,25 +34,24 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 import openai
 openai.api_key = "your_openai_api_key"
 
-
 # ------------------- APP FACTORY -------------------
 def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    # ------------------- CONFIG -------------------
     app.secret_key = 'supersecretkey'
     app.config['UPLOAD_FOLDER'] = 'uploads/'
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # --- SQLAlchemy Config ---
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'   # ✅ updated DB
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Init extensions
+    # ------------------- EXTENSIONS -------------------
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # --- Flask-Login ---
+    # ------------------- FLASK LOGIN -------------------
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
@@ -63,7 +60,7 @@ def create_app():
     def load_user(user_id):
         return User.query.get(user_id)
 
-    # --- Firebase Initialization ---
+    # ------------------- FIREBASE -------------------
     if not firebase_admin._apps:
         try:
             cred = credentials.Certificate("firebase-service-account.json")
@@ -71,26 +68,22 @@ def create_app():
             print("Firebase Admin SDK initialized successfully.")
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
-# Firestore client
-firestore_db = firestore.client()
-FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
 
-    # Firestore
     global firestore_db
     firestore_db = firestore.client()
+    FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
+
     return app
 
 
 # Create app instance for CLI tools like flask db migrate
 app = create_app()
 
-
 # ------------------- FILE UTILS -------------------
 ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 # ------------------- MODEL LOADING -------------------
 try:
@@ -100,6 +93,7 @@ try:
 except Exception as e:
     print(f"Error loading image model: {e}. Analysis will be database-driven.")
     image_model = None
+
 
 # ----------------- ROUTES -----------------
 
