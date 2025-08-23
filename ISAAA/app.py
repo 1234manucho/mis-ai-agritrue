@@ -3,58 +3,93 @@ from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
+from sqlalchemy import desc
 import os
 import re
 import requests
 import json
 import uuid
 from datetime import datetime, timedelta
-from sqlalchemy import desc
-from extensions import db
-import os
-import json
 import tensorflow as tf
 import numpy as np
 import pandas as pd
 import docx
 from PyPDF2 import PdfReader
 from PIL import Image
-import models
-
-# Firebase Admin
-# import firebase_admin
-# from firebase_admin import credentials, auth, firestore
 
 # Local imports
-from extensions import db
-from models import CommunityNote, Comment, User, get_user, get_user_by_id, add_user, get_user_by_email
+from ISAAA.extensions import db, migrate
 
-# Database
-from flask_sqlalchemy import SQLAlchemy
+from ISAAA.models import CommunityNote, Comment, User, DiagnosticResult
+
+
+# Firebase
+import firebase_admin
+from firebase_admin import credentials, auth, firestore
 
 # Google Generative AI
 import google.generativeai as genai
 genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
 model = genai.GenerativeModel('gemini-1.5-flash')
-import firebase_admin
-from firebase_admin import credentials, auth, firestore
+
 # OpenAI
 import openai
 openai.api_key = "your_openai_api_key"
-import firebase_admin
 
-app = Flask(__name__)
-CORS(app)
-app.secret_key = 'supersecretkey'
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# --- File System and ML Model Loading ---
+# ------------------- APP FACTORY -------------------
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
+
+    app.secret_key = 'supersecretkey'
+    app.config['UPLOAD_FOLDER'] = 'uploads/'
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+    # --- SQLAlchemy Config ---
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'   # ✅ updated DB
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Init extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # --- Flask-Login ---
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(user_id)
+
+    # --- Firebase Initialization ---
+    if not firebase_admin._apps:
+        try:
+            cred = credentials.Certificate("firebase-service-account.json")
+            firebase_admin.initialize_app(cred)
+            print("Firebase Admin SDK initialized successfully.")
+        except Exception as e:
+            print(f"Error initializing Firebase Admin SDK: {e}")
+
+    # Firestore
+    global firestore_db
+    firestore_db = firestore.client()
+    return app
+
+
+# Create app instance for CLI tools like flask db migrate
+app = create_app()
+
+
+# ------------------- FILE UTILS -------------------
 ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+# ------------------- MODEL LOADING -------------------
 try:
     IMAGE_MODEL_PATH = 'models/agri_image_model.h5'
     image_model = tf.keras.models.load_model(IMAGE_MODEL_PATH)
@@ -62,139 +97,6 @@ try:
 except Exception as e:
     print(f"Error loading image model: {e}. Analysis will be database-driven.")
     image_model = None
-
-# --- Analysis Functions ---
-def analyze_document_misinformation(text_content):
-    misinformation_entities = models.find_misinformation_entities()
-    for entity in misinformation_entities:
-        if entity['name'].lower() in text_content.lower():
-            return {
-                "is_misinformation": True,
-                "explanation": f"The term '{entity['name']}' was found, which is a known source of agricultural misinformation. This claim may be fraudulent."
-            }
-    return {
-        "is_misinformation": False,
-        "explanation": "No known misinformation or misleading claims were detected in this document."
-    }
-
-def analyze_document_data(file_path, file_ext):
-    data = {}
-    text_content = ""
-    try:
-        if file_ext == 'csv':
-            df = pd.read_csv(file_path)
-            data["summary"] = df.head(10).to_dict('records')
-            text_content = df.to_string()
-        elif file_ext == 'docx':
-            doc = docx.Document(file_path)
-            text_content = " ".join([p.text for p in doc.paragraphs if p.text.strip()])
-            data["content"] = text_content
-        elif file_ext == 'pdf':
-            with open(file_path, 'rb') as f:
-                reader = PdfReader(f)
-                text_content = "".join([page.extract_text() for page in reader.pages])
-            data["content"] = text_content
-    except Exception as e:
-        print(f"Error processing document: {e}")
-        return None, None
-    return data, text_content
-
-def analyze_image_model_output(image_path):
-    detections = []
-    
-    # Use real model if loaded, otherwise, use the database
-    if image_model:
-        img = Image.open(image_path).resize((224, 224))
-        img_array = np.array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        predictions = image_model.predict(img_array)
-        class_labels = ["Healthy", "Maize Lethal Necrosis", "Lumpy Skin Disease", "Fall Armyworm"]
-        detected_class_idx = np.argmax(predictions[0])
-        label = class_labels[detected_class_idx]
-        confidence = float(predictions[0][detected_class_idx])
-        
-        entity = models.find_entity_by_name(label)
-        
-        img_width, img_height = Image.open(image_path).size
-        x_min, y_min, x_max, y_max = int(img_width * 0.2), int(img_height * 0.2), int(img_width * 0.8), int(img_height * 0.8)
-
-        if entity:
-            details = f"Symptoms: {entity['symptoms']}\nCause: {entity['cause']}\nTreatment: {entity['treatment']}"
-            is_safe = not entity['is_misinformation']
-            diagnosis_type = entity['category']
-        else:
-            details = "No detailed information found in the database."
-            is_safe = True
-            diagnosis_type = "unknown"
-
-        # Save the diagnostic result to the database
-        # This is a key change - we're saving real analysis results
-        models.add_diagnostic_result(
-            user_id=g.current_user, # Assumes user is logged in
-            image_url=f"/uploads/{os.path.basename(image_path)}", # Placeholder URL
-            diagnosis_name=label,
-            diagnosis_type=diagnosis_type,
-            cause=entity['cause'] if entity else "Unknown",
-            treatment=entity['treatment'] if entity else "Unknown",
-            confidence_score=confidence
-        )
-        
-        detections.append({
-            "label": label,
-            "details": details,
-            "is_safe": is_safe,
-            "box": [x_min, y_min, x_max, y_max]
-        })
-    else:
-        results = models.get_random_entities(2)
-        img_width, img_height = Image.open(image_path).size
-        
-        for i, row in enumerate(results):
-            x_min = int(img_width * 0.1 * (i + 1))
-            y_min = int(img_height * 0.1 * (i + 1))
-            x_max = int(img_width * 0.5 * (i + 1))
-            y_max = int(img_height * 0.5 * (i + 1))
-            detections.append({
-                "label": row['name'],
-                "details": f"Symptoms: {row['symptoms']}\nCause: {row['cause']}\nTreatment: {row['treatment']}",
-                "is_safe": not row['is_misinformation'],
-                "box": [x_min, y_min, x_max, y_max]
-            })
-    return {"detections": detections, "description": "Analysis complete."}
-# --- Flask-Login Initialization ---
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-# --- SQLAlchemy Configuration ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db.init_app(app)            # ✅ use db from extensions.py
-migrate = Migrate(app, db)  # ✅ attach Flask-Migrate
-
-# Create tables if not exist
-with app.app_context():
-    db.create_all()
-# --- Firebase Initialization ---
-if not firebase_admin._apps:
-    try:
-        cred = credentials.Certificate("firebase-service-account.json")
-        firebase_admin.initialize_app(cred)
-        print("Firebase Admin SDK initialized successfully.")
-    except Exception as e:
-        print(f"Error initializing Firebase Admin SDK: {e}")
-
-# Firestore client
-firestore_db = firestore.client()
-FIREBASE_API_KEY = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
-
-# --- Flask-Login User Loader ---
-@login_manager.user_loader
-def load_user(user_id):
-   
-    return User.query.get(user_id)
-
 
 # ----------------- ROUTES -----------------
 
