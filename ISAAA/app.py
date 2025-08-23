@@ -18,9 +18,9 @@ from PyPDF2 import PdfReader
 from PIL import Image
 
 # Local imports
-from ISAAA.extensions import db, migrate
+from extensions import db, migrate
 
-from ISAAA.models import CommunityNote, Comment, User, DiagnosticResult
+from models import CommunityNote, Comment, User, DiagnosticResult
 
 
 # Firebase
