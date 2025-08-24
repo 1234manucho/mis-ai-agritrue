@@ -426,7 +426,7 @@ def repost(note_id):
 
 
 @app.route('/research')
-def dashboard():
+def research():
     """Render the dashboard page."""
     return render_template('research.html')
 
