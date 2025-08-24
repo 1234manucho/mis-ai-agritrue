@@ -425,6 +425,10 @@ def repost(note_id):
 
 
 
+@app.route('/research')
+def dashboard():
+    """Render the dashboard page."""
+    return render_template('research.html')
 
 
 @app.route('/dashboard')
