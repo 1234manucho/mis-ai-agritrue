@@ -564,7 +564,84 @@
                 }
             }
 
-            
+            // --- Mock Document Analysis (No real API call) ---
+            async function analyzeDocument(file) {
+                showAnalysisLoader(true);
+                docResults.classList.add('hidden');
+
+                const fileName = file.name;
+
+                // Simulate a delay for processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Generate mock data
+                const mockData = [
+                    { metric: "Document Type", value: file.type },
+                    { metric: "File Name", value: fileName },
+                    { metric: "Estimated Size", value: `${(file.size / 1024).toFixed(2)} KB` },
+                    { metric: "Keywords", value: "agriculture, harvest, yield, climate, soil" }
+                ];
+
+                const mockMetrics = [
+                    { name: "Yield (ton/ha)", data: [1.5, 2.1, 1.8, 2.5, 2.3] },
+                    { name: "Moisture (%)", data: [12.5, 11.2, 13.0, 10.8, 11.5] },
+                    { name: "Soil pH", data: [6.5, 6.8, 6.1, 7.0, 6.7] }
+                ];
+
+                // Render the summary table
+                const tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${mockData.map(d => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${d.metric}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.value}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                docSummaryTable.innerHTML = tableHtml;
+
+                // Render the charts
+                docCharts.innerHTML = mockMetrics.map((m, i) => `
+                    <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
+                        <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
+                        <canvas id="chart-${i}"></canvas>
+                    </div>
+                `).join('');
+
+                // Create the Chart.js instances
+                mockMetrics.forEach((m, i) => {
+                    const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+                    if (chartInstances[`chart-${i}`]) {
+                        chartInstances[`chart-${i}`].destroy();
+                    }
+                    chartInstances[`chart-${i}`] = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Plot 1', 'Plot 2', 'Plot 3', 'Plot 4', 'Plot 5'],
+                            datasets: [{
+                                label: m.name,
+                                data: m.data,
+                                backgroundColor: chartColors[i % chartColors.length],
+                                borderColor: chartColors[i % chartColors.length],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                });
+
+                docResults.classList.remove('hidden');
+                showAnalysisLoader(false);
+            }
+
             // --- Event Listeners for Analysis Buttons ---
             analyzeImageBtn.addEventListener('click', () => {
                 const file = imageFile.files[0];
