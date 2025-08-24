@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTrue FAQ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2U6nN5D0W9u8i+R5nS22Q+P3G/gX6r2Cj2sQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .hero-content {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Loader Styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Slideshow Styles */
+        #slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
+            z-index: 2;
+        }
+
+        /* Chatbot Styles */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #34d399;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 360px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        #chatbot-header {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: white;
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #chatbot-body {
+            padding: 16px;
+            background: #f0fdf4;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+        
+        #chatbot-input-container {
+            display: flex;
+            padding: 12px;
+            background: #ecfdf5;
+            border-top: 1px solid #d1fae5;
+        }
+        
+        #chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #send-message, #mic-button {
+            background: #34d399;
+            color: white;
+            border: none;
+            padding: 0 12px;
+            margin-left: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: #34d399;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: #d1fae5;
+            color: black;
+            margin-right: auto;
+        }
+
+        /* Hide default Bootstrap toggler on larger screens */
+        @media (min-width: 992px) {
+            .navbar-toggler {
+                display: none;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: #f0fdf4;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-f0fdf4 font-inter">
+
+    <!-- Loader -->
+    <div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="text-center">
+            <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
+            <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                  <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+                        </div>
+                    </div>
+                </div>  
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                   
+                </div>
+            </li>
+        </ul>
+        <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+                        </div>
+                    </div>
+                </div>  
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</head>
+<body class="bg-gray-50 text-gray-800 p-4 sm:p-8">
+
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-white rounded-3xl shadow-xl">
+
+        <!-- Header Section -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-2 text-green-700">AgriTrue FAQ</h1>
+        <h2 class="text-xl sm:text-2xl font-medium text-center mb-8 text-gray-600">Empowering Farmers with Fact-Based Insights</h2>
+
+        <!-- Introduction -->
+        <p class="text-center text-lg mb-12 max-w-2xl mx-auto text-gray-600">
+            Welcome to the AgriTrue FAQ. Here, we debunk common agricultural myths—both related to our tools and broader misconceptions in farming.
+            Whether you're curious about ML Analyzer, Know Your Land, or Farm Truth, we’ve got you covered with clear, research-backed answers.
+        </p>
+
+        <!-- All Combined FAQs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- FAQ Item 1: ML Analyzer -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>1. Does the ML Analyzer automatically flag misinformation with no mistakes?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        While ML Analyzer uses AI to detect potential misinformation—like counterfeit fertilizer labels or false weather alerts—it’s designed for precision, not perfection. That’s why it incorporates community notes and expert oversight to ensure accuracy and avoid false alerts. (<a href="https://africenter.isaaa.org/young-african-developers-showcase-ai-solutions-tackle-agricultural-misinformation/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">africenter.isaaa.org</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 2: Know Your Land -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>2. Can Know Your Land make farming decisions without any input data?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—Know Your Land delivers accurate soil type and localized weather insights based on user-provided data (like your location or soil samples) combined with regional datasets to offer tailored recommendations. (<a href="https://www.isda-africa.com/posts/world-soil-day-empowering-farmers-with-isda-know-your-soil/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">isda-africa.com</a>, <a href="https://lschub.kalro.org/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">lschub.kalro.org</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 3: Farm Truth -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>3. Does Farm Truth generate visual progress without any uploads?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not quite. Farm Truth creates visual infographics and analytics only when photos, activity logs, or farm data are uploaded—transforming your inputs into clear, engaging visuals. (<a href="https://africenter.isaaa.org/young-african-developers-showcase-ai-solutions-tackle-agricultural-misinformation/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">africenter.isaaa.org</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 4: Connectivity -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>4. Is AgriTrue accessible only through high-speed internet?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—AgriTrue works across platforms, including web, mobile, USSD, and offline tools, ensuring accessibility even in low-connectivity rural areas. (<a href="https://africenter.isaaa.org/young-african-developers-showcase-ai-solutions-tackle-agricultural-misinformation/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">africenter.isaaa.org</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 5: Yield Challenges -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>5. Will AgriTrue solve all yield challenges on its own?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        AgriTrue offers tools and insights—ML diagnostics, soil mapping, visual tracking—but yield improvements still depend on implementing recommendations and external factors like weather and pests. The tools guide informed actions, not guarantee outcomes. (<a href="https://www.theguardian.com/world/2024/sep/30/high-tech-high-yields-the-kenyan-farmers-deploying-ai-to-increase-productivity?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">The Guardian</a>, <a href="https://www.isda-africa.com/posts/world-soil-day-empowering-farmers-with-isda-know-your-soil/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">isda-africa.com</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 6: Regional Suitability -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>6. Is AgriTrue’s information always suited for every African region equally?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Yes—our tools use region-specific datasets and allow farmers to input local data. This ensures insights are tailored to varied agro-ecological zones across Africa and beyond. (<a href="https://www.isda-africa.com/posts/world-soil-day-empowering-farmers-with-isda-know-your-soil/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">isda-africa.com</a>, <a href="https://lschub.kalro.org/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">lschub.kalro.org</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 7: More fertilizer -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>7. Does more fertilizer always mean better yield?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—over-fertilization can damage soil and reduce productivity. Precision application and soil testing are key. (<a href="https://agriculture.co.ke/soil-health-everything-you-need-to-know/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">agriculture.co.ke</a>, <a href="https://www.harvestogroup.com/post/soil-testing-importance-and-benefits?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Harvesto Group</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 8: Soil nutrients -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>8. Will soil hold onto nutrients permanently?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—nutrients like nitrogen and potassium can leach away. Organic matter improves retention. (<a href="https://agriculture.co.ke/soil-health-everything-you-need-to-know/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">agriculture.co.ke</a>, <a href="https://agriculture.institute/rain-fed-farming/soil-health-cards-sustainable-agriculture/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Agriculture Institute</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 9: Organic matter -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>9. Is organic matter in soil unimportant?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—it’s critical for water retention, structure, nutrient cycling, and microbial health. (<a href="https://agriculture.co.ke/soil-health-everything-you-need-to-know/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">agriculture.co.ke</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 10: Chemicals -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>10. Does modern agriculture rely excessively on chemicals?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not always—many farmers use integrated pest management, precision techniques, and sustainable practices. (<a href="https://nation.africa/kenya/blogs-opinion/blogs/pesticide-myths-and-lies-standing-in-the-way-of-sustainable-farming-in-kenya--3459362?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Nation Africa</a>, <a href="https://www.samglobaluniversity.ac.in/seven-myths-about-the-agriculture-industry/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">samglobaluniversity.ac.in</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 11: GMOs -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>11. Are GMOs unsafe to eat?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—extensive studies show GMOs are safe and can enhance yields and nutritional quality. (<a href="https://www.samglobaluniversity.ac.in/seven-myths-about-the-agriculture-industry/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">samglobaluniversity.ac.in</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 12: Organic vs Conventional -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>12. Is organic farming always superior to conventional?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not necessarily—organic reduces synthetic inputs but may yield less; sustainable conventional methods can also be highly effective. (<a href="https://nation.africa/kenya/blogs-opinion/blogs/pesticide-myths-and-lies-standing-in-the-way-of-sustainable-farming-in-kenya--3459362?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Nation Africa</a>, <a href="https://www.samglobaluniversity.ac.in/seven-myths-about-the-agriculture-industry/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">samglobaluniversity.ac.in</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 13: Organic pesticides -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>13. Is organic produce free of pesticides?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—even organic farms use approved pesticides. Washing produce remains important. (<a href="https://nation.africa/kenya/blogs-opinion/blogs/pesticide-myths-and-lies-standing-in-the-way-of-sustainable-farming-in-kenya--3459362?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Nation Africa</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 14: Farm size -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>14. Are most farms large corporate operations?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—in Africa and globally, the majority are family-owned smallholdings. (<a href="https://www.africaninsider.com/news/land-reform-south-africa-5-myths-farming-debunked/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">African Insider</a>, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5384436/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">PMC</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 15: Tech in farming -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>15. Is farming low-tech?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Absolutely not—modern ag employs GPS, drones, analytics, hydroponics, and AI. (<a href="https://www.theguardian.com/world/2024/sep/30/high-tech-high-yields-the-kenyan-farmers-deploying-ai-to-increase-productivity?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">The Guardian</a>, <a href="https://www.sciencedirect.com/science/article/pii/S221191242030047X?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">ScienceDirect</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 16: Farmer education -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>16. Are farmers generally uneducated?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—many farmers are trained in agricultural sciences and receive ongoing training. (<a href="https://www.mavuno.tech/unwrapping-the-myths-agriculture-in-africa/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">mavuno.tech</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 17: Climate change -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>17. Is agriculture the largest source of climate change?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—in many contexts, agriculture contributes about 10% of emissions. Fossil fuels dominate—but sustainable ag can sequester carbon. (<a href="https://www.worldbank.org/en/programs/africa-myths-and-facts?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">World Bank</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 18: No-till -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>18. Is no-till always better for soil health?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not always—no-till reduces erosion and improves moisture, but may increase pest pressure and requires alternative management. (<a href="https://en.wikipedia.org/wiki/No-till_farming?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Wikipedia</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 19: Local food -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>19. Is local food always more sustainable than imports?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not necessarily—the overall impact depends on production efficiency, transportation, and practices used. (<a href="https://www.globalcitizen.org/en/content/10-myths-about-food-in-africa/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Global Citizen</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 20: Natural fertilizers -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>20. Are natural fertilizers always better?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        Not always—some can pollute or be resource-heavy; management matters most. (<a href="https://www.globalcitizen.org/en/content/10-myths-about-food-in-africa/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Global Citizen</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 21: Agricultural animals -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>21. Do agricultural animals only harm the planet?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—they support nutrient cycling, sustainable land use, and can be part of regenerative systems. (<a href="https://nation.africa/kenya/blogs-opinion/blogs/pesticide-myths-and-lies-standing-in-the-way-of-sustainable-farming-in-kenya--3459362?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">Nation Africa</a>)
+                    </p>
+                </div>
+            </details>
+
+            <!-- FAQ Item 22: Misinformation -->
+            <details class="group bg-gray-50 p-6 rounded-2xl cursor-pointer transition-all duration-300 hover-lift accordion-item">
+                <summary class="flex justify-between items-center font-medium text-lg leading-tight text-gray-900 focus:outline-none">
+                    <span class="flex items-center space-x-2">
+                        <span class="text-2xl"></span>
+                        <span>22. Is agricultural misinformation harmless?</span>
+                    </span>
+                    <svg class="arrow-icon w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </summary>
+                <div class="mt-4 text-gray-600 text-base">
+                    <p>
+                        No—misinformation misguides decisions, policies, and undermines trust. (<a href="https://www.standardmedia.co.ke/farmkenya/crop/article/2001461348/one-fifth-of-gmo-coverage-in-africa-contains-misinformation-study-finds?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">The Standard</a>, <a href="https://africenter.isaaa.org/young-african-developers-showcase-ai-solutions-tackle-agricultural-misinformation/?utm_source=chatgpt.com" class="text-blue-600 hover:underline" target="_blank">africenter.isaaa.org</a>)
+                    </p>
+                </div>
+            </details>
+        </div>
+        <!-- End of all FAQs -->
+
+    </div>
+
+</body>
+</html>
