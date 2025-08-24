@@ -354,124 +354,134 @@
 
     <!-- Main Content Area -->
     <main class="min-h-screen pt-24 pb-12 px-4 bg-[#f0fdf4]">
-        <div class="container mx-auto max-w-5xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
-                <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
-            </h2>
-
-            <!-- Tabbed navigation for Document and Image analysis -->
-            <div class="flex border-b border-gray-200 mb-6">
-                <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
-                <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
-            </div>
-
-            <!-- Document Analyzer Section -->
-            <div id="doc-analyzer" class="active-tab" style="display: none;">
-                <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
-                    <div class="mb-4">
-                        <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, PDF, DOCX)</label>
-                        <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.pdf,.docx" required>
-                    </div>
-                    <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
-                        Analyze Document
-                    </button>
-                </div>
-                <!-- Document analysis results will be injected here by JavaScript -->
-                <div id="doc-analysis-results" class="hidden">
-                    <section class="mt-8">
-                        <h4 class="text-3xl font-bold text-green-700 mb-4">Data Summary</h4>
-                        <div id="doc-summary-table" class="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-100">
-                            <!-- Table will be inserted here by JavaScript -->
-                        </div>
-                    </section>
-                    <section class="mt-8">
-                        <h4 class="text-3xl font-bold text-green-700 mb-4">Data Visualizations</h4>
-                        <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- Charts will be inserted here by JavaScript -->
-                        </div>
-                    </section>
-                </div>
-            </div>
-
-            <!-- Image Analyzer Section -->
-            <div id="image-analyzer" class="hidden-tab" style="display: block;">
-                <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
-                    <div class="mb-4">
-                        <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
-                        <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
-                    </div>
-                    <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
-                        Analyze Image
-                    </button>
-                </div>
-                <!-- Image analysis results will be injected here by JavaScript -->
-                <div id="image-analysis-results" class="hidden">
-                    <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                        <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
-                        <div id="image-display-container" class="mb-4">
-                            <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200">
-                        </div>
-                        <p id="image-description" class="text-gray-800 text-lg leading-relaxed"></p>
-                    </section>
-                </div>
-            </div>
-
-            <!-- Universal loader for any analysis process -->
-            <div id="analysis-loader" class="analysis-loader-container">
-                <div class="analysis-spinner"></div>
-                <p class="analysis-loading-text mt-3">Analyzing your data...</p>
-            </div>
-        </div>
-    </main>
-    
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>agritrue13@gmail.com</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
-                </div>
-            </div>
-            <hr class="border-gray-700 my-8">
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Chatbot Floating Icon and Container -->
-    <div id="chatbot-icon" class="fixed bottom-6 right-6 z-40 bg-green-600 text-white p-4 rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110 animate-pulse">
-        <i class="fas fa-comment-dots text-2xl"></i>
+     
+    <!-- Universal Message Box -->
+    <div id="message-box-container" class="message-box-container hidden bg-white rounded-lg shadow-xl p-6 border-t-4 border-green-500 max-w-sm w-full z-50">
+        <h3 class="text-xl font-bold mb-2 text-gray-800">Notification</h3>
+        <p id="message-box-text" class="text-gray-600 mb-4"></p>
+        <button id="message-box-close" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg w-full hover:bg-green-700 transition">OK</button>
     </div>
+
+    <!-- The new landing page with the dropdown -->
+    <div id="welcome-page" class="w-full max-w-2xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl dropdown-container text-center">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center justify-center">
+                <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+            </h1>
+            <p class="text-lg text-gray-700 mb-8">
+                Welcome! Please select the type of analysis you need to begin.
+            </p>
+            <div class="mb-6">
+                <select id="analyzer-select" class="w-full p-3 md:p-4 text-lg border border-green-300 rounded-lg bg-white appearance-none focus:ring-2 focus:ring-green-400 focus:outline-none transition-shadow">
+                    <option value="" disabled selected>Select an Analyzer</option>
+                    <option value="image">Image Analyzer</option>
+                    <option value="document">Document Analyzer</option>
+                </select>
+                <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-green-700">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            <button id="proceed-btn" class="w-full bg-green-400 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-200 transform hover:scale-105" disabled>
+                Proceed
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Analyzer Container (hidden initially) -->
+    <div id="main-analyzer-container" class="w-full max-w-5xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl hidden">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
+            <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+        </h2>
+
+        <!-- Tabbed navigation for Document and Image analysis -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
+            <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
+        </div>
+
+        <!-- Document Analyzer Section -->
+        <div id="doc-analyzer" style="display: none;">
+            <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+                <div class="mb-4">
+                    <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, TXT)</label>
+                    <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.txt" required>
+                </div>
+                <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
+                    Analyze Document
+                </button>
+            </div>
+            <!-- Document analysis results will be injected here by JavaScript -->
+            <div id="doc-analysis-results" class="hidden">
+                <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h4 class="text-3xl font-bold text-green-700 mb-4">Document Analysis Result</h4>
+                    <p id="doc-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+
+                    <div id="doc-summary-table" class="mb-6"></div>
+
+                    <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+                    <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+                    <ul id="doc-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+                </section>
+            </div>
+        </div>
+
+        <!-- Image Analyzer Section -->
+        <div id="image-analyzer" style="display: block;">
+            <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+                <div class="mb-4">
+                    <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
+                    <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
+                </div>
+                <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
+                    Analyze Image
+                </button>
+            </div>
+            <!-- Image analysis results will be injected here by JavaScript -->
+            <div id="image-analysis-results" class="hidden">
+                <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
+                    <div id="image-display-container" class="mb-4 text-center">
+                        <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200 mx-auto">
+                    </div>
+                    <p id="image-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+                    <p id="image-detailed-analysis" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+                    <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+                    <ul id="image-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+                </section>
+            </div>
+        </div>
+
+        <!-- Universal loader for any analysis process -->
+        <div id="analysis-loader" class="analysis-loader-container hidden">
+            <div class="analysis-spinner"></div>
+            <p class="analysis-loading-text mt-3 text-lg font-semibold">Analyzing your data...</p>
+        </div>
+    </div>
+
+    <!-- Floating Chatbot Icon -->
+    <div id="chatbot-icon" class="chatbot-icon">
+        <i class="fas fa-comments text-2xl"></i>
+    </div>
+
+    <!-- Chatbot Container -->
     <div id="chatbot-container" class="chatbot-container hidden">
-        <div id="chatbot-header">
-            <span class="text-white text-lg font-semibold">AgriTrue Bot</span>
+        <div class="chatbot-header">
+            <h3 class="text-lg font-bold">Agri-Bot Assistant</h3>
             <button id="close-chatbot" class="text-white text-xl">&times;</button>
         </div>
-        <div id="chatbot-body" class="p-4 flex-1 overflow-y-auto">
-            <div class="bot-message p-3 rounded-xl shadow-md mb-2 bg-green-100 text-green-800">Hello! I am AgriTrue AI. How can I help you today?</div>
+        <div id="chatbot-body" class="chatbot-body">
+            <!-- Chat messages will be appended here -->
         </div>
-        <div id="chatbot-input-container" class="p-4 bg-gray-100 flex items-center rounded-b-xl">
-            <input type="text" id="chatbot-input" placeholder="Type a message..." class="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
-            <button id="send-message" class="ml-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-            <button id="mic-button" class="ml-2 bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors">
+        <div class="chatbot-input-container">
+            <input type="text" id="chatbot-input" class="flex-grow p-3 border border-gray-300 rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask me anything...">
+            <button id="mic-button" class="bg-gray-200 text-gray-700 p-3 rounded-lg hover:bg-gray-300 transition-colors">
                 <i class="fas fa-microphone"></i>
+            </button>
+            <button id="send-message" class="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-paper-plane"></i>
             </button>
         </div>
     </div>
@@ -480,6 +490,11 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // --- UI Elements and State Variables ---
+            const welcomePage = document.getElementById('welcome-page');
+            const mainAnalyzerContainer = document.getElementById('main-analyzer-container');
+            const analyzerSelect = document.getElementById('analyzer-select');
+            const proceedBtn = document.getElementById('proceed-btn');
+            
             const docTabBtn = document.getElementById('doc-tab-btn');
             const imageTabBtn = document.getElementById('image-tab-btn');
             const docAnalyzer = document.getElementById('doc-analyzer');
@@ -491,11 +506,20 @@
             const analysisLoader = document.getElementById('analysis-loader');
             const docResults = document.getElementById('doc-analysis-results');
             const imageResults = document.getElementById('image-analysis-results');
+            const docSummary = document.getElementById('doc-summary');
             const docSummaryTable = document.getElementById('doc-summary-table');
             const docCharts = document.getElementById('doc-charts');
+            const docRemediesList = document.getElementById('doc-remedies-list');
             const analyzedImage = document.getElementById('analyzed-image');
-            const imageDescription = document.getElementById('image-description');
-            
+            const imageSummary = document.getElementById('image-summary');
+            const imageDetailedAnalysis = document.getElementById('image-detailed-analysis');
+            const imageRemediesList = document.getElementById('image-remedies-list');
+
+            // Message box elements
+            const messageBoxContainer = document.getElementById('message-box-container');
+            const messageBoxText = document.getElementById('message-box-text');
+            const messageBoxCloseBtn = document.getElementById('message-box-close');
+
             // Chatbot elements
             const chatbotIcon = document.getElementById('chatbot-icon');
             const chatbotContainer = document.getElementById('chatbot-container');
@@ -510,10 +534,20 @@
             let chartInstances = {};
             let chatHistory = [];
             
-            // The API key is provided automatically by the canvas environment
-            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA"; 
+            const apiKey = ""; 
 
             // --- Utility Functions ---
+            function showMessageBox(message) {
+                messageBoxText.textContent = message;
+                messageBoxContainer.classList.remove('hidden');
+                messageBoxContainer.classList.add('visible');
+            }
+
+            function hideMessageBox() {
+                messageBoxContainer.classList.remove('visible');
+                messageBoxContainer.classList.add('hidden');
+            }
+
             function showAnalysisLoader(isLoading) {
                 analysisLoader.style.display = isLoading ? 'flex' : 'none';
                 analyzeImageBtn.disabled = isLoading;
@@ -523,10 +557,14 @@
             function resetUI() {
                 docResults.classList.add('hidden');
                 imageResults.classList.add('hidden');
-                imageDescription.textContent = '';
+                imageSummary.textContent = '';
+                imageDetailedAnalysis.textContent = '';
+                imageRemediesList.innerHTML = '';
                 analyzedImage.src = '';
+                docSummary.textContent = '';
                 docSummaryTable.innerHTML = '';
                 docCharts.innerHTML = '';
+                docRemediesList.innerHTML = '';
             }
 
             // --- Tab Switching Logic ---
@@ -566,8 +604,7 @@
                     // Display the uploaded image
                     analyzedImage.src = `data:image/jpeg;base64,${base64}`;
 
-                    // Construct the prompt for the Gemini model
-                    const prompt = "Analyze this image and describe the scene. If it's related to agriculture, provide a detailed analysis of the crops, soil health, or any visible issues like pests or disease. If it's a non-agricultural image, simply provide a detailed description. Provide a concise summary and a detailed analysis.";
+                    const prompt = "Analyze this agricultural image. Identify any diseases, pests, or nutrient deficiencies visible on the crops. Provide a summary of the findings, a detailed analysis, and a list of actionable remedies or solutions to address the identified issues. If the image is not agricultural, provide a general description. Format the response with clear headings for 'Summary', 'Detailed Analysis', and 'Recommended Remedies' in Markdown.";
 
                     const payload = {
                         contents: [{
@@ -595,98 +632,158 @@
 
                     const result = await response.json();
                     
-                    // Extract the text from the response
                     const text = result.candidates[0].content.parts[0].text;
+                    const parts = text.split('### ').slice(1); // Split by markdown heading
+
+                    // Extract and display the sections
+                    let summary = "No summary found.";
+                    let analysis = "No detailed analysis found.";
+                    let remedies = ["No remedies found."];
+
+                    parts.forEach(part => {
+                        const [heading, ...content] = part.split('\n');
+                        const contentStr = content.join('\n').trim();
+                        if (heading.includes('Summary')) {
+                            summary = contentStr;
+                        } else if (heading.includes('Detailed Analysis')) {
+                            analysis = contentStr;
+                        } else if (heading.includes('Recommended Remedies')) {
+                            remedies = contentStr.split('\n').filter(line => line.trim() !== '').map(line => line.replace(/^- /, ''));
+                        }
+                    });
+
+                    imageSummary.textContent = summary;
+                    imageDetailedAnalysis.textContent = analysis;
+                    imageRemediesList.innerHTML = remedies.map(remedy => `<li>${remedy}</li>`).join('');
                     
-                    // Display the results
-                    imageDescription.textContent = text;
                     imageResults.classList.remove('hidden');
 
                 } catch (error) {
                     console.error("Image analysis failed:", error);
-                    imageDescription.textContent = "Analysis failed. Please try again with a different image.";
-                    imageResults.classList.remove('hidden');
+                    showMessageBox("Analysis failed. Please try again with a different image.");
+                    imageResults.classList.add('hidden');
                 } finally {
                     showAnalysisLoader(false);
                 }
             }
 
-            // --- Mock Document Analysis (No real API call) ---
+            // --- Document Analysis with Gemini API ---
             async function analyzeDocument(file) {
                 showAnalysisLoader(true);
                 docResults.classList.add('hidden');
 
-                const fileName = file.name;
+                try {
+                    const text = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                        reader.readAsText(file);
+                    });
+                    
+                    const prompt = `Analyze the following agricultural document content:
+                    
+${text}
 
-                // Simulate a delay for processing
-                await new Promise(resolve => setTimeout(resolve, 2000));
+Provide a summary of the document, identify key metrics and their corresponding values in a structured format, and offer a list of actionable remedies based on the analysis. The key metrics should be numeric data suitable for plotting on a graph. The response must be a single JSON object with the following schema:
+{
+  "summary": "A concise summary of the document.",
+  "key_metrics": [
+    {
+      "name": "Name of the metric (e.g., 'Yield (ton/ha)')",
+      "labels": ["Label 1", "Label 2", ...],
+      "data": [1.5, 2.1, 1.8, ...]
+    }
+  ],
+  "remedies": ["Remedy 1", "Remedy 2", "Remedy 3"]
+}`;
 
-                // Generate mock data
-                const mockData = [
-                    { metric: "Document Type", value: file.type },
-                    { metric: "File Name", value: fileName },
-                    { metric: "Estimated Size", value: `${(file.size / 1024).toFixed(2)} KB` },
-                    { metric: "Keywords", value: "agriculture, harvest, yield, climate, soil" }
-                ];
-
-                const mockMetrics = [
-                    { name: "Yield (ton/ha)", data: [1.5, 2.1, 1.8, 2.5, 2.3] },
-                    { name: "Moisture (%)", data: [12.5, 11.2, 13.0, 10.8, 11.5] },
-                    { name: "Soil pH", data: [6.5, 6.8, 6.1, 7.0, 6.7] }
-                ];
-
-                // Render the summary table
-                const tableHtml = `
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${mockData.map(d => `
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${d.metric}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.value}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-                docSummaryTable.innerHTML = tableHtml;
-
-                // Render the charts
-                docCharts.innerHTML = mockMetrics.map((m, i) => `
-                    <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-                        <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
-                        <canvas id="chart-${i}"></canvas>
-                    </div>
-                `).join('');
-
-                // Create the Chart.js instances
-                mockMetrics.forEach((m, i) => {
-                    const ctx = document.getElementById(`chart-${i}`).getContext('2d');
-                    if (chartInstances[`chart-${i}`]) {
-                        chartInstances[`chart-${i}`].destroy();
-                    }
-                    chartInstances[`chart-${i}`] = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Plot 1', 'Plot 2', 'Plot 3', 'Plot 4', 'Plot 5'],
-                            datasets: [{
-                                label: m.name,
-                                data: m.data,
-                                backgroundColor: chartColors[i % chartColors.length],
-                                borderColor: chartColors[i % chartColors.length],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: { beginAtZero: true }
+                    const payload = {
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    summary: { type: "STRING" },
+                                    key_metrics: {
+                                        type: "ARRAY",
+                                        items: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                name: { type: "STRING" },
+                                                labels: { type: "ARRAY", items: { type: "STRING" } },
+                                                data: { type: "ARRAY", items: { type: "NUMBER" } }
+                                            },
+                                            propertyOrdering: ["name", "labels", "data"]
+                                        }
+                                    },
+                                    remedies: { type: "ARRAY", items: { type: "STRING" } }
+                                }
                             }
                         }
-                    });
-                });
+                    };
 
-                docResults.classList.remove('hidden');
-                showAnalysisLoader(false);
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    const parsedData = JSON.parse(jsonString);
+                    
+                    // Display summary and remedies
+                    docSummary.textContent = parsedData.summary;
+                    docRemediesList.innerHTML = parsedData.remedies.map(remedy => `<li>${remedy}</li>`).join('');
+
+                    // Render the charts
+                    docCharts.innerHTML = parsedData.key_metrics.map((m, i) => `
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
+                            <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
+                            <canvas id="chart-${i}"></canvas>
+                        </div>
+                    `).join('');
+
+                    // Destroy old charts and create new ones
+                    Object.values(chartInstances).forEach(chart => chart.destroy());
+                    chartInstances = {};
+
+                    parsedData.key_metrics.forEach((m, i) => {
+                        const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+                        chartInstances[`chart-${i}`] = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: m.labels,
+                                datasets: [{
+                                    label: m.name,
+                                    data: m.data,
+                                    backgroundColor: chartColors[i % chartColors.length],
+                                    borderColor: chartColors[i % chartColors.length],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: { y: { beginAtZero: true } }
+                            }
+                        });
+                    });
+
+                    docResults.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Document analysis failed:", error);
+                    showMessageBox("Document analysis failed. Please ensure the file is a plain text or CSV file with relevant agricultural data.");
+                    docResults.classList.add('hidden');
+                } finally {
+                    showAnalysisLoader(false);
+                }
             }
 
             // --- Event Listeners for Analysis Buttons ---
@@ -695,7 +792,7 @@
                 if (file) {
                     analyzeImage(file);
                 } else {
-                    alert("Please select an image file to analyze.");
+                    showMessageBox("Please select an image file to analyze.");
                 }
             });
 
@@ -704,7 +801,7 @@
                 if (file) {
                     analyzeDocument(file);
                 } else {
-                    alert("Please select a document file to analyze.");
+                    showMessageBox("Please select a document file to analyze.");
                 }
             });
 
@@ -713,12 +810,10 @@
                 const text = chatbotInput.value.trim();
                 if (!text) return;
                 
-                // Add user message to UI and history
                 appendMessage(text, true);
                 chatHistory.push({ role: "user", parts: [{ text: text }] });
                 chatbotInput.value = "";
 
-                // Show loading dots
                 const loadingDots = appendLoadingDots();
 
                 try {
@@ -733,7 +828,6 @@
 
                     const result = await response.json();
                     
-                    // Remove loading dots
                     loadingDots.remove();
 
                     if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
@@ -750,7 +844,6 @@
                 }
             }
 
-            // Helper function to append messages to the chat body
             function appendMessage(text, isUser) {
                 const msg = document.createElement("div");
                 msg.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? 'user-message bg-green-200 text-gray-900' : 'bot-message bg-gray-100 text-gray-800'}`;
@@ -759,7 +852,6 @@
                 chatbotBody.scrollTop = chatbotBody.scrollHeight;
             }
 
-            // Helper function to show loading dots
             function appendLoadingDots() {
                 const loadingContainer = document.createElement("div");
                 loadingContainer.className = "bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 text-gray-800 chat-loading-dots";
@@ -797,7 +889,6 @@
                 recognition.onresult = (event) => {
                     const transcript = event.results[0][0].transcript;
                     chatbotInput.value = transcript;
-                    // Automatically send the message after recognition
                     sendMessage();
                 };
                 recognition.onerror = (event) => {
@@ -808,7 +899,7 @@
                     recognition.start();
                 });
             } else {
-                micButton.style.display = 'none'; // Hide mic button if not supported
+                micButton.style.display = 'none';
             }
 
             // --- General UI Event Listeners ---
@@ -818,6 +909,7 @@
             chatbotInput.addEventListener('keydown', (e) => {
                 if (e.key === "Enter") sendMessage();
             });
+            messageBoxCloseBtn.addEventListener('click', hideMessageBox);
 
             // Chatbot visibility controls
             chatbotIcon.addEventListener('click', () => {
@@ -828,42 +920,22 @@
                 chatbotContainer.classList.add('hidden');
                 chatbotIcon.classList.remove('hidden');
             });
-
-            // Mobile menu logic fix
-            const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-            const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
-            const mobileMenu = document.getElementById("mobileMenu");
-            const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
-
-            mobileMenuBtn.addEventListener("click", () => {
-                mobileMenu.classList.add("open");
-                mobileMenuOverlay.style.display = "block";
-                document.body.style.overflow = "hidden";
-            });
             
-            closeMobileMenuBtn.addEventListener("click", () => {
-                mobileMenu.classList.remove("open");
-                mobileMenuOverlay.style.display = "none";
-                document.body.style.overflow = "auto";
+            // Landing page logic
+            analyzerSelect.addEventListener('change', () => {
+                proceedBtn.disabled = false;
+                proceedBtn.classList.remove('bg-green-400');
+                proceedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
             });
 
-            mobileMenuOverlay.addEventListener("click", () => {
-                mobileMenu.classList.remove("open");
-                mobileMenuOverlay.style.display = "none";
-                document.body.style.overflow = "auto";
+            proceedBtn.addEventListener('click', () => {
+                const selectedAnalyzer = analyzerSelect.value;
+                if (selectedAnalyzer) {
+                    welcomePage.classList.add('hidden');
+                    mainAnalyzerContainer.classList.remove('hidden');
+                    showTab(selectedAnalyzer);
+                }
             });
-
-            // Loader script
-            window.addEventListener("load", () => {
-                const loader = document.getElementById("agritrue-loader");
-                setTimeout(() => {
-                    loader.style.opacity = 0;
-                    setTimeout(() => loader.style.display = "none", 500);
-                }, 1000);
-            });
-
-            // Set initial tab
-            showTab('image');
         });
     </script>
 </body>
