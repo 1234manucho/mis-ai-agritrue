@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research & Media</title>
+ 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2U6nN5D0W9u8i+R5nS22Q+P3G/gX6r2Cj2sQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .hero-content {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Loader Styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Slideshow Styles */
+        #slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+
+        .dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
+            z-index: 2;
+        }
+
+        /* Chatbot Styles */
+        #chatbot-icon {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #34d399;
+            color: #fff;
+            font-size: 2rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 999;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 360px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        #chatbot-header {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: white;
+            padding: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #chatbot-body {
+            padding: 16px;
+            background: #f0fdf4;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+        
+        #chatbot-input-container {
+            display: flex;
+            padding: 12px;
+            background: #ecfdf5;
+            border-top: 1px solid #d1fae5;
+        }
+        
+        #chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        #send-message, #mic-button {
+            background: #34d399;
+            color: white;
+            border: none;
+            padding: 0 12px;
+            margin-left: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: #34d399;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: #d1fae5;
+            color: black;
+            margin-right: auto;
+        }
+
+        /* Hide default Bootstrap toggler on larger screens */
+        @media (min-width: 992px) {
+            .navbar-toggler {
+                display: none;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: #f0fdf4;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-f0fdf4 font-inter">
+
+    <!-- Loader -->
+    <div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="text-center">
+            <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
+            <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+                <a href="/research">Research</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                   
+                </div>
+            </li>
+        </ul>
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
+    </div>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/dashboard">
+                <img src="https://placehold.co/48x48/16a34a/ffffff?text=Logo" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Home</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About</a>
+                <a href="/tools" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Tools</a>
+                
+                <!-- Research Dropdown -->
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Research <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-64 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Academic Publications</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Case Studies</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Policy & Reports</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Partner Research</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Tools & Methodologies</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Dropdown -->
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Media <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Latest News</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Infographics</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Videos & Podcasts</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Press Snippets</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="/contact" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Contact</a>
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li><a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-home mr-3"></i>Home</a></li>
+            <li><a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about"><i class="fas fa-info-circle mr-3"></i>About</a></li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#research" onclick="document.getElementById('researchCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-flask mr-3"></i>Research</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="researchCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Research Hub</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Academic Publications</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Case Studies</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Policy & Reports</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Partner Research</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Tools & Methodologies</a>
+                </div>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#media" onclick="document.getElementById('mediaCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-newspaper mr-3"></i>Media</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="mediaCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Latest News</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Infographics</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Videos & Podcasts</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="#">Press Snippets</a>
+                </div>
+            </li>
+            <li><a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/contact"><i class="fas fa-address-book mr-3"></i>Contact</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Research Section -->
+        <section id="research" class="max-w-7xl mx-auto my-12 pt-8">
+            <h2 class="text-4xl font-extrabold text-green-800 mb-6 text-center">Research Hub</h2>
+            <p class="text-gray-600 text-lg text-center max-w-3xl mx-auto mb-12">
+                Explore African-focused studies and data-driven insights combating agricultural misinformation. Our research is the foundation of the trustworthy advice we provide to farmers.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Academic Publications Card -->
+                <div class="card flex flex-col items-center text-center">
+                    <div class="text-green-600 text-5xl mb-4"><i class="fas fa-book-reader"></i></div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Academic Publications</h3>
+                    <p class="text-gray-600 mb-4">Access our peer-reviewed papers and formal studies on agricultural data and technology in Africa.</p>
+                    <a href="#" class="inline-flex items-center text-green-600 font-medium hover:text-green-800 transition duration-200">
+                        View Papers <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                </div>
+                <!-- Case Studies Card -->
+                <div class="card flex flex-col items-center text-center">
+                    <div class="text-green-600 text-5xl mb-4"><i class="fas fa-chart-line"></i></div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Case Studies</h3>
+                    <p class="text-gray-600 mb-4">Discover real-world examples of how AgriTrue's tools are making a tangible impact on farms across the continent.</p>
+                    <a href="#" class="inline-flex items-center text-green-600 font-medium hover:text-green-800 transition duration-200">
+                        Read Stories <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                </div>
+                <!-- Policy & Reports Card -->
+                <div class="card flex flex-col items-center text-center">
+                    <div class="text-green-600 text-5xl mb-4"><i class="fas fa-file-invoice"></i></div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Policy & Reports</h3>
+                    <p class="text-gray-600 mb-4">Dive into white papers and reports on agricultural policy, governance, and the role of technology in food security.</p>
+                    <a href="#" class="inline-flex items-center text-green-600 font-medium hover:text-green-800 transition duration-200">
+                        Download Reports <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <hr class="max-w-7xl mx-auto border-t-2 border-gray-200 my-16">
+
+        <!-- Media Section -->
+        <section id="media" class="max-w-7xl mx-auto my-12 pt-8">
+            <h2 class="text-4xl font-extrabold text-green-800 mb-6 text-center">AgriTrue Media & News</h2>
+            <p class="text-gray-600 text-lg text-center max-w-3xl mx-auto mb-12">
+                Stay up-to-date with the latest stories, videos, and infographics from AgriTrue and the broader agricultural community.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Media Card 1: News Highlight -->
+                <a href="https://www.theguardian.com/world/2024/sep/30/high-tech-high-yields-the-kenyan-farmers-deploying-ai-to-increase-productivity" target="_blank" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/10b981/ffffff?text=AI+in+Farming" alt="A Kenyan farmer using AI tools in a field" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-green-600 uppercase tracking-wider mb-2 block">News</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">Kenyan Farmer Triples Yield with AI Tool</h3>
+                        <p class="text-gray-600 text-sm">Using a new ML-powered tool, a local farmer has seen a remarkable increase in his harvest.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> October 2, 2024
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Media Card 2: Infographic -->
+                <a href="#" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/2563eb/ffffff?text=Infographic" alt="An infographic about misinformation" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2 block">Infographic</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">Facts vs. Myths: GMOs in Africa</h3>
+                        <p class="text-gray-600 text-sm">A visual breakdown debunking common misconceptions about genetically modified crops.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> September 28, 2024
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Media Card 3: Video -->
+                <a href="#" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/ef4444/ffffff?text=Video+Thumbnail" alt="A video thumbnail of a farmer in a field" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-red-600 uppercase tracking-wider mb-2 block">Video</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">AgriTrue: The Farm Truth in 60 Seconds</h3>
+                        <p class="text-gray-600 text-sm">A quick-fire video showing how to use our Farm Truth tool to verify soil quality.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> September 25, 2024
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Media Card 4: Podcast -->
+                <a href="#" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/9b59b6/ffffff?text=Audio" alt="A microphone and headphones representing a podcast" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-2 block">Audio</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">Myth-Busters: The Fake Fertilizer Episode</h3>
+                        <p class="text-gray-600 text-sm">Our first podcast episode interviews an expert on identifying counterfeit agricultural products.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> September 20, 2024
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Media Card 5: Partner Insights -->
+                <a href="#" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/f39c12/ffffff?text=Partner+Research" alt="An image representing partnership research" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-yellow-600 uppercase tracking-wider mb-2 block">Insight</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">The Role of Community Notes in Africa</h3>
+                        <p class="text-gray-600 text-sm">An exclusive insight piece from our partners at DisinfoAfrica on how collective intelligence fights fakes.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> September 15, 2024
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Media Card 6: Press Snippet -->
+                <a href="https://www.standardmedia.co.ke/sports/amp/crop/article/2001461348/one-fifth-of-gmo-coverage-in-africa-contains-misinformation-study-finds" target="_blank" class="media-card group block no-underline" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); cursor: pointer;">
+                    <img src="https://placehold.co/600x400/95a5a6/ffffff?text=Press" alt="A news banner or press photo" class="w-full h-48 object-cover rounded-t-lg transition-transform duration-300 group-hover:scale-110">
+                    <div class="p-6">
+                        <span class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2 block">Press</span>
+                        <h3 class="text-xl font-bold text-gray-800 leading-tight mb-2">Study Finds High Misinformation in African Media</h3>
+                        <p class="text-gray-600 text-sm">A new study highlights that one in five GMO articles contains misinformation, underscoring our mission.</p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <span class="font-semibold">Published:</span> September 10, 2024
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div class="mb-4 md:mb-0">
+                <span class="font-bold text-xl">AgriTrue</span>
+                <p class="text-gray-400 text-sm mt-1">Empowering farmers with data-driven insights.</p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200"><i class="fab fa-facebook-f"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // JavaScript for mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+        });
+
+        closeMobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        mobileMenuOverlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        // Close menu when a link is clicked
+        const mobileLinks = document.querySelectorAll('.mobile-menu a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
