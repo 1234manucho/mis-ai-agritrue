@@ -352,139 +352,132 @@
         </div>
     </div>
 
-    <!-- Main Content Area -->
-    <main class="min-h-screen pt-24 pb-12 px-4 bg-[#f0fdf4]">
-     
-    <!-- Universal Message Box -->
-    <div id="message-box-container" class="message-box-container hidden bg-white rounded-lg shadow-xl p-6 border-t-4 border-green-500 max-w-sm w-full z-50">
-        <h3 class="text-xl font-bold mb-2 text-gray-800">Notification</h3>
-        <p id="message-box-text" class="text-gray-600 mb-4"></p>
-        <button id="message-box-close" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg w-full hover:bg-green-700 transition">OK</button>
+   <!-- Main Content Area -->
+<main class="min-h-screen w-full bg-[#f0fdf4] flex flex-col items-center justify-start pt-20 pb-12 px-4">
+
+  <!-- Universal Message Box -->
+  <div id="message-box-container" class="message-box-container hidden fixed top-1/4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl p-6 border-t-4 border-green-500 max-w-sm w-full z-50">
+    <h3 class="text-xl font-bold mb-2 text-gray-800">Notification</h3>
+    <p id="message-box-text" class="text-gray-600 mb-4"></p>
+    <button id="message-box-close" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg w-full hover:bg-green-700 transition">OK</button>
+  </div>
+
+  <!-- Landing Page -->
+  <div id="welcome-page" class="w-full max-w-2xl bg-white bg-opacity-95 p-8 md:p-12 rounded-2xl shadow-2xl text-center">
+    <div class="max-w-md mx-auto">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center justify-center">
+        <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+      </h1>
+      <p class="text-lg text-gray-700 mb-8">
+        Welcome! Please select the type of analysis you need to begin.
+      </p>
+      <div class="mb-6 relative">
+        <select id="analyzer-select" class="w-full p-3 md:p-4 text-lg border border-green-300 rounded-lg bg-white appearance-none focus:ring-2 focus:ring-green-400 focus:outline-none transition-shadow">
+          <option value="" disabled selected>Select an Analyzer</option>
+          <option value="image">Image Analyzer</option>
+          <option value="document">Document Analyzer</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-green-700">
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+      <button id="proceed-btn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition transform hover:scale-105" disabled>
+        Proceed
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Analyzer Container -->
+  <div id="main-analyzer-container" class="w-full max-w-5xl bg-white bg-opacity-95 p-8 md:p-12 rounded-2xl shadow-2xl hidden mt-10">
+    <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
+      <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+    </h2>
+
+    <!-- Tabbed navigation -->
+    <div class="flex border-b border-gray-200 mb-6">
+      <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
+      <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
     </div>
 
-    <!-- The new landing page with the dropdown -->
-    <div id="welcome-page" class="w-full max-w-2xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl dropdown-container text-center">
-        <div class="max-w-md mx-auto">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center justify-center">
-                <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
-            </h1>
-            <p class="text-lg text-gray-700 mb-8">
-                Welcome! Please select the type of analysis you need to begin.
-            </p>
-            <div class="mb-6">
-                <select id="analyzer-select" class="w-full p-3 md:p-4 text-lg border border-green-300 rounded-lg bg-white appearance-none focus:ring-2 focus:ring-green-400 focus:outline-none transition-shadow">
-                    <option value="" disabled selected>Select an Analyzer</option>
-                    <option value="image">Image Analyzer</option>
-                    <option value="document">Document Analyzer</option>
-                </select>
-                <div class="relative">
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-green-700">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-            </div>
-            <button id="proceed-btn" class="w-full bg-green-400 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-200 transform hover:scale-105" disabled>
-                Proceed
-            </button>
+    <!-- Document Analyzer Section -->
+    <div id="doc-analyzer" style="display: none;">
+      <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+        <div class="mb-4">
+          <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, WORD, PDF)</label>
+          <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.txt,.pdf,.docx" required>
         </div>
+        <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 w-full">
+          Analyze Document
+        </button>
+      </div>
+      <div id="doc-analysis-results" class="hidden">
+        <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h4 class="text-3xl font-bold text-green-700 mb-4">Document Analysis Result</h4>
+          <p id="doc-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <div id="doc-summary-table" class="mb-6"></div>
+          <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+          <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+          <ul id="doc-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+        </section>
+      </div>
     </div>
 
-    <!-- Main Analyzer Container (hidden initially) -->
-    <div id="main-analyzer-container" class="w-full max-w-5xl bg-white bg-opacity-95 p-6 md:p-10 rounded-xl shadow-2xl hidden">
-        <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
-            <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
-        </h2>
-
-        <!-- Tabbed navigation for Document and Image analysis -->
-        <div class="flex border-b border-gray-200 mb-6">
-            <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
-            <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
+    <!-- Image Analyzer Section -->
+    <div id="image-analyzer" style="display: block;">
+      <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+        <div class="mb-4">
+          <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
+          <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
         </div>
-
-        <!-- Document Analyzer Section -->
-        <div id="doc-analyzer" style="display: none;">
-            <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
-                <div class="mb-4">
-                    <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, TXT)</label>
-                    <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.txt" required>
-                </div>
-                <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
-                    Analyze Document
-                </button>
-            </div>
-            <!-- Document analysis results will be injected here by JavaScript -->
-            <div id="doc-analysis-results" class="hidden">
-                <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                    <h4 class="text-3xl font-bold text-green-700 mb-4">Document Analysis Result</h4>
-                    <p id="doc-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
-
-                    <div id="doc-summary-table" class="mb-6"></div>
-
-                    <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-                    <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
-                    <ul id="doc-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
-                </section>
-            </div>
-        </div>
-
-        <!-- Image Analyzer Section -->
-        <div id="image-analyzer" style="display: block;">
-            <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
-                <div class="mb-4">
-                    <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
-                    <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
-                </div>
-                <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 transform hover:scale-105 w-full">
-                    Analyze Image
-                </button>
-            </div>
-            <!-- Image analysis results will be injected here by JavaScript -->
-            <div id="image-analysis-results" class="hidden">
-                <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                    <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
-                    <div id="image-display-container" class="mb-4 text-center">
-                        <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200 mx-auto">
-                    </div>
-                    <p id="image-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
-                    <p id="image-detailed-analysis" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
-                    <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
-                    <ul id="image-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
-                </section>
-            </div>
-        </div>
-
-        <!-- Universal loader for any analysis process -->
-        <div id="analysis-loader" class="analysis-loader-container hidden">
-            <div class="analysis-spinner"></div>
-            <p class="analysis-loading-text mt-3 text-lg font-semibold">Analyzing your data...</p>
-        </div>
+        <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 w-full">
+          Analyze Image
+        </button>
+      </div>
+      <div id="image-analysis-results" class="hidden">
+        <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
+          <div id="image-display-container" class="mb-4 text-center">
+            <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200 mx-auto">
+          </div>
+          <p id="image-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <p id="image-detailed-analysis" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+          <ul id="image-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+        </section>
+      </div>
     </div>
 
-    <!-- Floating Chatbot Icon -->
-    <div id="chatbot-icon" class="chatbot-icon">
-        <i class="fas fa-comments text-2xl"></i>
+    <!-- Loader -->
+    <div id="analysis-loader" class="analysis-loader-container hidden text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-green-600 mx-auto"></div>
+      <p class="mt-3 text-lg font-semibold text-green-700">Analyzing your data...</p>
     </div>
+  </div>
 
-    <!-- Chatbot Container -->
-    <div id="chatbot-container" class="chatbot-container hidden">
-        <div class="chatbot-header">
-            <h3 class="text-lg font-bold">Agri-Bot Assistant</h3>
-            <button id="close-chatbot" class="text-white text-xl">&times;</button>
-        </div>
-        <div id="chatbot-body" class="chatbot-body">
-            <!-- Chat messages will be appended here -->
-        </div>
-        <div class="chatbot-input-container">
-            <input type="text" id="chatbot-input" class="flex-grow p-3 border border-gray-300 rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask me anything...">
-            <button id="mic-button" class="bg-gray-200 text-gray-700 p-3 rounded-lg hover:bg-gray-300 transition-colors">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button id="send-message" class="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-colors">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
+  <!-- Floating Chatbot Icon -->
+  <div id="chatbot-icon" class="fixed bottom-6 right-6 bg-green-600 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-green-700 transition">
+    <i class="fas fa-comments text-2xl"></i>
+  </div>
+
+  <!-- Chatbot Container -->
+  <div id="chatbot-container" class="hidden fixed bottom-20 right-6 w-80 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-green-500">
+    <div class="bg-green-600 text-white px-4 py-3 flex justify-between items-center">
+      <h3 class="text-lg font-bold">Agri-Bot Assistant</h3>
+      <button id="close-chatbot" class="text-white text-2xl">&times;</button>
     </div>
+    <div id="chatbot-body" class="flex-1 p-4 overflow-y-auto space-y-3 text-left text-gray-800"></div>
+    <div class="flex items-center p-3 border-t border-gray-200 bg-gray-50">
+      <input type="text" id="chatbot-input" class="flex-grow p-2 border border-green-300 rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask me anything...">
+      <button id="mic-button" class="bg-green-100 text-green-700 p-2 rounded-lg hover:bg-green-200 transition">
+        <i class="fas fa-microphone"></i>
+      </button>
+      <button id="send-message" class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</main>
+
 
     <!-- JavaScript to handle all interactivity, including tabs, analysis, and the chatbot -->
     <script>
