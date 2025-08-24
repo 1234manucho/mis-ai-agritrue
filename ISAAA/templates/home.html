@@ -1041,6 +1041,107 @@
         </a>
     </div>
 </section>
+<!-- NEW: Types of Agriculture Section with Image Carousels -->
+<section id="types-of-agriculture" 
+         style="max-width:1280px; margin:3rem auto; padding-top:2rem; font-family:Arial, sans-serif;">
+  
+  <!-- Section Title -->
+  <h2 style="font-size:1.875rem; font-weight:bold; text-align:center; color:#166534; margin-bottom:2rem;">
+    Exploring Types of Agriculture
+  </h2>
+  
+  <!-- Grid Container -->
+  <div style="display:grid; grid-template-columns:1fr; gap:2rem;" id="agriculture-grid">
+    
+    <!-- Crop Farming Card -->
+    <div style="display:flex; flex-direction:column; align-items:center; padding:1rem; border-radius:0.75rem; 
+                background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;">
+      
+      <!-- Moving Images (Marquee style) -->
+      <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
+        <div style="display:flex; gap:1rem; width:max-content; animation:scrollCrop 20s linear infinite;">
+         <img src="/static/images/crop1.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop2.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop3.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop4.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <!-- Duplicate for seamless loop -->
+           <img src="/static/images/crop1.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop2.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop3.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop4.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        </div>
+      </div>
+      
+      <!-- Title -->
+      <h4 style="font-size:1.5rem; font-weight:600; color:#15803d; margin-bottom:0.5rem;">
+        Crop Farming
+      </h4>
+      
+      <!-- Description -->
+      <p style="color:#4b5563; text-align:center; font-size:1rem; line-height:1.6;">
+        Crop farming involves the cultivation of grains, vegetables, and fruits. 
+        It ensures a stable food supply and raw materials for industries worldwide.
+      </p>
+    </div>
+    
+    <!-- Livestock & Poultry Farming Card -->
+    <div style="display:flex; flex-direction:column; align-items:center; padding:1rem; border-radius:0.75rem; 
+                background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;">
+      
+      <!-- Moving Images -->
+      <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
+        <div style="display:flex; gap:1rem; width:max-content; animation:scrollLivestock 22s linear infinite;">
+          <img src="/static/images/an1.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an2.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an3.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an4.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <!-- Duplicate for seamless loop -->
+          <img src="/static/images/an1.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an2.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an3.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/an4.jpg" style="width:300px; height:200px; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+        </div>
+      </div>
+      
+      <!-- Title -->
+      <h4 style="font-size:1.5rem; font-weight:600; color:#15803d; margin-bottom:0.5rem;">
+        Livestock & Poultry Farming
+      </h4>
+      
+      <!-- Description -->
+      <p style="color:#4b5563; text-align:center; font-size:1rem; line-height:1.6;">
+        Livestock and poultry farming includes cattle, goats, sheep, and chickens raised for meat, milk, and eggs. 
+        It supplies vital proteins and supports the agricultural economy.
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- Animations -->
+<style>
+  @keyframes scrollCrop {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes scrollLivestock {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Responsive: 2 columns on larger screens */
+  @media (min-width: 768px) {
+    #agriculture-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Hover zoom effect */
+  #agriculture-grid img:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s;
+  }
+</style>
 
 <!-- Section with Image on Left, Text on Right, now focused on fighting misinformation -->
 <section class="mb-12" id="combating-misinformation">
