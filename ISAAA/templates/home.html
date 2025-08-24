@@ -1060,15 +1060,15 @@
       <!-- Moving Images (Marquee style) -->
       <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
         <div style="display:flex; gap:1rem; width:max-content; animation:scrollCrop 20s linear infinite;">
-          <img src="/static/images/crop1.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop2.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop3.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop4.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop1.jpg" class="carousel-img">
+          <img src="/static/images/Lan1.jpg" class="carousel-img">
+          <img src="/static/images/crop3.jpg" class="carousel-img">
+          <img src="/static/images/crop4.jpg" class="carousel-img">
           <!-- Duplicate for seamless loop -->
-          <img src="/static/images/crop1.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop2.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop3.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/crop4.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/crop1.jpg" class="carousel-img">
+          <img src="/static/images/Lan1.jpg" class="carousel-img">
+          <img src="/static/images/crop3.jpg" class="carousel-img">
+          <img src="/static/images/crop4.jpg" class="carousel-img">
         </div>
       </div>
       
@@ -1091,15 +1091,15 @@
       <!-- Moving Images -->
       <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
         <div style="display:flex; gap:1rem; width:max-content; animation:scrollLivestock 22s linear infinite;">
-          <img src="/static/images/kul1.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an2.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an3.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an4.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/kul1.jpg" class="carousel-img">
+          <img src="/static/images/an2.jpg" class="carousel-img">
+          <img src="/static/images/an3.jpg" class="carousel-img">
+          <img src="/static/images/an4.jpg" class="carousel-img">
           <!-- Duplicate for seamless loop -->
-          <img src="/static/images/kul1.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an2.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an3.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-          <img src="/static/images/an4.jpg" style="width:500px; height:320px; object-fit:cover; border-radius:0.5rem; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+          <img src="/static/images/kul1.jpg" class="carousel-img">
+          <img src="/static/images/an2.jpg" class="carousel-img">
+          <img src="/static/images/an3.jpg" class="carousel-img">
+          <img src="/static/images/an4.jpg" class="carousel-img">
         </div>
       </div>
       
@@ -1119,7 +1119,7 @@
   </div>
 </section>
 
-<!-- Animations -->
+<!-- Animations + Responsive Styling -->
 <style>
   @keyframes scrollCrop {
     from { transform: translateX(0); }
@@ -1130,18 +1130,35 @@
     to { transform: translateX(-50%); }
   }
 
+  /* Default image size (desktop/laptop) */
+  .carousel-img {
+    width: 400px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  /* On tablets */
+  @media (max-width: 1024px) {
+    .carousel-img {
+      width: 300px;
+      height: 200px;
+    }
+  }
+
+  /* On small devices (mobile) */
+  @media (max-width: 767px) {
+    .carousel-img {
+      width: 180px;
+      height: 120px;
+    }
+  }
+
   /* Responsive: 2 columns on larger screens */
   @media (min-width: 768px) {
     #agriculture-grid {
       grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* Make images responsive on small screens */
-  @media (max-width: 767px) {
-    #agriculture-grid img {
-      width: 100% !important;
-      height: auto !important;
     }
   }
 
