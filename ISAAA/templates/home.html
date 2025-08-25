@@ -259,14 +259,13 @@
 </head>
 <body class="bg-f0fdf4 font-inter">
 
-    <!-- Loader -->
-    <!-- <div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="text-center">
-            <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
-            <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
-        </div>
-    </div> -->
-
+   <!-- Loader -->
+<div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="text-center">
+        <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
+        <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
+    </div>
+</div>
     <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
@@ -1464,28 +1463,28 @@
     </footer>
     
     <script>
-        // Loader Script
-        window.addEventListener("load", () => {
-            const loader = document.getElementById("agritrue-loader");
-            setTimeout(() => {
-                loader.style.opacity = 0;
-                setTimeout(() => loader.style.display = "none", 50);
-            }, 1);
-        });
+   // Loader Script (always 2s max)
+    window.addEventListener("load", () => {
+        const loader = document.getElementById("agritrue-loader");
+        setTimeout(() => {
+            loader.style.opacity = 0;
+            setTimeout(() => loader.style.display = "none", 500); // allow fade-out
+        }, 2000); // show loader for 2 seconds
+    });
 
-        // Slideshow Script
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('#slideshow .slide');
-            let current = 0;
-            if (slides.length > 0) {
-                slides[current].classList.add('active');
-            }
-            setInterval(() => {
-                slides[current].classList.remove('active');
-                current = (current + 1) % slides.length;
-                slides[current].classList.add('active');
-            }, 5000); // Change slide every 5 seconds
-        });
+    // Slideshow Script
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('#slideshow .slide');
+        let current = 0;
+        if (slides.length > 0) {
+            slides[current].classList.add('active');
+        }
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 5000);
+    });
 
         // Mobile Menu Script
         const mobileMenuBtn = document.getElementById("mobileMenuBtn");
