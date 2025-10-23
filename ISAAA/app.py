@@ -85,14 +85,14 @@ ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ------------------- MODEL LOADING -------------------
-try:
-    IMAGE_MODEL_PATH = 'models/agri_image_model.h5'
-    image_model = tf.keras.models.load_model(IMAGE_MODEL_PATH)
-    print("Image model loaded successfully.")
-except Exception as e:
-    print(f"Error loading image model: {e}. Analysis will be database-driven.")
-    image_model = None
+# # ------------------- MODEL LOADING -------------------
+# try:
+#     IMAGE_MODEL_PATH = 'models/agri_image_model.h5'
+#     image_model = tf.keras.models.load_model(IMAGE_MODEL_PATH)
+#     print("Image model loaded successfully.")
+# except Exception as e:
+#     print(f"Error loading image model: {e}. Analysis will be database-driven.")
+#     image_model = None
 
 # ------------------- FIREBASE API KEY HELPER -------------------
 def get_firebase_api_key():
