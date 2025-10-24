@@ -10,7 +10,6 @@ import requests
 import json
 import uuid
 from datetime import datetime, timedelta
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 import docx
@@ -39,7 +38,6 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    # ------------------- CONFIG -------------------
     app.secret_key = 'supersecretkey'
     app.config['UPLOAD_FOLDER'] = 'uploads/'
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -52,7 +50,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # ------------------- FLASK LOGIN -------------------
+    # ------------------- LOGIN -------------------
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
@@ -70,7 +68,6 @@ def create_app():
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
 
-    # Firestore client (global for simplicity)
     global firestore_db
     firestore_db = firestore.client()
 
@@ -85,22 +82,12 @@ ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ------------------- MODEL LOADING -------------------
-try:
-    IMAGE_MODEL_PATH = 'models/agri_image_model.h5'
-    image_model = tf.keras.models.load_model(IMAGE_MODEL_PATH)
-    print("Image model loaded successfully.")
-except Exception as e:
-    print(f"Error loading image model: {e}. Analysis will be database-driven.")
-    image_model = None
-
 # ------------------- FIREBASE API KEY HELPER -------------------
 def get_firebase_api_key():
-    """Access Firebase API key from Flask config safely."""
     return current_app.config.get('FIREBASE_API_KEY')
 
-
 # ----------------- ROUTES -----------------
+
 
 @app.route('/')
 def home():
