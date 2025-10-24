@@ -88,6 +88,8 @@ def get_firebase_api_key():
 
 # ----------------- ROUTES -----------------
 
+# ----------------- ROUTES -----------------
+
 
 @app.route('/')
 def home():
