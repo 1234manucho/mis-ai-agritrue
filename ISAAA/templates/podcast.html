@@ -5,39 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgriTrue Podcast — Voices of the Land</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* Podcast Card Hover Effect */
         .podcast-card:hover {
             transform: translateY(-4px) scale(1.03);
             box-shadow: 0 10px 28px rgba(34,197,94,0.18), 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.18s cubic-bezier(.4,0,.2,1);
         }
-        /* Animate audio play button */
-        .audio-flash:active {
-            animation: flash 0.3s;
-        }
+        .audio-flash:active { animation: flash 0.3s; }
         @keyframes flash {
             0% { filter: brightness(1.1); }
             50% { filter: brightness(1.5); }
             100% { filter: brightness(1.1); }
         }
+        /* Mobile nav overlay */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 49;
+        }
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #f0fdf4;
+            z-index: 50;
+            padding: 2rem 1rem 1rem 1rem;
+            overflow-y: auto;
+        }
+        .mobile-menu.show, .mobile-menu-overlay.show { display: block; }
     </style>
 </head>
 <body class="bg-green-50 text-gray-800 font-sans">
 
-     <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar bg-green-700">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
             <a class="flex items-center space-x-2" href="/">
                 <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
                 <span class="text-white text-2xl font-bold">AgriTrue</span>
             </a>
-
             <!-- Desktop Menu -->
             <div class="hidden lg:flex items-center space-x-6">
                 <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
@@ -48,11 +61,11 @@
                         </div>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Farm Truth</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">About Us</a>
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
@@ -61,36 +74,15 @@
                         </div>
                     </div>
                 </div>  
-                {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
-                            {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
-                {% endif %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-800">Register</a>
             </div>
-
             <!-- Mobile Toggler Button -->
             <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </div>
     </nav>
-    
     <!-- Mobile Menu -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
     <div id="mobileMenu" class="mobile-menu lg:hidden">
@@ -103,9 +95,7 @@
                 <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
             </li>
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about"><i class="fas fa-info-circle mr-3"></i>About Us</a>
             </li>
             <li>
                 <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
@@ -121,45 +111,38 @@
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
                     <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
+                </div>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-green-600 font-medium p-2 rounded-lg transition hover:bg-green-700 hover:text-white">
+                Resource & Downloads <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </a>
+                <div class="pl-8 pt-2 space-y-2">
+                    <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                    <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
                 </div>
             </li>
         </ul>
-        <div class="relative group">
-                    <a href="#"
-   class="nav-link text-green-600 font-medium p-2 rounded-lg transition duration-200 hover:bg-green-700 hover:text-white">
-   Resource & Downloads
-   <i class="fas fa-chevron-down text-xs ml-1"></i>
-</a>
-
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                    </div>
-                </div>  
         <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
             <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
             <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
         </div>
     </div>
 
-
     <!-- Hero Section -->
-    <section class="text-center py-16 bg-gradient-to-r from-green-600 to-green-400 text-white">
+    <section class="text-center py-16 bg-gradient-to-r from-green-600 to-green-400 text-white mt-14">
         <h2 class="text-4xl font-bold mb-4">🎧 Voices of the Land</h2>
         <p class="text-lg max-w-3xl mx-auto">Real stories. Expert insights. Smart farming for a sustainable future.  
             Tune in as farmers, researchers, and innovators share how technology and data are transforming African agriculture.</p>
+        <div class="flex justify-center gap-4 mt-6">
+            <a href="https://www.instagram.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-instagram fa-xl"></i></a>
+            <a href="https://open.spotify.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-spotify fa-xl"></i></a>
+            <a href="https://www.youtube.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-youtube fa-xl"></i></a>
+        </div>
+        <div class="mt-6">
+            <span class="inline-block bg-yellow-300 text-green-900 px-4 py-2 rounded-full text-lg font-semibold">Follow us for new content every week!</span>
+        </div>
     </section>
 
     <!-- Featured Episode -->
@@ -174,6 +157,38 @@
                     <source src="static/audio/episode1.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
+                <div class="mt-4 flex gap-4">
+                    <a href="https://open.spotify.com/" target="_blank" class="bg-green-700 text-white px-4 py-2 rounded-lg shadow hover:bg-green-800 transition"><i class="fab fa-spotify"></i> Listen on Spotify</a>
+                    <a href="https://www.instagram.com/" target="_blank" class="bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition"><i class="fab fa-instagram"></i> Instagram</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Youtube Agricultural Videos -->
+    <section class="container mx-auto px-6 py-10">
+        <h3 class="text-3xl font-bold text-green-700 mb-6">🌱 Agricultural Videos</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="rounded-2xl overflow-hidden shadow-xl bg-white">
+                <iframe width="100%" height="220" src="https://www.youtube.com/embed/2dTqYwzQY1g" title="Climate Smart Agriculture" frameborder="0" allowfullscreen></iframe>
+                <div class="p-4">
+                    <h4 class="font-bold text-lg text-green-700 mb-2">Climate Smart Agriculture</h4>
+                    <p class="text-gray-600">Learn about climate-smart farming practices that boost productivity and sustainability.</p>
+                </div>
+            </div>
+            <div class="rounded-2xl overflow-hidden shadow-xl bg-white">
+                <iframe width="100%" height="220" src="https://www.youtube.com/embed/G5cWkbr5wM8" title="Modern Irrigation Techniques" frameborder="0" allowfullscreen></iframe>
+                <div class="p-4">
+                    <h4 class="font-bold text-lg text-green-700 mb-2">Modern Irrigation Techniques</h4>
+                    <p class="text-gray-600">Discover how tech is revolutionizing water management for African farms.</p>
+                </div>
+            </div>
+            <div class="rounded-2xl overflow-hidden shadow-xl bg-white">
+                <iframe width="100%" height="220" src="https://www.youtube.com/embed/4A6b3lq1e8A" title="Youth in Agribusiness" frameborder="0" allowfullscreen></iframe>
+                <div class="p-4">
+                    <h4 class="font-bold text-lg text-green-700 mb-2">Youth in Agribusiness</h4>
+                    <p class="text-gray-600">Hear inspiring stories from young African agri-innovators.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -188,13 +203,11 @@
                     <p class="text-gray-600 mb-4">Discover how precision irrigation and artificial intelligence are reducing water waste in dry regions.</p>
                     <span class="text-green-600 font-medium">Coming Nov 5</span>
                 </div>
-
                 <div class="bg-white rounded-2xl shadow-lg p-6 podcast-card transition-transform duration-200">
                     <h4 class="font-semibold text-xl mb-2">Youth in Agribusiness</h4>
                     <p class="text-gray-600 mb-4">Young innovators share their journey into agriculture, from agritech startups to green solutions.</p>
                     <span class="text-green-600 font-medium">Coming Nov 12</span>
                 </div>
-
                 <div class="bg-white rounded-2xl shadow-lg p-6 podcast-card transition-transform duration-200">
                     <h4 class="font-semibold text-xl mb-2">AgriTrue Community Voices</h4>
                     <p class="text-gray-600 mb-4">Farmers across Kenya share local challenges, indigenous solutions, and lessons learned on the ground.</p>
@@ -205,12 +218,64 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-green-700 text-white py-6 mt-10 text-center">
-        <p>&copy; 2025 AgriTrue — Empowering Informed Agriculture</p>
+    <footer class="bg-green-700 text-white py-8 mt-10">
+        
+          <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Farm Truth</a></li>
+                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+             <div class="flex gap-4 mt-4 md:mt-0">
+                <a href="https://www.instagram.com/" target="_blank" class="text-white hover:text-pink-400 transition"><i class="fab fa-instagram fa-xl"></i></a>
+                <a href="https://open.spotify.com/" target="_blank" class="text-white hover:text-green-400 transition"><i class="fab fa-spotify fa-xl"></i></a>
+                <a href="https://www.youtube.com/" target="_blank" class="text-white hover:text-red-400 transition"><i class="fab fa-youtube fa-xl"></i></a>
+            </div>
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
     </footer>
 
-    <!-- JavaScript to enhance podcast page -->
+    <!-- JavaScript for navbar responsiveness and page enhancements -->
     <script>
+        // Mobile menu logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('show');
+            mobileMenuOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+        closeMobileMenu.addEventListener('click', () => {
+            mobileMenu.classList.remove('show');
+            mobileMenuOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        });
+        mobileMenuOverlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('show');
+            mobileMenuOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        });
+
         // Play featured audio when image is clicked
         document.querySelector('img[alt="Featured Speaker"]').addEventListener('click', function() {
             const audio = document.getElementById('featured-audio');
@@ -219,7 +284,7 @@
             setTimeout(() => audio.classList.remove('audio-flash'), 300);
         });
 
-        // (Optional) Smooth scroll for navigation links
+        // Smooth scroll for navigation links
         document.querySelectorAll('nav a').forEach(link => {
             link.addEventListener('click', function(e) {
                 const href = link.getAttribute('href');
