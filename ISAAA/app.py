@@ -423,7 +423,9 @@ def research():
 def faqs():
     """Render the FAQs page."""
     return render_template('faqs.html')
-
+@app.route('/podcast')
+def podcast():
+    return render_template('podcast.html')
 @app.route('/dashboard')
 def dashboard():
     """Render the dashboard page."""
