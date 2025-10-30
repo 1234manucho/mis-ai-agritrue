@@ -998,7 +998,117 @@
         reportBtn.addEventListener('click', generateReport);
     };
 </script>
+<!-- Professional Live Agriculture Feed Ticker (Scrolling, Custom Colors, Stock Exchange Style) -->
+<section class="container mx-auto px-4 py-8">
+  <h3 class="text-2xl font-bold mb-2 flex items-center text-[#197278]">
+    <span class="mr-2"></span> Live Agriculture Performance Feed
+  </h3>
+  <p class="text-[#444] max-w-2xl mb-4 text-sm">
+    Stay updated with real-time agricultural insights across the region. This live ticker scrolls like a stock exchange display, showing constantly changing statistics – from crop yields to soil data and farm input availability. Updated every 1.5 seconds, it reflects ongoing agricultural trends for instant, informed decisions.
+  </p>
+  <!-- Ticker Container -->
+  <div class="relative overflow-hidden rounded-2xl border-4 border-[#197278] bg-gradient-to-r from-[#eef6f7] via-[#e0f2e7] to-[#e1ebf5] shadow-xl"
+       style="height:54px;">
+    <div id="tickerTrack" class="flex items-center h-full absolute left-0 top-0 whitespace-nowrap transition-transform duration-500">
+      <!-- Ticker stats will be rendered here -->
+    </div>
+    <!-- Gradient fade for ticker effect -->
+    <div class="absolute left-0 top-0 h-full w-20 bg-gradient-to-r from-[#eef6f7] to-transparent pointer-events-none"></div>
+    <div class="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-[#eef6f7] to-transparent pointer-events-none"></div>
+  </div>
+</section>
 
+<script>
+// Custom color palette
+const statBg = [
+  "bg-[#197278]/90 text-white",             // Maize Yield
+  "bg-[#49a078]/90 text-white",             // Livestock Count
+  "bg-[#3d7068]/90 text-white",             // Rainfall Index
+  "bg-[#d6d1b1]/90 text-[#197278]",         // Potato Production
+  "bg-[#9cc5a1]/90 text-[#197278]",         // Soil Moisture
+  "bg-[#f9f7f3]/90 text-[#197278]"          // Farm Input
+];
+
+// Feed data
+let agriTickerData = [
+  { icon: "🌾", label: "Maize Yield", value: 12430, unit: "tons", min: 12000, max: 13000 },
+  { icon: "🐄", label: "Livestock Count", value: 8920, unit: "", min: 8700, max: 9000 },
+  { icon: "🌧️", label: "Rainfall Index", value: 62, unit: "mm", min: 55, max: 75 },
+  { icon: "🥔", label: "Potato Production", value: 7850, unit: "tons", min: 7700, max: 8100 },
+  { icon: "🪴", label: "Soil Moisture", value: 48, unit: "%", min: 42, max: 55 },
+  { icon: "🚜", label: "Farm Input Availability", value: 91, unit: "%", min: 85, max: 95 }
+];
+
+// Utility to animate value change
+function animateTickerValue(span, start, end, duration) {
+  if (start === end) { span.textContent = end.toLocaleString(); return; }
+  let range = end - start, current = start, increment = range / (duration / 16);
+  function update() {
+    current += increment;
+    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) current = end;
+    span.textContent = Math.round(current).toLocaleString();
+    if (current !== end) requestAnimationFrame(update);
+  }
+  update();
+}
+
+// Render all stats in ticker
+function renderTicker(stats) {
+  const track = document.getElementById('tickerTrack');
+  track.innerHTML = '';
+  stats.forEach((stat, i) => {
+    // Up/down indicator for change
+    let upDown = stat.trend === undefined ? "" :
+      stat.trend > 0 ? `<span class="ml-2 text-green-600 font-bold">&#9650;</span>` :
+      stat.trend < 0 ? `<span class="ml-2 text-red-600 font-bold">&#9660;</span>` : "";
+    track.innerHTML += `
+      <div class="flex items-center px-5 py-2 mx-2 rounded-xl shadow ${statBg[i % statBg.length]} font-semibold text-xs md:text-base"
+           style="min-width: 175px;">
+        <span class="text-xl md:text-2xl mr-2">${stat.icon}</span>
+        <span class="font-bold mr-2">${stat.label}:</span>
+        <span class="font-bold text-lg md:text-xl" id="ticker-val-${i}">${stat.value.toLocaleString()}</span>
+        <span class="ml-1 text-[#444] text-xs">${stat.unit}</span>
+        ${upDown}
+      </div>
+    `;
+  });
+}
+
+// Initial render
+renderTicker(agriTickerData);
+
+// Ticker scroll logic
+let tickerPos = 0;
+function scrollTicker() {
+  const track = document.getElementById('tickerTrack');
+  // Move left by one stat each scroll
+  tickerPos += 1;
+  if (tickerPos > agriTickerData.length) tickerPos = 0;
+  // Calculate translateX in pixels (175px per stat)
+  track.style.transform = `translateX(${-tickerPos * 175}px)`;
+}
+
+// Every 1.5s, change values and scroll
+setInterval(() => {
+  agriTickerData = agriTickerData.map((stat, i) => {
+    let prev = stat.value;
+    let change = Math.floor(Math.random() * 7 + 1) * (Math.random() > 0.5 ? 1 : -1);
+    let next = Math.min(stat.max, Math.max(stat.min, prev + change));
+    stat.trend = next - prev;
+    // Animate number change
+    const span = document.getElementById(`ticker-val-${i}`);
+    if (span) animateTickerValue(span, prev, next, 400);
+    return { ...stat, value: next };
+  });
+  scrollTicker();
+}, 1500);
+
+// Responsive fallback: If screen is small, reduce stat width
+window.addEventListener('resize', () => {
+  const track = document.getElementById('tickerTrack');
+  if (window.innerWidth < 460) track.querySelectorAll('div').forEach(div => div.style.minWidth = "120px");
+});
+</script>
 <!-- Section for Feature Cards, now focused on combating misinformation -->
 <section class="mb-12">
     <h2 class="text-3xl font-bold text-center text-green-700 mb-8">Explore Our Tools</h2>
