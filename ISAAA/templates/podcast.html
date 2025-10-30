@@ -146,25 +146,130 @@
     </section>
 
     <!-- Featured Episode -->
-    <section class="container mx-auto px-6 py-12">
-        <h3 class="text-3xl font-bold text-green-700 mb-6">🎙️ Featured Episode</h3>
-        <div class="bg-white rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center podcast-card transition-transform duration-200">
-            <img src="static/images/denno.jpg" alt="Featured Speaker" class="w-full md:w-1/3 rounded-2xl shadow-md mb-4 md:mb-0 md:mr-6">
-            <div class="flex-1">
-                <h4 class="text-2xl font-semibold mb-2">Building Climate-Resilient Farms</h4>
-                <p class="mb-4 text-gray-600">Join Dr.  Dennis as they discuss how smallholder farmers can adapt to climate change through data-driven soil health and innovation.</p>
-                <audio controls class="w-full mt-2 audio-flash" id="featured-audio">
-                    <source src="static/images/podcast.unknown" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <div class="mt-4 flex gap-4">
-                    <a href="https://open.spotify.com/search/agriculture" target="_blank" class="bg-green-700 text-white px-4 py-2 rounded-lg shadow hover:bg-green-800 transition"><i class="fab fa-spotify"></i> Listen on Spotify</a>
-                    <a href="https://www.instagram.com/talkdirtpodcast/" target="_blank" class="bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition"><i class="fab fa-instagram"></i> Instagram</a>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- Featured Episode & Searchable Agricultural Podcasts Section -->
+<section class="container mx-auto px-6 py-12">
+  <h3 class="text-3xl font-bold text-green-700 mb-6 flex items-center">
+    <span class="mr-2">🎙️</span> Featured Episode
+  </h3>
+  <div class="bg-white rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center podcast-card transition-transform duration-200">
+    <img src="static/images/denno.jpg" alt="Featured Speaker" class="w-full md:w-1/3 rounded-2xl shadow-md mb-4 md:mb-0 md:mr-6" style="max-width:260px;">
+    <div class="flex-1">
+      <h4 class="text-2xl font-semibold mb-2 text-[#197278]">Building Climate-Resilient Farms</h4>
+      <p class="mb-4 text-gray-600">Join Dr. Dennis as they discuss how smallholder farmers can adapt to climate change through data-driven soil health and innovation.</p>
+      <audio controls class="w-full mt-2 audio-flash" id="featured-audio" style="background:#f4f6f7;border-radius:8px;">
+        <source src="static/images/podcast.unknown" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+      <div class="mt-4 flex gap-4">
+        <a href="https://open.spotify.com/search/agriculture" target="_blank" class="bg-green-700 text-white px-4 py-2 rounded-lg shadow hover:bg-green-800 transition flex items-center gap-2"><i class="fab fa-spotify"></i> Spotify</a>
+        <a href="https://www.instagram.com/talkdirtpodcast/" target="_blank" class="bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition flex items-center gap-2"><i class="fab fa-instagram"></i> Instagram</a>
+      </div>
+    </div>
+  </div>
 
+  <!-- Searchable Podcasts Directory -->
+  <div class="mt-10">
+    <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
+      <h4 class="text-2xl font-bold text-green-700">🎧 Discover More Agricultural Podcasts</h4>
+      <div class="relative w-full sm:w-80">
+        <input id="podcastSearch" type="text" placeholder="Search podcast by title or host..." 
+          class="w-full px-4 py-2 border border-green-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-600 transition" />
+        <span class="absolute right-4 top-2 text-green-700"><i class="fas fa-search"></i></span>
+      </div>
+    </div>
+    <div id="podcastList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Podcasts are rendered here by JS -->
+    </div>
+  </div>
+</section>
+
+<script>
+// Example podcast data
+const podcasts = [
+  {
+    title: "Agri-Innovators Africa",
+    host: "Emmanuel Nyongesa",
+    desc: "Explore the latest digital, soil, and data innovations transforming African agriculture.",
+    link: "https://open.spotify.com/show/7AgrInnovators",
+    platform: "Spotify",
+    img: "static/images/agri-innovators.jpg"
+  },
+  {
+    title: "Talk Dirt To Me",
+    host: "Alma Lynn",
+    desc: "Stories from the field: Kenyan farmers, policy makers, and agritech visionaries.",
+    link: "https://www.instagram.com/talkdirtpodcast/",
+    platform: "Instagram",
+    img: "static/images/talk-dirt.jpg"
+  },
+  {
+    title: "Farming Today Kenya",
+    host: "Vitalis Orute",
+    desc: "Trends, yields, and local insights from Kenya’s top agricultural counties.",
+    link: "https://open.spotify.com/show/3FarmingTodayKenya",
+    platform: "Spotify",
+    img: "static/images/farming-today.jpg"
+  },
+  {
+    title: "Youth in Agribusiness",
+    host: "Lewis Muriuki",
+    desc: "Young African agripreneurs share their challenges and successes.",
+    link: "https://open.spotify.com/show/5YouthAgribiz",
+    platform: "Spotify",
+    img: "static/images/youth-agribiz.jpg"
+  },
+  {
+    title: "The Soil Health Report",
+    host: "Dennis Mwendwa",
+    desc: "Expert soil science, climate, and data-driven practices for sustainability.",
+    link: "https://open.spotify.com/show/4SoilHealthReport",
+    platform: "Spotify",
+    img: "static/images/soil-health.jpg"
+  },
+  {
+    title: "Women Who Farm",
+    host: "Wanjiku Mwangi",
+    desc: "Empowering women in agriculture through stories, resources, and strategies.",
+    link: "https://open.spotify.com/show/6WomenWhoFarm",
+    platform: "Spotify",
+    img: "static/images/women-who-farm.jpg"
+  }
+];
+
+// Podcast rendering and search
+function renderPodcastList(query = "") {
+  const container = document.getElementById('podcastList');
+  const q = query.trim().toLowerCase();
+  const filtered = podcasts.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.host.toLowerCase().includes(q)
+  );
+  container.innerHTML = filtered.length ? filtered.map(p => `
+    <div class="bg-white rounded-xl shadow-lg flex flex-col items-center p-4 hover:shadow-xl transition-all duration-300 border border-green-100" style="min-height:310px;">
+      <img src="${p.img}" alt="${p.title}" class="rounded-lg w-full h-36 object-cover mb-3 shadow" style="max-width:240px;">
+      <div class="w-full flex flex-col items-center text-center">
+        <h5 class="text-lg font-bold text-green-700 mb-1">${p.title}</h5>
+        <p class="text-xs font-semibold text-[#197278] mb-2">Host: ${p.host}</p>
+        <p class="text-gray-600 text-sm mb-3" style="min-height:48px;">${p.desc}</p>
+        <a href="${p.link}" target="_blank"
+          class="inline-block bg-green-600 text-white px-3 py-1 rounded-full shadow hover:bg-green-700 transition flex items-center gap-2"
+        >
+          <i class="fab fa-spotify"></i> Listen
+        </a>
+      </div>
+    </div>
+  `).join("") :
+  `<div class="col-span-3 text-center text-gray-500 py-6">No podcasts found for your search.</div>`;
+}
+
+// Initial render
+renderPodcastList();
+
+// Search logic
+document.getElementById('podcastSearch').addEventListener('input', e => {
+  renderPodcastList(e.target.value);
+});
+</script>
     <!-- Youtube Agricultural Videos -->
    <section class="container mx-auto px-6 py-10">
     <h3 class="text-3xl font-bold text-green-700 mb-6">🌱 Agricultural Videos</h3>
