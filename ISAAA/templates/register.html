@@ -687,6 +687,28 @@
         adviceBtn.addEventListener('click', getAdvice);
         reportBtn.addEventListener('click', generateReport);
     };
+     document.addEventListener("DOMContentLoaded", function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        closeMobileMenu.addEventListener('click', function() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        mobileMenuOverlay.addEventListener('click', function() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
 </script>
  <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
