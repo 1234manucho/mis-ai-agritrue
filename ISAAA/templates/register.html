@@ -11,7 +11,6 @@
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Password tooltip */
         .tooltip-password::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -32,22 +31,54 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* Navbar Styles */
+        .navbar-gradient {
+            background: linear-gradient(90deg,#197278 0%,#49a078 100%);
+        }
+        .navbar-shadow {
+            box-shadow: 0 4px 12px -4px rgba(34,197,94,0.15);
+        }
+        .mobile-menu,
+        .mobile-menu-overlay {
+            display: none;
+        }
+        .mobile-menu.active,
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+        .mobile-menu {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(120deg,#f0fdf4 60%,#e0f2e7 100%);
+            z-index: 1000;
+            padding: 2rem 1rem 1rem 1rem;
+            overflow-y: auto;
+            transition: all 0.3s cubic-bezier(.4,0,.2,1);
+        }
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(34,197,94,0.17);
+            z-index: 999;
+        }
+        @media (min-width: 1024px) {
+            .mobile-menu, .mobile-menu-overlay { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-green-100 via-white to-green-200 min-h-screen">
 
     <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+    <nav class="fixed top-0 w-full z-50 navbar-gradient navbar-shadow">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
             <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full border-2 border-green-200 shadow" />
+                <span class="text-white text-2xl font-bold tracking-wide">AgriTrue</span>
             </a>
-
             <!-- Desktop Menu -->
             <div class="hidden lg:flex items-center space-x-6">
                 <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10 flex items-center">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
@@ -61,8 +92,8 @@
                 <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
                 <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
                 <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10 flex items-center">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
@@ -70,10 +101,10 @@
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
                         </div>
                     </div>
-                </div>  
+                </div>
                 {% if current_user.is_authenticated %}
                 <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10 flex items-center">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
@@ -93,59 +124,56 @@
                 <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
                 {% endif %}
             </div>
-
             <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none rounded-full bg-green-700 hover:bg-green-800 p-2 shadow-md" aria-label="Open menu">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </div>
     </nav>
-    
-    <!-- Mobile Menu -->
+    <!-- Mobile Menu Overlay -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <!-- Mobile Menu -->
     <div id="mobileMenu" class="mobile-menu lg:hidden">
         <div class="flex justify-between items-center mb-5">
             <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+            <button id="closeMobileMenu" class="text-3xl text-green-700" aria-label="Close menu">&times;</button>
         </div>
         <ul class="flex flex-col space-y-2">
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-200 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
             </li>
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-200 rounded-lg flex items-center" href="/about"><i class="fas fa-info-circle mr-3"></i>About Us</a>
             </li>
             <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-200 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
             </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+            <li>
+                <button type="button" class="w-full flex items-center justify-between nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-200 rounded-lg" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
                     <span><i class="fas fa-tools mr-3"></i>Utilities</span>
                     <i class="fas fa-chevron-down text-xs"></i>
-                </a>
+                </button>
                 <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg" href="/streak">Streak</a>
+                </div>
+            </li>
+            <li>
+                <button type="button" class="w-full flex items-center justify-between nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-200 rounded-lg" onclick="document.getElementById('resourcesCollapse').classList.toggle('hidden')">
+                    <span>Resource & Downloads</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="resourcesCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg">Research Hub</a>
+                    <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg">FAQS</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-200 rounded-lg">Media & News</a>
                 </div>
             </li>
         </ul>
-        <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                    </div>
-                </div>  
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+        <div class="px-6 mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
             {% if current_user.is_authenticated %}
             <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
             {% if current_user.is_admin %}
@@ -159,8 +187,33 @@
         </div>
     </div>
 
+    <!-- Mobile Navbar JS -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
 
-    <!-- Registration Form -->
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        closeMobileMenu.addEventListener('click', function() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        mobileMenuOverlay.addEventListener('click', function() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+    </script>
+
+    <!-- Registration Form (unchanged) -->
     <div class="flex items-center justify-center pt-28 px-4">
         <div class="bg-white/90 p-8 rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex justify-center mb-4">
@@ -168,7 +221,6 @@
             </div>
             <h2 class="text-3xl font-bold text-center text-green-700 mb-2">Create Your AgriTrue Account</h2>
             <p class="text-center text-gray-500 mb-6">Join the AgriTrue community and connect with fellow farmers.</p>
-
             <!-- Flash messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -181,7 +233,7 @@
                 </div>
             {% endif %}
             {% endwith %}
-
+   
             <form action="{{ url_for('register') }}" method="POST" class="space-y-4">
                 <input type="text" name="fullname" placeholder="Full Name" required
                        class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
@@ -299,33 +351,35 @@
     <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
         <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
     </button>
-
-<style>
-    @keyframes slide-up {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
-    .dot-pulse {
-        position: relative;
-        width: 10px; height: 10px; border-radius: 50%;
-        background-color: #22c55e; color: #22c55e;
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .dot-pulse::before, .dot-pulse::after {
-        content: ''; position: absolute; width: 10px; height: 10px;
-        border-radius: 50%; background-color: #22c55e;
-        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-    }
-    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
-    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
-    @keyframes dot-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
-        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    }
-</style>
-
+ <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
+                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">Community Notes</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+            <hr class="border-gray-700 my-8">
+            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </div>
+    </footer>
+    
 <script>
     window.onload = function() {
         const chatbotIcon = document.getElementById("chatbot-icon");
@@ -687,56 +741,7 @@
         adviceBtn.addEventListener('click', getAdvice);
         reportBtn.addEventListener('click', generateReport);
     };
-     document.addEventListener("DOMContentLoaded", function() {
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.add('active');
-            mobileMenuOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-        closeMobileMenu.addEventListener('click', function() {
-            mobileMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-        mobileMenuOverlay.addEventListener('click', function() {
-            mobileMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-    });
 </script>
- <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="#" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
-                </div>
-            </div>
-            <hr class="border-gray-700 my-8">
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
-        </div>
-    </footer>
+
 </body>
 </html>
