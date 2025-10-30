@@ -259,6 +259,7 @@
 <body class="bg-[#f0fdf4] font-['Inter']">
 
     <!-- Navigation Bar -->
+    <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
             <a class="flex items-center space-x-2" href="/">
@@ -283,6 +284,7 @@
                 <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
                 <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
                 <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                             <a href="/podcast" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Podcast</a>
                   <div class="relative group">
                     <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
@@ -340,6 +342,11 @@
                 </a>
             </li>
             <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/podcast" aria-label="Podcast">
+                    <i class="fas fa-podcast mr-3"></i>Podcast
+                </a>
+            </li>
+            <li>
                 <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
             </li>
             <li class="relative">
@@ -358,7 +365,12 @@
             </li>
         </ul>
         <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <a href="#"
+   class="nav-link text-green-600 font-medium p-2 rounded-lg transition duration-200 hover:bg-green-700 hover:text-white">
+   Resource & Downloads
+   <i class="fas fa-chevron-down text-xs ml-1"></i>
+</a>
+
                     <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                         <div class="py-1">
                             <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
@@ -380,6 +392,7 @@
             {% endif %}
         </div>
     </div>
+
 
 
 
