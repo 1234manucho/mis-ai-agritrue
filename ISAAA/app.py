@@ -1039,6 +1039,7 @@ mock_data = {
 }
 
 @app.route('/know_your_land', methods=['GET', 'POST'])
+@login_required
 def know_your_land():
     results = {}
     if request.method == 'POST':
