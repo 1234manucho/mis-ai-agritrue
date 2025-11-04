@@ -448,7 +448,7 @@ def dashboard():
     return render_template('dashboard.html')
 # ml analyzer
 @app.route('/ml-analyzer', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def ml_analyzer():
     analysis_result = None
     chart_data = {}
