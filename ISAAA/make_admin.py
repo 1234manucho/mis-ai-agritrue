@@ -20,11 +20,11 @@ import firebase_admin
 from firebase_admin import credentials, auth
 
 # === CONFIG ===
-SERVICE_ACCOUNT_PATH = "firebase-service-account.json"  # path to your service account JSON
+SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"  # path to your service account JSON
 EMAIL = "info@agritrue.org"
 PASSWORD = "agritrue@30"
-FULLNAME = "Emmanuel Alma Dennis"  # change as desired
-USERNAME = "agritrue_admin"
+FULLNAME = "Chills Emmanuel"  # change as desired
+USERNAME = "chills"
 
 # === Initialize Flask app and Firebase, then run ===
 app = create_app()

@@ -62,7 +62,7 @@ def create_app():
     # ------------------- FIREBASE INITIALIZATION -------------------
     if not firebase_admin._apps:
         try:
-            cred = credentials.Certificate("firebase-service-account.json")
+            cred = credentials.Certificate("serviceAccountKey.json")
             firebase_admin.initialize_app(cred)
             print("Firebase Admin SDK initialized successfully.")
         except Exception as e:
