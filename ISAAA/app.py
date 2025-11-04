@@ -237,7 +237,7 @@ def login():
 
             login_user(admin_user)
             flash(f"✅ Admin logged in! Current streak: {admin_user.streak_count} days.", "success")
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('home'))
 
         # --- 2️⃣ Firebase user login ---
         try:
@@ -1215,7 +1215,7 @@ def admin_dashboard():
     total_comments = len(comments)
 
     return render_template(
-        'admin/dashboard.html',
+        'admin_dashboard.html',
         users=users,
         notes=notes,
         diagnostics=diagnostics,
