@@ -211,10 +211,8 @@ def register():
             return redirect(url_for('register'))
 
     return render_template('register.html')
-# --- Login Route ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Login using Firebase REST API for password authentication."""
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
@@ -223,13 +221,30 @@ def login():
             flash("Please enter both email and password.", "error")
             return redirect(url_for('login'))
 
+        # --- 1️⃣ Check local admin first ---
+        admin_user = User.query.filter_by(email=email, is_admin=True).first()
+        if admin_user and check_password_hash(admin_user.password, password):
+            # Update streak
+            today = datetime.utcnow().date()
+            last_login_date = admin_user.last_login.date() if admin_user.last_login else today
+            if last_login_date == today - timedelta(days=1):
+                admin_user.streak_count += 1
+            elif last_login_date < today - timedelta(days=1):
+                admin_user.streak_count = 1
+
+            admin_user.last_login = datetime.utcnow()
+            db.session.commit()
+
+            login_user(admin_user)
+            flash(f"✅ Admin logged in! Current streak: {admin_user.streak_count} days.", "success")
+            return redirect(url_for('home'))
+
+        # --- 2️⃣ Firebase user login ---
         try:
-            # Get Firebase API key from app config
             firebase_api_key = current_app.config.get('FIREBASE_API_KEY')
             if not firebase_api_key:
                 raise ValueError("Firebase API key is not configured.")
 
-            # Firebase REST API for signInWithPassword
             url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_api_key}"
             payload = {"email": email, "password": password, "returnSecureToken": True}
             headers = {"Content-Type": "application/json"}
@@ -242,7 +257,7 @@ def login():
 
             uid = res_data["localId"]
 
-            # Firestore User Data
+            # Fetch Firestore user
             user_ref = firestore_db.collection("users").document(uid)
             user_doc = user_ref.get()
             if not user_doc.exists:
@@ -251,15 +266,14 @@ def login():
 
             user_data = user_doc.to_dict()
 
-            # --- Streak Update ---
+            # --- Streak update ---
             today = datetime.utcnow().date()
             streak = user_data.get("streak_count", 1)
             last_login = user_data.get("last_login")
-
             last_login_date = (
                 datetime.fromisoformat(last_login).date()
                 if isinstance(last_login, str)
-                else last_login.date()
+                else last_login.date() if last_login else today
             )
 
             if last_login_date == today - timedelta(days=1):
@@ -273,7 +287,7 @@ def login():
             })
 
             # --- Local DB Sync ---
-            user = db.session.get(User, uid)   # ✅ SQLAlchemy 2.0
+            user = db.session.get(User, uid)
             if not user:
                 user = User(
                     id=uid,
@@ -286,10 +300,17 @@ def login():
                     country=user_data.get('country'),
                     county=user_data.get('county'),
                     is_admin=user_data.get('is_admin', False),
-                    created_at=datetime.fromisoformat(user_data.get('created_at'))
+                    created_at=datetime.fromisoformat(user_data.get('created_at')),
+                    streak_count=streak,
+                    last_login=datetime.utcnow()
                 )
                 db.session.add(user)
-                db.session.commit()
+            else:
+                # Update streak and last login
+                user.streak_count = streak
+                user.last_login = datetime.utcnow()
+
+            db.session.commit()
 
             login_user(user)
             flash(f"✅ Logged in! Current streak: {streak} days.", "success")
@@ -300,8 +321,6 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
-
-   
 @app.route('/community-notes', methods=['GET', 'POST'])
 @login_required
 def community_notes():
