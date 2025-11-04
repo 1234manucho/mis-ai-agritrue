@@ -237,7 +237,7 @@ def login():
 
             login_user(admin_user)
             flash(f"✅ Admin logged in! Current streak: {admin_user.streak_count} days.", "success")
-            return redirect(url_for('home'))
+            return redirect(url_for('admin_dashboard'))
 
         # --- 2️⃣ Firebase user login ---
         try:
