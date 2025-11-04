@@ -670,6 +670,157 @@ window.addEventListener('resize', () => {
     
   </div>
 </section>
+<!-- ✅ AMSA Capital Newsletter Popup (Two-Step Animated Version) -->
+<div id="newsletter-popup" style="
+  position: fixed;
+  bottom: -600px;
+  right: 30px;
+  width: 90%;
+  max-width: 380px;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  text-align: left;
+  padding: 26px;
+  transition: bottom 0.8s ease;
+  z-index: 9999;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+">
+  <!-- Step 1: Intro Message -->
+  <div id="popup-intro" style="display:block;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📊 Join AMSA Capital Newsletter</h2>
+      <button id="close-popup" style="
+        background:none;
+        border:none;
+        color:#64748b;
+        font-size:22px;
+        cursor:pointer;
+        line-height:1;
+      ">&times;</button>
+    </div>
+    <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
+      Stay ahead with <b>market insights, investment trends,</b> and real estate intelligence in Africa.
+    </p>
+  </div>
+
+  <!-- Step 2: Full Signup Form -->
+  <div id="popup-form" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📰 AMSA Capital Signup</h2>
+      <button id="close-popup-2" style="
+        background:none;
+        border:none;
+        color:#64748b;
+        font-size:22px;
+        cursor:pointer;
+        line-height:1;
+      ">&times;</button>
+    </div>
+
+    <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
+      Get early access to <b>opportunities and financial insights</b> from our analysts — straight to your inbox.
+    </p>
+
+    <form id="amsa-form" action="https://formspree.io/f/xkgplzaj" method="POST"
+      style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:18px;">
+      <input type="text" name="name" placeholder="Full Name" required
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+      <input type="email" name="email" placeholder="Email Address" required
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+      <input type="text" name="phone" placeholder="Phone Number"
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+      <input type="text" name="location" placeholder="Location"
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+      <input type="number" name="age" placeholder="Age"
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+      <select name="gender" required
+        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+      <button type="submit" style="
+        background:#0f766e;
+        color:#ffffff;
+        border:none;
+        padding:12px;
+        border-radius:8px;
+        cursor:pointer;
+        font-size:15px;
+        font-weight:600;
+        transition:background 0.3s ease;
+      ">Sign Up</button>
+    </form>
+
+    <p style="font-size:12px; text-align:center; color:#64748b; margin-top:10px;">
+      We respect your privacy. Unsubscribe anytime.
+    </p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const popup = document.getElementById("newsletter-popup");
+    const intro = document.getElementById("popup-intro");
+    const formDiv = document.getElementById("popup-form");
+    const close1 = document.getElementById("close-popup");
+    const close2 = document.getElementById("close-popup-2");
+    const form = document.getElementById("amsa-form");
+
+    // ✅ Show popup only if user hasn't subscribed
+    if (!localStorage.getItem("amsaSubscribed")) {
+      setTimeout(() => {
+        popup.style.bottom = "30px";
+      }, 3000);
+
+      // Show intro first
+      setTimeout(() => {
+        intro.style.display = "block";
+      }, 3200);
+
+      // After 5s, switch to form
+      setTimeout(() => {
+        intro.style.display = "none";
+        formDiv.style.display = "block";
+      }, 8000);
+    }
+
+    // ❌ Close buttons
+    [close1, close2].forEach(btn => {
+      btn.addEventListener("click", () => {
+        popup.style.bottom = "-600px";
+      });
+    });
+
+    // ✅ Handle Formspree submission
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: { Accept: "application/json" },
+      });
+
+      if (response.ok) {
+        popup.innerHTML = `
+          <div style="text-align:center; padding:30px;">
+            <h3 style="margin:0; color:#065f46;">🎉 Thank you for subscribing!</h3>
+            <p style="font-size:14px; color:#334155;">You’ll receive AMSA Capital updates soon.</p>
+          </div>
+        `;
+        localStorage.setItem("amsaSubscribed", "true");
+        setTimeout(() => popup.style.bottom = "-600px", 4000);
+      } else {
+        alert("There was an issue sending your message. Please try again later.");
+      }
+    });
+  });
+</script>
+
 
     <!-- Chatbot Icon -->
     <div class="container-fluid py-5"></div>
