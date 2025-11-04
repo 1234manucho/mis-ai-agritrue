@@ -670,7 +670,7 @@ window.addEventListener('resize', () => {
     
   </div>
 </section>
-<!-- ✅ AMSA Capital Newsletter Popup (Two-Step Animated Version) -->
+<!-- ✅ AgriTrue Newsletter Popup (Two-Step Animated Version for Farmers) -->
 <div id="newsletter-popup" style="
   position: fixed;
   bottom: -600px;
@@ -690,7 +690,7 @@ window.addEventListener('resize', () => {
   <!-- Step 1: Intro Message -->
   <div id="popup-intro" style="display:block;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📊 Join AMSA Capital Newsletter</h2>
+      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">🌾 Join AgriTrue Newsletter</h2>
       <button id="close-popup" style="
         background:none;
         border:none;
@@ -701,14 +701,14 @@ window.addEventListener('resize', () => {
       ">&times;</button>
     </div>
     <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
-      Stay ahead with <b>market insights, investment trends,</b> and real estate intelligence in Africa.
+      Stay updated with <b>crop tips, market trends, weather alerts,</b> and AgriTrue insights for farmers.
     </p>
   </div>
 
   <!-- Step 2: Full Signup Form -->
   <div id="popup-form" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📰 AMSA Capital Signup</h2>
+      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📝 AgriTrue Signup</h2>
       <button id="close-popup-2" style="
         background:none;
         border:none;
@@ -720,7 +720,7 @@ window.addEventListener('resize', () => {
     </div>
 
     <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
-      Get early access to <b>opportunities and financial insights</b> from our analysts — straight to your inbox.
+      Get practical farming insights, <b>crop management tips</b>, and <b>market updates</b> delivered straight to your inbox.
     </p>
 
     <form id="amsa-form" action="https://formspree.io/f/xkgplzaj" method="POST"
@@ -731,7 +731,7 @@ window.addEventListener('resize', () => {
         style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
       <input type="text" name="phone" placeholder="Phone Number"
         style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <input type="text" name="location" placeholder="Location"
+      <input type="text" name="location" placeholder="County / Area"
         style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
       <input type="number" name="age" placeholder="Age"
         style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
@@ -743,7 +743,7 @@ window.addEventListener('resize', () => {
         <option value="Other">Other</option>
       </select>
       <button type="submit" style="
-        background:#0f766e;
+        background:#16a34a;
         color:#ffffff;
         border:none;
         padding:12px;
@@ -771,7 +771,7 @@ window.addEventListener('resize', () => {
     const form = document.getElementById("amsa-form");
 
     // ✅ Show popup only if user hasn't subscribed
-    if (!localStorage.getItem("amsaSubscribed")) {
+    if (!localStorage.getItem("agriTrueSubscribed")) {
       setTimeout(() => {
         popup.style.bottom = "30px";
       }, 3000);
@@ -808,11 +808,11 @@ window.addEventListener('resize', () => {
       if (response.ok) {
         popup.innerHTML = `
           <div style="text-align:center; padding:30px;">
-            <h3 style="margin:0; color:#065f46;">🎉 Thank you for subscribing!</h3>
-            <p style="font-size:14px; color:#334155;">You’ll receive AMSA Capital updates soon.</p>
+            <h3 style="margin:0; color:#15803d;">🎉 Thank you for subscribing!</h3>
+            <p style="font-size:14px; color:#334155;">You’ll receive AgriTrue farming updates soon.</p>
           </div>
         `;
-        localStorage.setItem("amsaSubscribed", "true");
+        localStorage.setItem("agriTrueSubscribed", "true");
         setTimeout(() => popup.style.bottom = "-600px", 4000);
       } else {
         alert("There was an issue sending your message. Please try again later.");
@@ -820,7 +820,6 @@ window.addEventListener('resize', () => {
     });
   });
 </script>
-
 
     <!-- Chatbot Icon -->
     <div class="container-fluid py-5"></div>
