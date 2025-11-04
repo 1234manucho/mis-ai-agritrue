@@ -88,9 +88,6 @@ def get_firebase_api_key():
 
 # ----------------- ROUTES -----------------
 
-# ----------------- ROUTES -----------------
-
-
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -1174,6 +1171,119 @@ def streak(username=None):
         user_to_show = current_user
 
     return render_template('streak.html', user=user_to_show)
+# ----------------- ADMIN ROUTES -----------------
+
+from flask import request
+
+@app.route('/admin')
+@login_required
+def admin_dashboard():
+    # Ensure only admin users can access
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Fetch all users, notes, diagnostics, and comments
+    users = User.query.order_by(User.created_at.desc()).all()
+    notes = CommunityNote.query.order_by(CommunityNote.created_at.desc()).all()
+    diagnostics = DiagnosticResult.query.order_by(DiagnosticResult.created_at.desc()).all()
+    comments = Comment.query.order_by(Comment.created_at.desc()).all()
+
+    # Calculate totals for dashboard cards
+    total_users = len(users)
+    total_notes = len(notes)
+    total_diagnostics = len(diagnostics)
+    total_comments = len(comments)
+
+    return render_template(
+        'admin/dashboard.html',
+        users=users,
+        notes=notes,
+        diagnostics=diagnostics,
+        comments=comments,
+        total_users=total_users,
+        total_notes=total_notes,
+        total_diagnostics=total_diagnostics,
+        total_comments=total_comments
+    )
+
+
+@app.route('/admin/delete_user/<string:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    # Ensure only admin users can delete
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {e}', 'danger')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/delete_note/<int:note_id>', methods=['POST'])
+@login_required
+def delete_note_admin(note_id):
+    # Ensure only admin users can delete any note
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    note = CommunityNote.query.get_or_404(note_id)
+    try:
+        db.session.delete(note)
+        db.session.commit()
+        flash('Note deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting note: {e}', 'danger')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/delete_diagnostic/<int:diagnostic_id>', methods=['POST'])
+@login_required
+def delete_diagnostic_admin(diagnostic_id):
+    # Ensure only admin users can delete diagnostics
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    diag = DiagnosticResult.query.get_or_404(diagnostic_id)
+    try:
+        db.session.delete(diag)
+        db.session.commit()
+        flash('Diagnostic deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting diagnostic: {e}', 'danger')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/delete_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def delete_comment_admin(comment_id):
+    # Ensure only admin users can delete comments
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    comment = Comment.query.get_or_404(comment_id)
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        flash('Comment deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting comment: {e}', 'danger')
+    return redirect(url_for('admin_dashboard'))
+
+
 if __name__ == '__main__':
    
     app.run(debug=True)
