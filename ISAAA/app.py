@@ -221,61 +221,41 @@ def login():
             flash("Please enter both email and password.", "error")
             return redirect(url_for('login'))
 
-        # --- 1️⃣ Check local admin first ---
-        admin_user = User.query.filter_by(email=email, is_admin=True).first()
-        if admin_user and check_password_hash(admin_user.password, password):
-            # Update streak
-            today = datetime.utcnow().date()
-            last_login_date = admin_user.last_login.date() if admin_user.last_login else today
-            if last_login_date == today - timedelta(days=1):
-                admin_user.streak_count += 1
-            elif last_login_date < today - timedelta(days=1):
-                admin_user.streak_count = 1
-
-            admin_user.last_login = datetime.utcnow()
-            db.session.commit()
-
-            login_user(admin_user)
-            flash(f"✅ Admin logged in! Current streak: {admin_user.streak_count} days.", "success")
-            return redirect(url_for('home'))
-
-        # --- 2️⃣ Firebase user login ---
         try:
             firebase_api_key = current_app.config.get('FIREBASE_API_KEY')
-            if not firebase_api_key:
-                raise ValueError("Firebase API key is not configured.")
-
             url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_api_key}"
+
             payload = {"email": email, "password": password, "returnSecureToken": True}
             headers = {"Content-Type": "application/json"}
+
             res = requests.post(url, data=json.dumps(payload), headers=headers)
             res_data = res.json()
 
+            # Wrong password / Invalid email
             if "error" in res_data:
                 flash("Invalid email or password.", "error")
                 return redirect(url_for('login'))
 
             uid = res_data["localId"]
 
-            # Fetch Firestore user
+            # ✅ Fetch profile from Firestore
             user_ref = firestore_db.collection("users").document(uid)
             user_doc = user_ref.get()
+
             if not user_doc.exists:
-                flash("User profile missing. Contact support.", "error")
+                flash("⚠️ Account exists but profile not created. Contact support.", "error")
                 return redirect(url_for('login'))
 
             user_data = user_doc.to_dict()
 
-            # --- Streak update ---
+            # ✅ Streak update
             today = datetime.utcnow().date()
-            streak = user_data.get("streak_count", 1)
             last_login = user_data.get("last_login")
             last_login_date = (
-                datetime.fromisoformat(last_login).date()
-                if isinstance(last_login, str)
-                else last_login.date() if last_login else today
+                datetime.fromisoformat(last_login).date() if last_login else today
             )
 
+            streak = user_data.get("streak_count", 1)
             if last_login_date == today - timedelta(days=1):
                 streak += 1
             elif last_login_date < today - timedelta(days=1):
@@ -286,39 +266,43 @@ def login():
                 "last_login": datetime.utcnow().isoformat()
             })
 
-            # --- Local DB Sync ---
+            # ✅ Sync to local DB
             user = db.session.get(User, uid)
             if not user:
                 user = User(
                     id=uid,
-                    fullname=user_data.get('fullname'),
-                    username=user_data.get('username'),
-                    email=user_data.get('email'),
-                    phone=user_data.get('phone'),
-                    id_number=user_data.get('id_number'),
-                    home_address=user_data.get('home_address'),
-                    country=user_data.get('country'),
-                    county=user_data.get('county'),
-                    is_admin=user_data.get('is_admin', False),
-                    created_at=datetime.fromisoformat(user_data.get('created_at')),
-                    streak_count=streak,
-                    last_login=datetime.utcnow()
+                    fullname=user_data["fullname"],
+                    username=user_data["username"],
+                    email=user_data["email"],
+                    phone=user_data.get("phone"),
+                    id_number=user_data.get("id_number"),
+                    home_address=user_data.get("home_address"),
+                    country=user_data.get("country"),
+                    county=user_data.get("county"),
+                    is_admin=user_data.get("is_admin", False)
                 )
                 db.session.add(user)
-            else:
-                # Update streak and last login
-                user.streak_count = streak
-                user.last_login = datetime.utcnow()
 
+            user.streak_count = streak
+            user.last_login = datetime.utcnow()
             db.session.commit()
 
             login_user(user)
-            flash(f"✅ Logged in! Current streak: {streak} days.", "success")
-            return redirect(url_for('home'))
+
+            # ✅ Redirect based on admin flag
+            if user.is_admin:
+                flash(f"✅ Welcome admin! Streak: {streak} days.", "success")
+                return redirect(url_for('admin_dashboard'))
+            else:
+                flash(f"✅ Logged in! Streak: {streak} days.", "success")
+                return redirect(url_for('home'))
 
         except Exception as e:
             flash(f"⚠️ Login failed: {str(e)}", "error")
             return redirect(url_for('login'))
+
+    return render_template('login.html')
+
 
     return render_template('login.html')
 @app.route('/community-notes', methods=['GET', 'POST'])
