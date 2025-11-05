@@ -221,10 +221,7 @@ def login():
             flash("Please enter both email and password.", "error")
             return redirect(url_for('login'))
 
-        user = None
-        streak = 1
-
-        # --- 1️⃣ Try Firebase login ---
+        # --- 1️⃣ Try Firebase login first ---
         try:
             firebase_api_key = current_app.config.get('FIREBASE_API_KEY')
             if firebase_api_key:
@@ -235,7 +232,6 @@ def login():
 
                 if "error" not in res_data:
                     uid = res_data["localId"]
-                    # Fetch Firestore user
                     user_ref = firestore_db.collection("users").document(uid)
                     user_doc = user_ref.get()
 
@@ -243,7 +239,7 @@ def login():
                         user_data = user_doc.to_dict()
                         user = db.session.get(User, uid)
 
-                        # Update streak
+                        # --- Update streak ---
                         today = datetime.utcnow().date()
                         last_login = user_data.get("last_login")
                         last_login_date = datetime.fromisoformat(last_login).date() if last_login else today
@@ -254,13 +250,12 @@ def login():
                         elif last_login_date < today - timedelta(days=1):
                             streak = 1
 
-                        # Update Firestore
                         user_ref.update({
                             "streak_count": streak,
                             "last_login": datetime.utcnow().isoformat()
                         })
 
-                        # Sync to local DB
+                        # --- Sync to local DB ---
                         if not user:
                             user = User(
                                 id=uid,
@@ -287,29 +282,37 @@ def login():
                         login_user(user)
                         flash(f"✅ Logged in successfully! Streak: {streak} days.", "success")
                         return redirect(url_for('home'))
-        except Exception:
-            pass  # Ignore Firebase errors and try local login
+        except Exception as e:
+            # Ignore Firebase errors and try local login
+            print("Firebase login error:", str(e))
 
-        # --- 2️⃣ Fallback: Local DB login for accounts with passwords ---
-        if not user:
-            local_user = User.query.filter_by(email=email).first()
-            if local_user and local_user.password and check_password_hash(local_user.password, password):
-                today = datetime.utcnow().date()
-                last_login_date = local_user.last_login.date() if local_user.last_login else today
+        # --- 2️⃣ Fallback: Local DB login for users with passwords ---
+        local_user = User.query.filter_by(email=email).first()
+        if local_user:
+            if local_user.password:  # Only check password if it exists
+                if check_password_hash(local_user.password, password):
+                    # Update streak
+                    today = datetime.utcnow().date()
+                    last_login_date = local_user.last_login.date() if local_user.last_login else today
 
-                if last_login_date == today - timedelta(days=1):
-                    local_user.streak_count += 1
-                elif last_login_date < today - timedelta(days=1):
-                    local_user.streak_count = 1
+                    if last_login_date == today - timedelta(days=1):
+                        local_user.streak_count += 1
+                    elif last_login_date < today - timedelta(days=1):
+                        local_user.streak_count = 1
 
-                local_user.last_login = datetime.utcnow()
-                db.session.commit()
+                    local_user.last_login = datetime.utcnow()
+                    db.session.commit()
 
-                login_user(local_user)
-                flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
-                return redirect(url_for('home'))
+                    login_user(local_user)
+                    flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
+                    return redirect(url_for('home'))
 
-        # --- If all fails ---
+            else:
+                # Local account without password is Firebase account
+                flash("This account was created via Firebase and cannot use password login here.", "error")
+                return redirect(url_for('login'))
+
+        # --- 3️⃣ All failed ---
         flash("Invalid login credentials. Make sure you use the correct email and password.", "error")
         return redirect(url_for('login'))
 
