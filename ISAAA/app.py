@@ -241,9 +241,24 @@ def login():
                 user_ref = firestore_db.collection("users").document(uid)
                 user_doc = user_ref.get()
 
+                # ✅ Auto-create profile if missing
                 if not user_doc.exists:
-                    flash("User profile missing in Firestore. Contact support.", "error")
-                    return redirect(url_for('login'))
+                    user_data = {
+                        "fullname": email.split('@')[0],
+                        "username": email.split('@')[0],
+                        "email": email,
+                        "phone": "",
+                        "id_number": "",
+                        "home_address": "",
+                        "country": "",
+                        "county": "",
+                        "is_admin": False,
+                        "streak_count": 1,
+                        "created_at": datetime.utcnow().isoformat(),
+                        "last_login": datetime.utcnow().isoformat()
+                    }
+                    user_ref.set(user_data)
+                    user_doc = user_ref.get()
 
                 user_data = user_doc.to_dict()
 
@@ -254,7 +269,7 @@ def login():
                 last_login_date = (
                     datetime.fromisoformat(last_login).date()
                     if isinstance(last_login, str)
-                    else last_login.date() if last_login else today
+                    else today
                 )
 
                 if last_login_date == today - timedelta(days=1):
@@ -297,16 +312,15 @@ def login():
                 return redirect(url_for('home'))
 
         except Exception:
-            # Ignore Firebase errors and try local DB
-            pass
+            pass  # If Firebase fails, fall back to local login
 
-        # --- 2️⃣ If Firebase login failed → Check Local Admin/Local Accounts ---
+        # --- 2️⃣ Try Local User Login (Admins & Offline Accounts) ---
         local_user = User.query.filter_by(email=email).first()
         if local_user and check_password_hash(local_user.password, password):
 
-            # Update streak
             today = datetime.utcnow().date()
             last_login_date = local_user.last_login.date() if local_user.last_login else today
+
             if last_login_date == today - timedelta(days=1):
                 local_user.streak_count += 1
             elif last_login_date < today - timedelta(days=1):
@@ -319,10 +333,11 @@ def login():
             flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
             return redirect(url_for('home'))
 
-        flash("Invalid login credentials.", "error")
+        flash("Invalid email or password.", "error")
         return redirect(url_for('login'))
 
     return render_template('login.html')
+
 
 @app.route('/community-notes', methods=['GET', 'POST'])
 @login_required
