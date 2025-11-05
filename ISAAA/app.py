@@ -248,11 +248,7 @@ def login():
                 # Update streak
                 today = datetime.utcnow().date()
                 last_login = user_data.get("last_login")
-                if last_login:
-                    last_login_date = datetime.fromisoformat(last_login).date()
-                else:
-                    last_login_date = today
-
+                last_login_date = datetime.fromisoformat(last_login).date() if last_login else today
                 streak = user_data.get("streak_count", 1)
 
                 if last_login_date == today - timedelta(days=1):
@@ -282,7 +278,7 @@ def login():
                         created_at=datetime.utcnow(),
                         streak_count=streak,
                         last_login=datetime.utcnow(),
-                        password=None  # ✅ Firebase user has no local password
+                        password=None  # Firebase users have no local password
                     )
                     db.session.add(user)
                 else:
@@ -291,39 +287,33 @@ def login():
 
                 db.session.commit()
                 login_user(user)
-
                 flash(f"✅ Logged in successfully! Streak: {streak} days.", "success")
                 return redirect(url_for('home'))
 
         except Exception:
+            # Firebase login failed; ignore and try local login
             pass
 
-        # --- 2️⃣ Fallback: LOCAL DB login (for manually created local accounts) ---
+        # --- 2️⃣ Fallback: LOCAL DB login (for accounts with password) ---
         local_user = User.query.filter_by(email=email).first()
+        if local_user and local_user.password:
+            if check_password_hash(local_user.password, password):
+                today = datetime.utcnow().date()
+                last_login_date = local_user.last_login.date() if local_user.last_login else today
 
-        if local_user:
-            if local_user.password:
-                if check_password_hash(local_user.password, password):
-                    # Update streak
-                    today = datetime.utcnow().date()
-                    last_login_date = local_user.last_login.date() if local_user.last_login else today
+                if last_login_date == today - timedelta(days=1):
+                    local_user.streak_count += 1
+                elif last_login_date < today - timedelta(days=1):
+                    local_user.streak_count = 1
 
-                    if last_login_date == today - timedelta(days=1):
-                        local_user.streak_count += 1
-                    elif last_login_date < today - timedelta(days=1):
-                        local_user.streak_count = 1
+                local_user.last_login = datetime.utcnow()
+                db.session.commit()
 
-                    local_user.last_login = datetime.utcnow()
-                    db.session.commit()
+                login_user(local_user)
+                flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
+                return redirect(url_for('home'))
 
-                    login_user(local_user)
-                    flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
-                    return redirect(url_for('home'))
-
-            # Reaches here only if password is missing
-            flash("This account was created via Firebase and cannot use password login here.", "error")
-            return redirect(url_for('login'))
-
+        # --- If both fail ---
         flash("Invalid login credentials.", "error")
         return redirect(url_for('login'))
 
