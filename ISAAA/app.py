@@ -225,52 +225,35 @@ def login():
         try:
             firebase_api_key = current_app.config.get('FIREBASE_API_KEY')
             if not firebase_api_key:
-                raise ValueError("Firebase API key is not configured.")
+                raise ValueError("Firebase API key missing.")
 
             url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={firebase_api_key}"
             payload = {"email": email, "password": password, "returnSecureToken": True}
-            headers = {"Content-Type": "application/json"}
-            res = requests.post(url, data=json.dumps(payload), headers=headers)
+            res = requests.post(url, json=payload)
             res_data = res.json()
 
             if "error" not in res_data:
-                # ✅ Firebase login success
                 uid = res_data["localId"]
 
                 # Fetch Firestore profile
                 user_ref = firestore_db.collection("users").document(uid)
                 user_doc = user_ref.get()
 
-                # ✅ Auto-create profile if missing
                 if not user_doc.exists:
-                    user_data = {
-                        "fullname": email.split('@')[0],
-                        "username": email.split('@')[0],
-                        "email": email,
-                        "phone": "",
-                        "id_number": "",
-                        "home_address": "",
-                        "country": "",
-                        "county": "",
-                        "is_admin": False,
-                        "streak_count": 1,
-                        "created_at": datetime.utcnow().isoformat(),
-                        "last_login": datetime.utcnow().isoformat()
-                    }
-                    user_ref.set(user_data)
-                    user_doc = user_ref.get()
+                    flash("Your profile is missing in Firestore. Contact support.", "error")
+                    return redirect(url_for('login'))
 
                 user_data = user_doc.to_dict()
 
-                # --- Streak update ---
+                # Update streak
                 today = datetime.utcnow().date()
-                streak = user_data.get("streak_count", 1)
                 last_login = user_data.get("last_login")
-                last_login_date = (
-                    datetime.fromisoformat(last_login).date()
-                    if isinstance(last_login, str)
-                    else today
-                )
+                if last_login:
+                    last_login_date = datetime.fromisoformat(last_login).date()
+                else:
+                    last_login_date = today
+
+                streak = user_data.get("streak_count", 1)
 
                 if last_login_date == today - timedelta(days=1):
                     streak += 1
@@ -282,7 +265,7 @@ def login():
                     "last_login": datetime.utcnow().isoformat()
                 })
 
-                # --- Local DB Sync ---
+                # Sync to local DB
                 user = db.session.get(User, uid)
                 if not user:
                     user = User(
@@ -298,7 +281,8 @@ def login():
                         is_admin=user_data.get('is_admin', False),
                         created_at=datetime.utcnow(),
                         streak_count=streak,
-                        last_login=datetime.utcnow()
+                        last_login=datetime.utcnow(),
+                        password=None  # ✅ Firebase user has no local password
                     )
                     db.session.add(user)
                 else:
@@ -312,28 +296,35 @@ def login():
                 return redirect(url_for('home'))
 
         except Exception:
-            pass  # If Firebase fails, fall back to local login
+            pass
 
-        # --- 2️⃣ Try Local User Login (Admins & Offline Accounts) ---
+        # --- 2️⃣ Fallback: LOCAL DB login (for manually created local accounts) ---
         local_user = User.query.filter_by(email=email).first()
-        if local_user and check_password_hash(local_user.password, password):
 
-            today = datetime.utcnow().date()
-            last_login_date = local_user.last_login.date() if local_user.last_login else today
+        if local_user:
+            if local_user.password:
+                if check_password_hash(local_user.password, password):
+                    # Update streak
+                    today = datetime.utcnow().date()
+                    last_login_date = local_user.last_login.date() if local_user.last_login else today
 
-            if last_login_date == today - timedelta(days=1):
-                local_user.streak_count += 1
-            elif last_login_date < today - timedelta(days=1):
-                local_user.streak_count = 1
+                    if last_login_date == today - timedelta(days=1):
+                        local_user.streak_count += 1
+                    elif last_login_date < today - timedelta(days=1):
+                        local_user.streak_count = 1
 
-            local_user.last_login = datetime.utcnow()
-            db.session.commit()
+                    local_user.last_login = datetime.utcnow()
+                    db.session.commit()
 
-            login_user(local_user)
-            flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
-            return redirect(url_for('home'))
+                    login_user(local_user)
+                    flash(f"✅ Logged in (Local Account). Streak: {local_user.streak_count} days.", "success")
+                    return redirect(url_for('home'))
 
-        flash("Invalid email or password.", "error")
+            # Reaches here only if password is missing
+            flash("This account was created via Firebase and cannot use password login here.", "error")
+            return redirect(url_for('login'))
+
+        flash("Invalid login credentials.", "error")
         return redirect(url_for('login'))
 
     return render_template('login.html')
