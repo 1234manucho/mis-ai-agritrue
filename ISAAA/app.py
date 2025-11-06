@@ -86,6 +86,78 @@ def allowed_file(filename):
 # ------------------- FIREBASE API KEY HELPER -------------------
 def get_firebase_api_key():
     return current_app.config.get('FIREBASE_API_KEY')
+@app.route('/setup-admin')
+def setup_admin():
+    """
+    One-time admin setup route.
+    Visit  /setup-admin  only once, then delete or disable.
+    """
+
+    from firebase_admin import auth
+
+    # ---- CHANGE THESE ----
+    admin_email = "admin@agritrue.org"
+    admin_password = "admin@30"   # Change to a strong password
+    admin_name = "System Administrator"
+
+    try:
+        # ✅ Try to find admin in Firebase Auth
+        user_record = auth.get_user_by_email(admin_email)
+        uid = user_record.uid
+        print("Admin already exists in Firebase Auth.")
+    except:
+        # ✅ Create the admin in Firebase Auth
+        user_record = auth.create_user(
+            email=admin_email,
+            password=admin_password,
+            display_name=admin_name
+        )
+        uid = user_record.uid
+        print("Admin created in Firebase Auth.")
+
+    # ✅ Ensure Firestore profile exists
+    user_ref = firestore_db.collection("users").document(uid)
+    user_ref.set({
+        "fullname": admin_name,
+        "email": admin_email,
+        "username": "admin",
+        "phone": "+254700000000",
+        "id_number": "000000000",
+        "home_address": " Nairobi",
+        "country": "Kenya",
+        "county": "Nairobi",
+        "is_admin": True,
+        "streak_count": 1,
+        "last_login": datetime.utcnow().isoformat()
+    }, merge=True)
+
+    # ✅ Ensure Local DB sync
+    existing_local = db.session.get(User, uid)
+    if not existing_local:
+        new_admin = User(
+            id=uid,
+            fullname=admin_name,
+            username="admin",
+            email=admin_email,
+            phone="+254700000000",
+            id_number="000000000",
+            home_address="Nairobi",
+            country="Kenya",
+            county="Nairobi",
+            is_admin=True,
+            created_at=datetime.utcnow(),
+            streak_count=1,
+            last_login=datetime.utcnow()
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+        print("Admin added to local database.")
+    else:
+        existing_local.is_admin = True
+        db.session.commit()
+        print("Admin updated in local database.")
+
+    return "✅ Admin setup complete. You can now login as admin.<br><br>IMPORTANT: Remove /setup-admin route now."
 
 # ----------------- ROUTES -----------------
 
