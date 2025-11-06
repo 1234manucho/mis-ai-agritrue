@@ -44,7 +44,8 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['FIREBASE_API_KEY'] = "AIzaSyA_Ku2Qo_tul9Xr61NwVszfr6h92LZC53U"
+    app.config['FIREBASE_API_KEY'] = "AIzaSyBnnfskPKX1-0jYeIDa1Ua6i0UkqWy6ImI"
+
 
     # ------------------- EXTENSIONS -------------------
     db.init_app(app)
