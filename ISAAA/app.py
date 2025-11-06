@@ -90,7 +90,7 @@ def get_firebase_api_key():
 def setup_admin():
     """
     One-time admin setup route.
-    Visit  /setup-admin  only once, then delete or disable.
+    Visit /setup-admin only once, then delete or disable.
     """
 
     from firebase_admin import auth
@@ -123,7 +123,7 @@ def setup_admin():
         "username": "admin",
         "phone": "+254700000000",
         "id_number": "000000000",
-        "home_address": " Nairobi",
+        "home_address": "Nairobi",
         "country": "Kenya",
         "county": "Nairobi",
         "is_admin": True,
@@ -131,14 +131,17 @@ def setup_admin():
         "last_login": datetime.utcnow().isoformat()
     }, merge=True)
 
-    # ✅ Ensure Local DB sync
+    # ✅ Ensure Local DB sync with hashed password
     existing_local = db.session.get(User, uid)
+    hashed_pw = generate_password_hash(admin_password)
+
     if not existing_local:
         new_admin = User(
             id=uid,
             fullname=admin_name,
             username="admin",
             email=admin_email,
+            password=hashed_pw,  # ✅ hashed password added
             phone="+254700000000",
             id_number="000000000",
             home_address="Nairobi",
@@ -154,11 +157,11 @@ def setup_admin():
         print("Admin added to local database.")
     else:
         existing_local.is_admin = True
+        existing_local.password = hashed_pw  # ✅ update hashed password if already exists
         db.session.commit()
         print("Admin updated in local database.")
 
     return "✅ Admin setup complete. You can now login as admin.<br><br>IMPORTANT: Remove /setup-admin route now."
-
 # ----------------- ROUTES -----------------
 
 @app.route('/')
