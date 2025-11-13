@@ -88,10 +88,7 @@ def get_firebase_api_key():
     return current_app.config.get('FIREBASE_API_KEY')
 @app.route('/setup-admin')
 def setup_admin():
-    """
-    One-time admin setup route.
-    Visit /setup-admin only once, then delete or disable.
-    """
+   
 
     from firebase_admin import auth
 
