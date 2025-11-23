@@ -26,7 +26,7 @@ from firebase_admin import credentials, auth, firestore
 
 # ------------------- GOOGLE GENERATIVE AI -------------------
 import google.generativeai as genai
-genai.configure(api_key="AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA")
+genai.configure(api_key="AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU")
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 
