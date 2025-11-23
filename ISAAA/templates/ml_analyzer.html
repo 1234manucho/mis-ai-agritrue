@@ -477,15 +477,14 @@
     </div>
   </div>
 </main>
-
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // --- UI Elements and State Variables ---
+    // --- UI Elements ---
     const welcomePage = document.getElementById('welcome-page');
     const mainAnalyzerContainer = document.getElementById('main-analyzer-container');
     const analyzerSelect = document.getElementById('analyzer-select');
     const proceedBtn = document.getElementById('proceed-btn');
-    
+
     const docTabBtn = document.getElementById('doc-tab-btn');
     const imageTabBtn = document.getElementById('image-tab-btn');
     const docAnalyzer = document.getElementById('doc-analyzer');
@@ -498,7 +497,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const docResults = document.getElementById('doc-analysis-results');
     const imageResults = document.getElementById('image-analysis-results');
     const docSummary = document.getElementById('doc-summary');
-    const docSummaryTable = document.getElementById('doc-summary-table');
     const docCharts = document.getElementById('doc-charts');
     const docRemediesList = document.getElementById('doc-remedies-list');
     const analyzedImage = document.getElementById('analyzed-image');
@@ -506,12 +504,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const imageDetailedAnalysis = document.getElementById('image-detailed-analysis');
     const imageRemediesList = document.getElementById('image-remedies-list');
 
-    // Message box elements
     const messageBoxContainer = document.getElementById('message-box-container');
     const messageBoxText = document.getElementById('message-box-text');
     const messageBoxCloseBtn = document.getElementById('message-box-close');
 
-    // Chatbot elements
     const chatbotIcon = document.getElementById('chatbot-icon');
     const chatbotContainer = document.getElementById('chatbot-container');
     const chatbotBody = document.getElementById('chatbot-body');
@@ -550,26 +546,25 @@ document.addEventListener("DOMContentLoaded", function() {
         imageRemediesList.innerHTML = '';
         analyzedImage.src = '';
         docSummary.textContent = '';
-        docSummaryTable.innerHTML = '';
         docCharts.innerHTML = '';
         docRemediesList.innerHTML = '';
     }
 
     // --- Tab Switching ---
-    function showTab(tabToShow) {
+    function showTab(tab) {
         resetUI();
-        if (tabToShow === 'doc') {
-            docTabBtn.classList.add('border-green-500', 'text-green-700');
-            docTabBtn.classList.remove('border-transparent', 'text-gray-500');
-            imageTabBtn.classList.add('border-transparent', 'text-gray-500');
-            imageTabBtn.classList.remove('border-green-500', 'text-green-700');
+        if(tab === 'doc') {
+            docTabBtn.classList.add('border-green-500','text-green-700');
+            docTabBtn.classList.remove('border-transparent','text-gray-500');
+            imageTabBtn.classList.add('border-transparent','text-gray-500');
+            imageTabBtn.classList.remove('border-green-500','text-green-700');
             docAnalyzer.style.display = 'block';
             imageAnalyzer.style.display = 'none';
         } else {
-            imageTabBtn.classList.add('border-green-500', 'text-green-700');
-            imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
-            docTabBtn.classList.add('border-transparent', 'text-gray-500');
-            docTabBtn.classList.remove('border-green-500', 'text-green-700');
+            imageTabBtn.classList.add('border-green-500','text-green-700');
+            imageTabBtn.classList.remove('border-transparent','text-gray-500');
+            docTabBtn.classList.add('border-transparent','text-gray-500');
+            docTabBtn.classList.remove('border-green-500','text-green-700');
             imageAnalyzer.style.display = 'block';
             docAnalyzer.style.display = 'none';
         }
@@ -583,64 +578,57 @@ document.addEventListener("DOMContentLoaded", function() {
             const base64 = await new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
+                reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
             analyzedImage.src = `data:image/jpeg;base64,${base64}`;
 
             const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [
-                        { text: "Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies, Cause, Treatment." },
-                        { inlineData: { mimeType: file.type, data: base64 } }
-                    ]
-                }]
+                instances: [
+                    {
+                        role:"user",
+                        content:[
+                            { text:"Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies, Cause, Treatment." },
+                            { image: { mime_type: file.type, data: base64 } }
+                        ]
+                    }
+                ]
             };
 
             const response = await fetchWithRetry(modelUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
                 body: JSON.stringify(payload)
             });
             const result = await response.json();
-            const text = result.candidates[0].content.parts[0].text;
+            const text = result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if(!text) throw new Error("No text returned");
 
-            const sections = text.split("### ").slice(1);
-            let summary = "", analysis = "", remedies = [], cause = "", treatment = "", confidence_score = null;
-            sections.forEach(sec => {
-                const [title, ...rest] = sec.split("\n");
+            const sections = text.split(/###\s+/).slice(1);
+            let summary="", analysis="", remedies=[], cause="", treatment="";
+            sections.forEach(sec=>{
+                const [title,...rest] = sec.split("\n");
                 const content = rest.join("\n").trim();
-                if (title.toLowerCase().includes("summary")) summary = content;
-                else if (title.toLowerCase().includes("detailed")) analysis = content;
-                else if (title.toLowerCase().includes("remedies")) remedies = content.split("\n").filter(x => x.trim()).map(x => x.replace(/^- /, ""));
-                else if (title.toLowerCase().includes("cause")) cause = content;
-                else if (title.toLowerCase().includes("treatment")) treatment = content;
+                if(/summary/i.test(title)) summary=content;
+                else if(/detailed/i.test(title)) analysis=content;
+                else if(/remedies/i.test(title)) remedies=content.split("\n").filter(x=>x.trim()).map(x=>x.replace(/^- /,""));
+                else if(/cause/i.test(title)) cause=content;
+                else if(/treatment/i.test(title)) treatment=content;
             });
 
             imageSummary.textContent = summary;
             imageDetailedAnalysis.textContent = analysis;
-            imageRemediesList.innerHTML = remedies.map(r => `<li>${r}</li>`).join("");
+            imageRemediesList.innerHTML = remedies.map(r=>`<li>${r}</li>`).join("");
             imageResults.classList.remove('hidden');
 
-            // --- Log to DiagnosticResult ---
-            await fetch('/log_analysis', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: currentUserId, // replace with actual user session
-                    type: 'image',
-                    filename: file.name,
-                    summary: summary,
-                    cause: cause,
-                    treatment: treatment,
-                    confidence_score: confidence_score
-                })
+            await fetch('/log_analysis',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id:currentUserId, type:'image', filename:file.name, summary, cause, treatment, confidence_score:null})
             });
-
         } catch(err) {
             console.error(err);
-            showMessageBox("Image analysis failed. Try another image.");
+            showMessageBox("Image analysis failed. Try a clear image.");
         } finally { showAnalysisLoader(false); }
     }
 
@@ -650,29 +638,19 @@ document.addEventListener("DOMContentLoaded", function() {
         docResults.classList.add('hidden');
         try {
             const text = await file.text();
-            const prompt = `
-Analyze this agricultural document:
+            const prompt = `Analyze this agricultural document and return JSON: {"summary":"","key_metrics":[{"name":"","labels":[],"data":[]}],"remedies":[],"cause":"","treatment":"","confidence_score":null}\n\nDocument:\n${text}`;
 
-${text}
-
-Return ONLY valid JSON in this format:
-{
-  "summary": "",
-  "key_metrics": [{"name":"","labels":[],"data":[]}],
-  "remedies": [],
-  "cause": "",
-  "treatment": "",
-  "confidence_score": null
-}`;
-
-            const payload = { contents:[{ parts:[{ text: prompt }] }] };
-            const response = await fetchWithRetry(modelUrl, { method:"POST", headers:{ "Content-Type":"application/json"}, body: JSON.stringify(payload) });
+            const payload = { instances:[{ role:"user", content:[{text:prompt}] }] };
+            const response = await fetchWithRetry(modelUrl,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(payload)
+            });
             const result = await response.json();
-            const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
+            const parsed = JSON.parse(result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text);
 
             docSummary.textContent = parsed.summary;
             docRemediesList.innerHTML = parsed.remedies.map(r=>`<li>${r}</li>`).join("");
-
             docCharts.innerHTML = parsed.key_metrics.map((m,i)=>`
                 <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
                     <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
@@ -684,79 +662,65 @@ Return ONLY valid JSON in this format:
             chartInstances = {};
             parsed.key_metrics.forEach((m,i)=>{
                 const ctx = document.getElementById(`chart-${i}`).getContext("2d");
-                chartInstances[`chart-${i}`] = new Chart(ctx,{
-                    type:"bar",
-                    data:{ labels: m.labels, datasets:[{ label:m.name, data:m.data, backgroundColor: chartColors[i%chartColors.length] }] }
-                });
+                chartInstances[`chart-${i}`] = new Chart(ctx,{type:"bar", data:{labels:m.labels, datasets:[{label:m.name,data:m.data,backgroundColor: chartColors[i%chartColors.length]}]}});
             });
 
-            docResults.classList.remove("hidden");
+            docResults.classList.remove('hidden');
 
-            // --- Log to DiagnosticResult ---
-            await fetch('/log_analysis', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: currentUserId,
-                    type: 'document',
-                    filename: file.name,
-                    summary: parsed.summary,
-                    cause: parsed.cause,
-                    treatment: parsed.treatment,
-                    confidence_score: parsed.confidence_score
-                })
+            await fetch('/log_analysis',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id:currentUserId, type:'document', filename:file.name, summary:parsed.summary, cause:parsed.cause, treatment:parsed.treatment, confidence_score:parsed.confidence_score})
             });
-
         } catch(err) {
             console.error(err);
-            showMessageBox("Document analysis failed. Ensure the file contains readable text.");
+            showMessageBox("Document analysis failed. Ensure readable text.");
         } finally { showAnalysisLoader(false); }
     }
 
     // --- Chatbot ---
     async function sendMessage() {
         const text = chatbotInput.value.trim();
-        if (!text) return;
-        appendMessage(text, true);
-        chatHistory.push({ role:"user", parts:[{ text }] });
-        chatbotInput.value = "";
+        if(!text) return;
+        appendMessage(text,true);
+        chatHistory.push({role:"user",parts:[{text}]});
+        chatbotInput.value="";
         const loadingDots = appendLoadingDots();
         try {
-            const payload = { contents: chatHistory };
-            const response = await fetchWithRetry(modelUrl, { method:"POST", headers:{ "Content-Type":"application/json"}, body: JSON.stringify(payload) });
+            const payload = { instances: chatHistory };
+            const response = await fetchWithRetry(modelUrl,{method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
             const result = await response.json();
             loadingDots.remove();
-            const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't respond. Try again.";
+            const reply = result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't respond";
             appendMessage(reply,false);
-            chatHistory.push({ role:"model", parts:[{ text: reply }] });
-        } catch(err) {
+            chatHistory.push({role:"model",parts:[{text:reply}]});
+        } catch(err){
             loadingDots.remove();
             appendMessage("Error connecting to AI. Try again.", false);
         }
     }
 
-    function appendMessage(text, isUser) {
+    function appendMessage(text,isUser){
         const div = document.createElement("div");
-        div.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser?"bg-green-200":"bg-gray-100"}`;
-        div.textContent = text;
+        div.className=`chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser?"bg-green-200":"bg-gray-100"}`;
+        div.textContent=text;
         chatbotBody.appendChild(div);
-        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        chatbotBody.scrollTop=chatbotBody.scrollHeight;
     }
-
-    function appendLoadingDots() {
+    function appendLoadingDots(){
         const div = document.createElement("div");
-        div.className = "bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 chat-loading-dots";
-        div.innerHTML = "<span></span><span></span><span></span>";
+        div.className="bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 chat-loading-dots";
+        div.innerHTML="<span></span><span></span><span></span>";
         chatbotBody.appendChild(div);
-        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        chatbotBody.scrollTop=chatbotBody.scrollHeight;
         return div;
     }
 
     // --- Retry Logic ---
-    async function fetchWithRetry(url, options, maxRetries=4) {
+    async function fetchWithRetry(url, options, maxRetries=4){
         let lastError;
         for(let i=0;i<maxRetries;i++){
-            try { const res = await fetch(url, options); if(!res.ok) throw new Error("API error "+res.status); return res; }
+            try{ const res=await fetch(url,options); if(!res.ok) throw new Error("API error "+res.status); return res; }
             catch(err){ lastError=err; await new Promise(r=>setTimeout(r,500*(i+1))); }
         }
         throw lastError;
@@ -767,7 +731,7 @@ Return ONLY valid JSON in this format:
     if(SpeechRecognition){
         const recognition = new SpeechRecognition();
         recognition.lang="en-US";
-        recognition.onresult = e => { chatbotInput.value = e.results[0][0].transcript; sendMessage(); }
+        recognition.onresult = e=>{ chatbotInput.value = e.results[0][0].transcript; sendMessage(); }
         micButton.onclick = ()=>recognition.start();
     } else micButton.style.display="none";
 
@@ -785,6 +749,7 @@ Return ONLY valid JSON in this format:
     proceedBtn.onclick = ()=>{ const selected=analyzerSelect.value; if(selected){ welcomePage.classList.add("hidden"); mainAnalyzerContainer.classList.remove("hidden"); showTab(selected); } }
 });
 </script>
+
 
 
 </body>
