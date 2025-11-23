@@ -520,15 +520,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const micButton = document.getElementById('mic-button');
     const closeChatbotBtn = document.getElementById('close-chatbot');
 
-    // Chart colors for consistent styling
     const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
     let chartInstances = {};
     let chatHistory = [];
 
-    // ************** UNIFIED API KEY + MODEL **************
     const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
     const modelUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    // ******************************************************
 
     // --- Utility Functions ---
     function showMessageBox(message) {
@@ -536,18 +533,15 @@ document.addEventListener("DOMContentLoaded", function() {
         messageBoxContainer.classList.remove('hidden');
         messageBoxContainer.classList.add('visible');
     }
-
     function hideMessageBox() {
         messageBoxContainer.classList.remove('visible');
         messageBoxContainer.classList.add('hidden');
     }
-
     function showAnalysisLoader(isLoading) {
         analysisLoader.style.display = isLoading ? 'flex' : 'none';
         analyzeImageBtn.disabled = isLoading;
         analyzeDocBtn.disabled = isLoading;
     }
-
     function resetUI() {
         docResults.classList.add('hidden');
         imageResults.classList.add('hidden');
@@ -561,7 +555,7 @@ document.addEventListener("DOMContentLoaded", function() {
         docRemediesList.innerHTML = '';
     }
 
-    // --- Tab Switching Logic ---
+    // --- Tab Switching ---
     function showTab(tabToShow) {
         resetUI();
         if (tabToShow === 'doc') {
@@ -585,7 +579,6 @@ document.addEventListener("DOMContentLoaded", function() {
     async function analyzeImage(file) {
         showAnalysisLoader(true);
         imageResults.classList.add('hidden');
-
         try {
             const base64 = await new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -593,20 +586,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 reader.onerror = error => reject(error);
                 reader.readAsDataURL(file);
             });
-
             analyzedImage.src = `data:image/jpeg;base64,${base64}`;
 
             const payload = {
                 contents: [{
                     role: "user",
                     parts: [
-                        { text: "Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies." },
-                        {
-                            inlineData: {
-                                mimeType: file.type,
-                                data: base64
-                            }
-                        }
+                        { text: "Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies, Cause, Treatment." },
+                        { inlineData: { mimeType: file.type, data: base64 } }
                     ]
                 }]
             };
@@ -616,50 +603,53 @@ document.addEventListener("DOMContentLoaded", function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-
             const result = await response.json();
             const text = result.candidates[0].content.parts[0].text;
 
             const sections = text.split("### ").slice(1);
-            let summary = "";
-            let analysis = "";
-            let remedies = [];
-
+            let summary = "", analysis = "", remedies = [], cause = "", treatment = "", confidence_score = null;
             sections.forEach(sec => {
                 const [title, ...rest] = sec.split("\n");
                 const content = rest.join("\n").trim();
-
                 if (title.toLowerCase().includes("summary")) summary = content;
-                if (title.toLowerCase().includes("detailed")) analysis = content;
-                if (title.toLowerCase().includes("remedies"))
-                    remedies = content
-                        .split("\n")
-                        .filter(x => x.trim())
-                        .map(x => x.replace(/^- /, ""));
+                else if (title.toLowerCase().includes("detailed")) analysis = content;
+                else if (title.toLowerCase().includes("remedies")) remedies = content.split("\n").filter(x => x.trim()).map(x => x.replace(/^- /, ""));
+                else if (title.toLowerCase().includes("cause")) cause = content;
+                else if (title.toLowerCase().includes("treatment")) treatment = content;
             });
 
             imageSummary.textContent = summary;
             imageDetailedAnalysis.textContent = analysis;
             imageRemediesList.innerHTML = remedies.map(r => `<li>${r}</li>`).join("");
-
             imageResults.classList.remove('hidden');
 
-        } catch (err) {
+            // --- Log to DiagnosticResult ---
+            await fetch('/log_analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: currentUserId, // replace with actual user session
+                    type: 'image',
+                    filename: file.name,
+                    summary: summary,
+                    cause: cause,
+                    treatment: treatment,
+                    confidence_score: confidence_score
+                })
+            });
+
+        } catch(err) {
             console.error(err);
             showMessageBox("Image analysis failed. Try another image.");
-        } finally {
-            showAnalysisLoader(false);
-        }
+        } finally { showAnalysisLoader(false); }
     }
 
     // --- Document Analysis ---
     async function analyzeDocument(file) {
         showAnalysisLoader(true);
         docResults.classList.add('hidden');
-
         try {
             const text = await file.text();
-
             const prompt = `
 Analyze this agricultural document:
 
@@ -668,100 +658,78 @@ ${text}
 Return ONLY valid JSON in this format:
 {
   "summary": "",
-  "key_metrics": [
-    {
-      "name": "",
-      "labels": [],
-      "data": []
-    }
-  ],
-  "remedies": []
+  "key_metrics": [{"name":"","labels":[],"data":[]}],
+  "remedies": [],
+  "cause": "",
+  "treatment": "",
+  "confidence_score": null
 }`;
 
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt }
-                    ]
-                }]
-            };
-
-            const response = await fetchWithRetry(modelUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
+            const payload = { contents:[{ parts:[{ text: prompt }] }] };
+            const response = await fetchWithRetry(modelUrl, { method:"POST", headers:{ "Content-Type":"application/json"}, body: JSON.stringify(payload) });
             const result = await response.json();
-            const jsonString = result.candidates[0].content.parts[0].text;
-            const parsed = JSON.parse(jsonString);
+            const parsed = JSON.parse(result.candidates[0].content.parts[0].text);
 
             docSummary.textContent = parsed.summary;
-            docRemediesList.innerHTML = parsed.remedies.map(r => `<li>${r}</li>`).join("");
+            docRemediesList.innerHTML = parsed.remedies.map(r=>`<li>${r}</li>`).join("");
 
-            // Charts
-            docCharts.innerHTML = parsed.key_metrics.map((m, i) => `
+            docCharts.innerHTML = parsed.key_metrics.map((m,i)=>`
                 <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
                     <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
                     <canvas id="chart-${i}"></canvas>
                 </div>
             `).join("");
 
-            Object.values(chartInstances).forEach(c => c.destroy());
+            Object.values(chartInstances).forEach(c=>c.destroy());
             chartInstances = {};
-
-            parsed.key_metrics.forEach((m, i) => {
+            parsed.key_metrics.forEach((m,i)=>{
                 const ctx = document.getElementById(`chart-${i}`).getContext("2d");
-                chartInstances[`chart-${i}`] = new Chart(ctx, {
-                    type: "bar",
-                    data: {
-                        labels: m.labels,
-                        datasets: [{
-                            label: m.name,
-                            data: m.data,
-                            backgroundColor: chartColors[i % chartColors.length]
-                        }]
-                    }
+                chartInstances[`chart-${i}`] = new Chart(ctx,{
+                    type:"bar",
+                    data:{ labels: m.labels, datasets:[{ label:m.name, data:m.data, backgroundColor: chartColors[i%chartColors.length] }] }
                 });
             });
 
             docResults.classList.remove("hidden");
 
-        } catch (err) {
+            // --- Log to DiagnosticResult ---
+            await fetch('/log_analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: currentUserId,
+                    type: 'document',
+                    filename: file.name,
+                    summary: parsed.summary,
+                    cause: parsed.cause,
+                    treatment: parsed.treatment,
+                    confidence_score: parsed.confidence_score
+                })
+            });
+
+        } catch(err) {
             console.error(err);
             showMessageBox("Document analysis failed. Ensure the file contains readable text.");
-        } finally {
-            showAnalysisLoader(false);
-        }
+        } finally { showAnalysisLoader(false); }
     }
 
     // --- Chatbot ---
     async function sendMessage() {
         const text = chatbotInput.value.trim();
         if (!text) return;
-
         appendMessage(text, true);
-        chatHistory.push({ role: "user", parts: [{ text }] });
+        chatHistory.push({ role:"user", parts:[{ text }] });
         chatbotInput.value = "";
-
         const loadingDots = appendLoadingDots();
-
         try {
             const payload = { contents: chatHistory };
-            const response = await fetchWithRetry(modelUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
+            const response = await fetchWithRetry(modelUrl, { method:"POST", headers:{ "Content-Type":"application/json"}, body: JSON.stringify(payload) });
             const result = await response.json();
             loadingDots.remove();
-
             const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't respond. Try again.";
-            appendMessage(reply, false);
-            chatHistory.push({ role: "model", parts: [{ text: reply }] });
-
-        } catch (err) {
+            appendMessage(reply,false);
+            chatHistory.push({ role:"model", parts:[{ text: reply }] });
+        } catch(err) {
             loadingDots.remove();
             appendMessage("Error connecting to AI. Try again.", false);
         }
@@ -769,7 +737,7 @@ Return ONLY valid JSON in this format:
 
     function appendMessage(text, isUser) {
         const div = document.createElement("div");
-        div.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? "bg-green-200" : "bg-gray-100"}`;
+        div.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser?"bg-green-200":"bg-gray-100"}`;
         div.textContent = text;
         chatbotBody.appendChild(div);
         chatbotBody.scrollTop = chatbotBody.scrollHeight;
@@ -785,81 +753,39 @@ Return ONLY valid JSON in this format:
     }
 
     // --- Retry Logic ---
-    async function fetchWithRetry(url, options, maxRetries = 4) {
+    async function fetchWithRetry(url, options, maxRetries=4) {
         let lastError;
-        for (let i = 0; i < maxRetries; i++) {
-            try {
-                const res = await fetch(url, options);
-                if (!res.ok) throw new Error("API error " + res.status);
-                return res;
-            } catch (err) {
-                lastError = err;
-                await new Promise(r => setTimeout(r, 500 * (i + 1)));
-            }
+        for(let i=0;i<maxRetries;i++){
+            try { const res = await fetch(url, options); if(!res.ok) throw new Error("API error "+res.status); return res; }
+            catch(err){ lastError=err; await new Promise(r=>setTimeout(r,500*(i+1))); }
         }
         throw lastError;
     }
 
     // --- Speech Recognition ---
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
+    const SpeechRecognition = window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SpeechRecognition){
         const recognition = new SpeechRecognition();
-        recognition.lang = "en-US";
-        recognition.onresult = e => {
-            chatbotInput.value = e.results[0][0].transcript;
-            sendMessage();
-        };
-        micButton.onclick = () => recognition.start();
-    } else {
-        micButton.style.display = "none";
-    }
+        recognition.lang="en-US";
+        recognition.onresult = e => { chatbotInput.value = e.results[0][0].transcript; sendMessage(); }
+        micButton.onclick = ()=>recognition.start();
+    } else micButton.style.display="none";
 
     // --- UI Listeners ---
-    docTabBtn.onclick = () => showTab("doc");
-    imageTabBtn.onclick = () => showTab("image");
-
-    analyzeImageBtn.onclick = () => {
-        const file = imageFile.files[0];
-        file ? analyzeImage(file) : showMessageBox("Select an image file.");
-    };
-
-    analyzeDocBtn.onclick = () => {
-        const file = docFile.files[0];
-        file ? analyzeDocument(file) : showMessageBox("Select a document file.");
-    };
-
+    docTabBtn.onclick = ()=>showTab("doc");
+    imageTabBtn.onclick = ()=>showTab("image");
+    analyzeImageBtn.onclick = ()=>{ const file=imageFile.files[0]; file?analyzeImage(file):showMessageBox("Select an image file."); }
+    analyzeDocBtn.onclick = ()=>{ const file=docFile.files[0]; file?analyzeDocument(file):showMessageBox("Select a document file."); }
     sendMessageBtn.onclick = sendMessage;
-    chatbotInput.onkeydown = (e) => {
-        if (e.key === "Enter") sendMessage();
-    };
-
+    chatbotInput.onkeydown = e=>{ if(e.key==="Enter") sendMessage(); }
     messageBoxCloseBtn.onclick = hideMessageBox;
-
-    chatbotIcon.onclick = () => {
-        chatbotContainer.classList.remove("hidden");
-        chatbotIcon.classList.add("hidden");
-    };
-
-    closeChatbotBtn.onclick = () => {
-        chatbotContainer.classList.add("hidden");
-        chatbotIcon.classList.remove("hidden");
-    };
-
-    analyzerSelect.onchange = () => {
-        proceedBtn.disabled = false;
-        proceedBtn.classList.add("bg-green-600");
-    };
-
-    proceedBtn.onclick = () => {
-        const selected = analyzerSelect.value;
-        if (selected) {
-            welcomePage.classList.add("hidden");
-            mainAnalyzerContainer.classList.remove("hidden");
-            showTab(selected);
-        }
-    };
+    chatbotIcon.onclick = ()=>{ chatbotContainer.classList.remove("hidden"); chatbotIcon.classList.add("hidden"); }
+    closeChatbotBtn.onclick = ()=>{ chatbotContainer.classList.add("hidden"); chatbotIcon.classList.remove("hidden"); }
+    analyzerSelect.onchange = ()=>{ proceedBtn.disabled=false; proceedBtn.classList.add("bg-green-600"); }
+    proceedBtn.onclick = ()=>{ const selected=analyzerSelect.value; if(selected){ welcomePage.classList.add("hidden"); mainAnalyzerContainer.classList.remove("hidden"); showTab(selected); } }
 });
 </script>
+
 
 </body>
 </html>

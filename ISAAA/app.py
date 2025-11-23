@@ -1386,6 +1386,42 @@ def delete_comment_admin(comment_id):
         db.session.rollback()
         flash(f'Error deleting comment: {e}', 'danger')
     return redirect(url_for('admin_dashboard'))
+@app.route('/log_analysis', methods=['POST'])
+def log_analysis():
+    data = request.get_json()
+
+    # Map incoming data to DiagnosticResult fields
+    diagnostic = DiagnosticResult(
+        user_id=data['user_id'],
+        image_url=data.get('filename', ''),           # URL or file path
+        diagnosis_name=data.get('summary', 'Unknown'), # Use summary as diagnosis_name if no specific name
+        diagnosis_type=data.get('type', 'unknown'),    # e.g., 'plant' or 'animal'
+        cause=data.get('cause', 'N/A'),
+        treatment=data.get('treatment', 'N/A'),
+        confidence_score=data.get('confidence_score'),
+        created_at=datetime.utcnow()
+    )
+
+    db.session.add(diagnostic)
+    db.session.commit()
+    return jsonify({'status':'success'})
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user_admin(user_id):
+    # Ensure only admin users can delete any user
+    if not current_user.is_admin:
+        flash('Access denied: Admins only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {e}', 'danger')
+    return redirect(url_for('admin_dashboard'))
 
 
 if __name__ == '__main__':
