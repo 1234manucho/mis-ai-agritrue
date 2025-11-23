@@ -32,7 +32,7 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 # ------------------- OPENAI -------------------
 import openai
-openai.api_key = "your_openai_api_key"
+openai.api_key = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"
 
 # ------------------- APP FACTORY -------------------
 def create_app():
