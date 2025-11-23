@@ -253,8 +253,9 @@
                 </div>
                 <input type="password" name="confirm_password" placeholder="Confirm Password" required
                        class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
-                <input type="tel" name="phone" placeholder="Phone Number"
-                       class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+                <input id="phone" type="tel" name="phone"
+       class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+
                 <small class="block mt-1 text-gray-500 text-xs pl-1">
                     Please start with your country code, e.g. +254, +44.
                 </small>
@@ -741,6 +742,27 @@
         adviceBtn.addEventListener('click', getAdvice);
         reportBtn.addEventListener('click', generateReport);
     };
+</script>
+<script>
+    const phoneInput = document.querySelector("#phone");
+
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "auto",
+        geoIpLookup: function(callback) {
+            fetch("https://ipapi.co/json/")
+                .then(res => res.json())
+                .then(data => callback(data.country_code))
+                .catch(() => callback("KE")); // fallback Kenya
+        },
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js"
+    });
+
+    // Send full phone number on submit
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function() {
+        const fullNumber = iti.getNumber();
+        phoneInput.value = fullNumber;
+    });
 </script>
 
 </body>
