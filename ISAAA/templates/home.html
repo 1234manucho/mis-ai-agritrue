@@ -961,8 +961,9 @@ window.addEventListener('resize', () => {
                     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
                 }
             };
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
             try {
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
@@ -1031,7 +1032,8 @@ window.addEventListener('resize', () => {
 
         async function getGeminiTextResponse(prompt) {
             const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
             const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
             let retries = 0;
             const maxRetries = 3;
