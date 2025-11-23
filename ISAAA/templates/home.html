@@ -259,7 +259,13 @@
 </head>
 <body class="bg-f0fdf4 font-inter">
 
- 
+   <!-- Loader -->
+<div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="text-center">
+        <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
+        <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
+    </div>
+</div>
     <!-- Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
         <div class="container mx-auto px-4 flex items-center justify-between py-3">
@@ -814,147 +820,57 @@ window.addEventListener('resize', () => {
     });
   });
 </script>
-<!-- Chatbot Icon -->
-<div class="container-fluid py-5"></div>
-<div id="chatbot-container"
-     style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
-     
-    <!-- Header -->
-    <div id="chatbot-header"
-         style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-        <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
-        </span>
-        <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
-    </div>
 
-    <!-- Chat Messages -->
-    <div id="chatbot-messages"
-         style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
-        <div class="message bot-message"
-             style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
-            Hello! I am AgriTrue AI. How can I help you today?
-            <button class="tts-btn"
-                    style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊
-            </button>
+    <!-- Chatbot Icon -->
+    <div class="container-fluid py-5"></div>
+    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
+        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
+            </span>
+            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
         </div>
-    </div>
-
-    <!-- Collapsible Content: Topics, Search, Webinars -->
-    <div id="collapsible-content" style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5; transition: max-height 0.3s ease; overflow:hidden;">
-
-        <!-- Suggested Topics -->
-        <div>
-            <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🌱 Suggested Topics</h3>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                <button class="suggest-btn" data-text="Best maize farming practices"
-                        style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
-                    Maize Farming
-                </button>
-                <button class="suggest-btn" data-text="How to prevent tomato diseases"
-                        style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
-                    Tomato Diseases
-                </button>
-                <button class="suggest-btn" data-text="How to start poultry farming"
-                        style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
-                    Poultry
-                </button>
-                <button class="suggest-btn" data-text="Best dairy feeding program"
-                        style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
-                    Dairy Farming
-                </button>
+        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
+            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
+                Hello! I am AgriTrue AI. How can I help you today?
+                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
             </div>
         </div>
-
-        <!-- Autocomplete Search -->
-        <div style="margin-top:12px;">
-            <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🔍 Quick Search</h3>
-            <input id="quick-search" type="text" placeholder="Search farming topics..."
-                   style="width:100%; padding:10px; border:1px solid #86efac; border-radius:10px; outline:none;">
-            <div id="search-suggestions"
-                 style="background:white; border:1px solid #d1d5db; margin-top:4px; border-radius:8px; display:none;"></div>
-        </div>
-
-        <!-- Latest Webinar -->
-        <div style="margin-top:12px;">
-            <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🎥 Latest Webinar</h3>
-            <div style="background:white; border-radius:12px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                <img src="https://images.unsplash.com/photo-1598986645066-4c0460d61abb?auto=format&fit=crop&w=600&q=80"
-                     style="width:100%; border-radius:10px;">
-                <p style="font-weight:bold; margin-top:6px;">Smart Irrigation for Dry Seasons</p>
-                <button style="background:#16a34a; color:white; padding:8px 12px; border:none; border-radius:8px; margin-top:6px; cursor:pointer;">
-                    Watch Webinar
-                </button>
+        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+                
+                 <input type="file" id="image-input" accept="image/*" style="display:none;">
+                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
+                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
+                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
+               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
+                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
+                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
+                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
             </div>
-        </div>
-
-        <!-- Farmer Feed -->
-        <div style="margin-top:12px;">
-            <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">📸 Farmer Spotlight</h3>
-            <div style="background:white; padding:10px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <img src="https://randomuser.me/api/portraits/men/40.jpg" style="width:40px; height:40px; border-radius:50%;">
-                    <div>
-                        <strong>John Mwangi</strong>
-                        <p style="font-size:0.8rem; color:gray;">Maize Farmer • Eldoret</p>
-                    </div>
-                </div>
-                <p style="margin:8px 0;">My maize this season is 🔥 thanks to drip irrigation!</p>
-                <img src="https://images.unsplash.com/photo-1609799745041-2abd1f3ef1d5?auto=format&fit=crop&w=600&q=80"
-                     style="width:100%; border-radius:10px;">
+            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
+                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
+                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
+            </div>
+            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
+                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-phone-alt"></i>
+                </a>
+                <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
+                    <i class="fas fa-sms"></i>
+                </a>
             </div>
         </div>
     </div>
-
-    <!-- Input Area -->
-    <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-        <input type="file" id="image-input" accept="image/*" style="display:none;">
-        <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
-        <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
-        <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
-        <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-
-    <!-- Quick Contact Buttons -->
-    <div style="display:flex; justify-content:center; gap:1.2rem; padding:1rem;">
-        <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; font-size:1.3rem;"><i class="fab fa-whatsapp"></i></a>
-        <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; font-size:1.3rem;"><i class="fas fa-phone-alt"></i></a>
-        <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; font-size:1.3rem;"><i class="fas fa-envelope"></i></a>
-        <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; font-size:1.3rem;"><i class="fas fa-sms"></i></a>
-    </div>
-</div>
-
-<!-- Chatbot Toggle Button -->
-<button id="chatbot-icon"
-        style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); cursor:pointer; z-index:1050; display:flex; align-items:center; justify-content:center;">
-    <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
-</button>
-
-<!-- JavaScript -->
-<script>
-const chatbotIcon = document.getElementById('chatbot-icon');
-const chatbotContainer = document.getElementById('chatbot-container');
-const closeBtn = document.getElementById('close-chatbot');
-const userInput = document.getElementById('user-input');
-const collapsibleContent = document.getElementById('collapsible-content');
-
-// Toggle chatbot
-chatbotIcon.addEventListener('click', () => {
-    chatbotContainer.style.display = 'flex';
-});
-closeBtn.addEventListener('click', () => {
-    chatbotContainer.style.display = 'none';
-});
-
-// Collapse suggested content when user types
-userInput.addEventListener('input', () => {
-    if (userInput.value.trim() !== '') {
-        collapsibleContent.style.maxHeight = '0';
-    } else {
-        collapsibleContent.style.maxHeight = '1000px'; // show again when empty
-    }
-});
-</script>
+    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
+        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
+    </button>
 
 <style>
     @keyframes slide-up {
