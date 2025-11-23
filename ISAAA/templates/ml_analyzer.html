@@ -520,25 +520,25 @@ document.addEventListener("DOMContentLoaded", function() {
     let chartInstances = {};
     let chatHistory = [];
 
-    const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
+    const apiKey = "YOUR_API_KEY_HERE";
     const modelUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     // --- Utility Functions ---
-    function showMessageBox(message) {
+    function showMessageBox(message){
         messageBoxText.textContent = message;
         messageBoxContainer.classList.remove('hidden');
         messageBoxContainer.classList.add('visible');
     }
-    function hideMessageBox() {
+    function hideMessageBox(){
         messageBoxContainer.classList.remove('visible');
         messageBoxContainer.classList.add('hidden');
     }
-    function showAnalysisLoader(isLoading) {
+    function showAnalysisLoader(isLoading){
         analysisLoader.style.display = isLoading ? 'flex' : 'none';
         analyzeImageBtn.disabled = isLoading;
         analyzeDocBtn.disabled = isLoading;
     }
-    function resetUI() {
+    function resetUI(){
         docResults.classList.add('hidden');
         imageResults.classList.add('hidden');
         imageSummary.textContent = '';
@@ -551,9 +551,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // --- Tab Switching ---
-    function showTab(tab) {
+    function showTab(tab){
         resetUI();
-        if(tab === 'doc') {
+        if(tab === 'doc'){
             docTabBtn.classList.add('border-green-500','text-green-700');
             docTabBtn.classList.remove('border-transparent','text-gray-500');
             imageTabBtn.classList.add('border-transparent','text-gray-500');
@@ -570,32 +570,47 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // --- Fetch with retry ---
+    async function fetchWithRetry(url, options, maxRetries=4){
+        let lastError;
+        for(let i=0;i<maxRetries;i++){
+            try{
+                const res = await fetch(url, options);
+                if(!res.ok) throw new Error("API error "+res.status);
+                return res;
+            }catch(err){
+                lastError = err;
+                await new Promise(r => setTimeout(r, 500*(i+1)));
+            }
+        }
+        throw lastError;
+    }
+
     // --- Image Analysis ---
-    async function analyzeImage(file) {
+    async function analyzeImage(file){
+        if(!file) return showMessageBox("Select an image file.");
         showAnalysisLoader(true);
         imageResults.classList.add('hidden');
-        try {
-            const base64 = await new Promise((resolve, reject) => {
+        try{
+            const base64 = await new Promise((resolve,reject)=>{
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onload = ()=>resolve(reader.result.split(',')[1]);
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
             analyzedImage.src = `data:image/jpeg;base64,${base64}`;
 
             const payload = {
-                instances: [
-                    {
-                        role:"user",
-                        content:[
-                            { text:"Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies, Cause, Treatment." },
-                            { image: { mime_type: file.type, data: base64 } }
-                        ]
-                    }
-                ]
+                instances: [{
+                    role:"user",
+                    content:[
+                        { text:"Analyze this agricultural image in detail with headings: Summary, Detailed Analysis, Remedies, Cause, Treatment." },
+                        { image: { mime_type: file.type, data: base64 } }
+                    ]
+                }]
             };
 
-            const response = await fetchWithRetry(modelUrl, {
+            const response = await fetchWithRetry(modelUrl,{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body: JSON.stringify(payload)
@@ -621,25 +636,27 @@ document.addEventListener("DOMContentLoaded", function() {
             imageRemediesList.innerHTML = remedies.map(r=>`<li>${r}</li>`).join("");
             imageResults.classList.remove('hidden');
 
+            // Optional: log analysis
             await fetch('/log_analysis',{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({user_id:currentUserId, type:'image', filename:file.name, summary, cause, treatment, confidence_score:null})
+                body:JSON.stringify({user_id:currentUserId,type:'image',filename:file.name,summary,cause,treatment,confidence_score:null})
             });
-        } catch(err) {
+
+        }catch(err){
             console.error(err);
             showMessageBox("Image analysis failed. Try a clear image.");
-        } finally { showAnalysisLoader(false); }
+        }finally{ showAnalysisLoader(false); }
     }
 
     // --- Document Analysis ---
-    async function analyzeDocument(file) {
+    async function analyzeDocument(file){
+        if(!file) return showMessageBox("Select a document file.");
         showAnalysisLoader(true);
         docResults.classList.add('hidden');
-        try {
+        try{
             const text = await file.text();
             const prompt = `Analyze this agricultural document and return JSON: {"summary":"","key_metrics":[{"name":"","labels":[],"data":[]}],"remedies":[],"cause":"","treatment":"","confidence_score":null}\n\nDocument:\n${text}`;
-
             const payload = { instances:[{ role:"user", content:[{text:prompt}] }] };
             const response = await fetchWithRetry(modelUrl,{
                 method:"POST",
@@ -647,7 +664,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 body:JSON.stringify(payload)
             });
             const result = await response.json();
-            const parsed = JSON.parse(result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text);
+            const jsonText = result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            const parsed = JSON.parse(jsonText);
 
             docSummary.textContent = parsed.summary;
             docRemediesList.innerHTML = parsed.remedies.map(r=>`<li>${r}</li>`).join("");
@@ -662,44 +680,51 @@ document.addEventListener("DOMContentLoaded", function() {
             chartInstances = {};
             parsed.key_metrics.forEach((m,i)=>{
                 const ctx = document.getElementById(`chart-${i}`).getContext("2d");
-                chartInstances[`chart-${i}`] = new Chart(ctx,{type:"bar", data:{labels:m.labels, datasets:[{label:m.name,data:m.data,backgroundColor: chartColors[i%chartColors.length]}]}});
+                chartInstances[`chart-${i}`] = new Chart(ctx,{
+                    type:"bar",
+                    data:{labels:m.labels,datasets:[{label:m.name,data:m.data,backgroundColor: chartColors[i%chartColors.length]}]}
+                });
             });
 
             docResults.classList.remove('hidden');
 
+            // Optional: log analysis
             await fetch('/log_analysis',{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({user_id:currentUserId, type:'document', filename:file.name, summary:parsed.summary, cause:parsed.cause, treatment:parsed.treatment, confidence_score:parsed.confidence_score})
+                body:JSON.stringify({user_id:currentUserId,type:'document',filename:file.name,summary:parsed.summary,cause:parsed.cause,treatment:parsed.treatment,confidence_score:parsed.confidence_score})
             });
-        } catch(err) {
+        }catch(err){
             console.error(err);
             showMessageBox("Document analysis failed. Ensure readable text.");
-        } finally { showAnalysisLoader(false); }
+        }finally{ showAnalysisLoader(false); }
     }
 
     // --- Chatbot ---
-    async function sendMessage() {
+    async function sendMessage(){
         const text = chatbotInput.value.trim();
         if(!text) return;
         appendMessage(text,true);
         chatHistory.push({role:"user",parts:[{text}]});
         chatbotInput.value="";
         const loadingDots = appendLoadingDots();
-        try {
+        try{
             const payload = { instances: chatHistory };
-            const response = await fetchWithRetry(modelUrl,{method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+            const response = await fetchWithRetry(modelUrl,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify(payload)
+            });
             const result = await response.json();
             loadingDots.remove();
             const reply = result?.predictions?.[0]?.content?.[0]?.text || result?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't respond";
             appendMessage(reply,false);
             chatHistory.push({role:"model",parts:[{text:reply}]});
-        } catch(err){
+        }catch(err){
             loadingDots.remove();
             appendMessage("Error connecting to AI. Try again.", false);
         }
     }
-
     function appendMessage(text,isUser){
         const div = document.createElement("div");
         div.className=`chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser?"bg-green-200":"bg-gray-100"}`;
@@ -716,16 +741,6 @@ document.addEventListener("DOMContentLoaded", function() {
         return div;
     }
 
-    // --- Retry Logic ---
-    async function fetchWithRetry(url, options, maxRetries=4){
-        let lastError;
-        for(let i=0;i<maxRetries;i++){
-            try{ const res=await fetch(url,options); if(!res.ok) throw new Error("API error "+res.status); return res; }
-            catch(err){ lastError=err; await new Promise(r=>setTimeout(r,500*(i+1))); }
-        }
-        throw lastError;
-    }
-
     // --- Speech Recognition ---
     const SpeechRecognition = window.SpeechRecognition||window.webkitSpeechRecognition;
     if(SpeechRecognition){
@@ -738,19 +753,23 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- UI Listeners ---
     docTabBtn.onclick = ()=>showTab("doc");
     imageTabBtn.onclick = ()=>showTab("image");
-    analyzeImageBtn.onclick = ()=>{ const file=imageFile.files[0]; file?analyzeImage(file):showMessageBox("Select an image file."); }
-    analyzeDocBtn.onclick = ()=>{ const file=docFile.files[0]; file?analyzeDocument(file):showMessageBox("Select a document file."); }
+    analyzeImageBtn.onclick = ()=>analyzeImage(imageFile.files[0]);
+    analyzeDocBtn.onclick = ()=>analyzeDocument(docFile.files[0]);
     sendMessageBtn.onclick = sendMessage;
     chatbotInput.onkeydown = e=>{ if(e.key==="Enter") sendMessage(); }
     messageBoxCloseBtn.onclick = hideMessageBox;
     chatbotIcon.onclick = ()=>{ chatbotContainer.classList.remove("hidden"); chatbotIcon.classList.add("hidden"); }
     closeChatbotBtn.onclick = ()=>{ chatbotContainer.classList.add("hidden"); chatbotIcon.classList.remove("hidden"); }
     analyzerSelect.onchange = ()=>{ proceedBtn.disabled=false; proceedBtn.classList.add("bg-green-600"); }
-    proceedBtn.onclick = ()=>{ const selected=analyzerSelect.value; if(selected){ welcomePage.classList.add("hidden"); mainAnalyzerContainer.classList.remove("hidden"); showTab(selected); } }
+    proceedBtn.onclick = ()=>{
+        const selected=analyzerSelect.value;
+        if(selected){
+            welcomePage.classList.add("hidden");
+            mainAnalyzerContainer.classList.remove("hidden");
+            showTab(selected);
+        }
+    }
 });
 </script>
-
-
-
 </body>
 </html>
