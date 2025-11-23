@@ -897,238 +897,368 @@ window.addEventListener('resize', () => {
         100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
     }
 </style>
+
 <script>
-window.onload = function() {
-    const chatbotIcon = document.getElementById("chatbot-icon");
-    const chatbotContainer = document.getElementById("chatbot-container");
-    const closeChatbotBtn = document.getElementById("close-chatbot");
-    const userInput = document.getElementById("user-input");
-    const sendBtn = document.getElementById("send-btn");
-    const voiceInputBtn = document.getElementById("voice-input-btn");
-    const factBtn = document.getElementById("fact-btn");
-    const adviceBtn = document.getElementById("advice-btn");
-    const reportBtn = document.getElementById("report-btn");
-    const messagesContainer = document.getElementById("chatbot-messages");
-    const headerText = document.getElementById("header-text");
-    const originalHeaderText = headerText.innerHTML;
+    window.onload = function() {
+        const chatbotIcon = document.getElementById("chatbot-icon");
+        const chatbotContainer = document.getElementById("chatbot-container");
+        const closeChatbotBtn = document.getElementById("close-chatbot");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const voiceInputBtn = document.getElementById("voice-input-btn");
+        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
+        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
+        const reportBtn = document.getElementById("report-btn"); // New button for Report
+        const messagesContainer = document.getElementById("chatbot-messages");
+        const headerText = document.getElementById("header-text");
+        const originalHeaderText = headerText.innerHTML;
 
-    const imageInput = document.getElementById("image-input");
-    const imageUploadBtn = document.getElementById("image-upload-btn");
-    const imagePreviewContainer = document.getElementById("image-preview-container");
-    const imagePreview = document.getElementById("image-preview");
-    const removeImageBtn = document.getElementById("remove-image-btn");
-    let uploadedImageBase64 = null;
+        const imageInput = document.getElementById("image-input");
+        const imageUploadBtn = document.getElementById("image-upload-btn");
+        const imagePreviewContainer = document.getElementById("image-preview-container");
+        const imagePreview = document.getElementById("image-preview");
+        const removeImageBtn = document.getElementById("remove-image-btn");
+        let uploadedImageBase64 = null;
 
-    const apiKeyText = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA"; // Text model
-    const apiKeyImage = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"; // Image model
-    const textModelUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKeyText}`;
-    const imageModelUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKeyImage}`;
-
-    // --- Helper Functions ---
-    function appendMessage(message, sender, imageBase64=null) {
-        const div = document.createElement('div');
-        div.style.maxWidth='80%';
-        div.style.padding='10px 14px';
-        div.style.borderRadius='18px';
-        div.style.lineHeight='1.4';
-        div.style.fontSize='0.95rem';
-        div.style.position='relative';
-        div.style.margin='5px 0';
-        if(sender==='user') {
-            div.style.backgroundColor='#e2e8f0';
-            div.style.color='#333';
-            div.style.alignSelf='flex-end';
-            div.style.borderBottomRightRadius='4px';
-        } else {
-            div.style.backgroundColor='#22c55e';
-            div.style.color='white';
-            div.style.alignSelf='flex-start';
-            div.style.borderBottomLeftRadius='4px';
+        // Helper functions for TTS
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
         }
-        if(imageBase64) {
-            const img = document.createElement('img');
-            img.src = `data:image/jpeg;base64,${imageBase64}`;
-            img.style.maxWidth='100%';
-            img.style.borderRadius='8px';
-            img.style.marginBottom='8px';
-            div.appendChild(img);
+        function pcmToWav(pcm16, sampleRate) {
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+            view.setUint32(0, 0x46464952, true); // "RIFF"
+            view.setUint32(4, 36 + pcm16.length * 2, true);
+            view.setUint32(8, 0x45564157, true); // "WAVE"
+            view.setUint32(12, 0x20746d66, true); // "fmt "
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            view.setUint32(36, 0x61746164, true); // "data"
+            view.setUint32(40, pcm16.length * 2, true);
+            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
+            buffer.set(new Uint8Array(wavHeader), 0);
+            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
+            return new Blob([buffer], { type: "audio/wav" });
         }
-        div.appendChild(document.createTextNode(message));
-        messagesContainer.appendChild(div);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    async function fetchWithRetry(url, payload, maxRetries=3) {
-        let retries = 0;
-        while(retries < maxRetries){
-            try{
-                const res = await fetch(url,{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify(payload)
-                });
-                if(!res.ok){
-                    if(res.status===429){
-                        retries++;
-                        await new Promise(r=>setTimeout(r, Math.pow(2,retries)*1000));
-                        continue;
-                    }
-                    throw new Error(`API error ${res.status}`);
+        async function speakMessage(text) {
+            const audio = new Audio();
+            audio.src = '#';
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
                 }
-                const data = await res.json();
-                return data;
-            } catch(e){
-                retries++;
-                if(retries>=maxRetries) return null;
-                await new Promise(r=>setTimeout(r, Math.pow(2,retries)*1000));
+            };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    audio.src = audioUrl;
+                    audio.play();
+                } else {
+                    console.error("TTS response is not a valid audio format.");
+                }
+            } catch (error) {
+                console.error('Error with TTS:', error);
             }
         }
-        return null;
-    }
 
-    async function getGeminiTextResponse(prompt) {
-        const payload = { contents:[{ role:"user", parts:[{ text: prompt }] }] };
-        const result = await fetchWithRetry(textModelUrl, payload);
-        return result?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't respond.";
-    }
+        // Function to append a new message to the chat
+        function appendMessage(message, sender, imageBase64 = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.maxWidth = '80%';
+            messageDiv.style.padding = '10px 14px';
+            messageDiv.style.borderRadius = '18px';
+            messageDiv.style.lineHeight = '1.4';
+            messageDiv.style.fontSize = '0.95rem';
+            messageDiv.style.position = 'relative';
 
-    async function getGeminiImageResponse(prompt, imageBase64) {
-        const payload = { contents:[{ role:"user", parts:[{ text: prompt }, { inlineData: { mimeType:"image/jpeg", data:imageBase64 } }] }] };
-        const result = await fetchWithRetry(imageModelUrl, payload);
-        return result?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't analyze the image.";
-    }
+            if (sender === 'user') {
+                messageDiv.style.backgroundColor = '#e2e8f0';
+                messageDiv.style.color = '#333';
+                messageDiv.style.alignSelf = 'flex-end';
+                messageDiv.style.borderBottomRightRadius = '4px';
+            } else {
+                messageDiv.style.backgroundColor = '#22c55e';
+                messageDiv.style.color = 'white';
+                messageDiv.style.alignSelf = 'flex-start';
+                messageDiv.style.borderBottomLeftRadius = '4px';
+            }
 
-    async function sendMessage() {
-        const message = userInput.value.trim();
-        const hasImage = uploadedImageBase64!==null;
-        if(!message && !hasImage) return;
+            if (imageBase64) {
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${imageBase64}`;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '8px';
+                img.style.marginBottom = '8px';
+                messageDiv.appendChild(img);
+            }
+            const textNode = document.createTextNode(message);
+            messageDiv.appendChild(textNode);
+            messagesContainer.appendChild(messageDiv);
 
-        appendMessage(message, 'user', uploadedImageBase64);
-        userInput.value='';
-        uploadedImageBase64=null;
-        imagePreviewContainer.style.display='none';
-
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.innerHTML='<span class="dot-pulse"></span>';
-        thinkingDiv.style.display='flex';
-        thinkingDiv.style.alignItems='center';
-        thinkingDiv.style.margin='5px 0';
-        messagesContainer.appendChild(thinkingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        let botResponse='';
-        if(hasImage){
-            const prompt="You are AgriTrue AI. Analyze this image for plant diseases, pests, or nutritional issues. Provide diagnosis and treatment.";
-            botResponse = await getGeminiImageResponse(prompt, uploadedImageBase64);
-        } else {
-            let prompt = `You are AgriTrue AI. Answer the user's query concisely. User: "${message}"`;
-            if(/hi|hello/i.test(message)) prompt = `The user said "${message}". Respond with a friendly greeting.`;
-            botResponse = await getGeminiTextResponse(prompt);
+            if (sender === 'bot') {
+                const ttsButton = document.createElement('button');
+                ttsButton.textContent = '🔊';
+                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
+                ttsButton.onclick = () => speakMessage(message);
+                messageDiv.appendChild(ttsButton);
+            }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        messagesContainer.removeChild(thinkingDiv);
-        appendMessage(botResponse, 'bot');
-    }
+        async function getGeminiTextResponse(prompt) {
+            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response at this time.";
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
+        }
 
-    async function generateFarmFact() {
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.innerHTML='<span class="dot-pulse"></span>';
-        thinkingDiv.style.display='flex';
-        messagesContainer.appendChild(thinkingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        const prompt = "Give a concise farming tip or fact in a single short paragraph.";
-        const botResponse = await getGeminiTextResponse(prompt);
-
-        messagesContainer.removeChild(thinkingDiv);
-        appendMessage(botResponse, 'bot');
-    }
-
-    async function getAdvice() {
-        const problem = prompt("Describe your crop problem:");
-        if(!problem) return;
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.innerHTML='<span class="dot-pulse"></span>';
-        thinkingDiv.style.display='flex';
-        messagesContainer.appendChild(thinkingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        const prompt = `You are AgriTrue AI. A farmer has this problem: "${problem}". Provide diagnosis and a step-by-step action plan.`;
-        const botResponse = await getGeminiTextResponse(prompt);
-
-        messagesContainer.removeChild(thinkingDiv);
-        appendMessage(botResponse, 'bot');
-    }
-
-    async function generateReport() {
-        const topic = prompt("Report topic:");
-        if(!topic) return;
-        const thinkingDiv = document.createElement('div');
-        thinkingDiv.innerHTML='<span class="dot-pulse"></span>';
-        thinkingDiv.style.display='flex';
-        messagesContainer.appendChild(thinkingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        const prompt = `Generate a short report on "${topic}" with intro, key findings, and conclusion. Use markdown headings and bullets.`;
-        const botResponse = await getGeminiTextResponse(prompt);
-
-        messagesContainer.removeChild(thinkingDiv);
-        appendMessage(botResponse, 'bot');
-    }
-
-    // --- UI Event Listeners ---
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', e=>{ if(e.key==='Enter') sendMessage(); });
-
-    factBtn.addEventListener('click', generateFarmFact);
-    adviceBtn.addEventListener('click', getAdvice);
-    reportBtn.addEventListener('click', generateReport);
-
-    chatbotIcon.onclick = ()=>{ chatbotContainer.style.display='flex'; chatbotIcon.style.display='none'; headerText.innerHTML='<i class="fa-solid fa-seedling"></i> AgriTrue'; };
-    closeChatbotBtn.onclick = ()=>{ chatbotContainer.style.display='none'; chatbotIcon.style.display='block'; headerText.innerHTML=originalHeaderText; };
-
-    imageUploadBtn.addEventListener('click', ()=>imageInput.click());
-    imageInput.addEventListener('change', (e)=>{
-        const file = e.target.files[0];
-        if(file){
-            const reader = new FileReader();
-            reader.onloadend = ()=>{
-                uploadedImageBase64 = reader.result.replace(/^data:.+?,/,'');
-                imagePreview.src = reader.result;
-                imagePreviewContainer.style.display='block';
-                userInput.placeholder = "Image uploaded. You can type a message to go with it...";
+        async function getGeminiImageResponse(prompt, imageBase64) {
+            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
+                }]
             };
-            reader.readAsDataURL(file);
+            let retries = 0;
+            const maxRetries = 3;
+            while (retries < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                            continue;
+                        }
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    return text || "I'm sorry, I couldn't generate a response for this image.";
+                } catch (error) {
+                    console.error('Error calling Gemini API with image:', error);
+                    retries++;
+                    if (retries >= maxRetries) {
+                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
+                    }
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                }
+            }
+            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
         }
-    });
-    removeImageBtn.addEventListener('click', ()=>{
-        uploadedImageBase64=null;
-        imagePreviewContainer.style.display='none';
-        userInput.placeholder="Type a message...";
-        imageInput.value='';
-    });
 
-    // --- Voice Recognition ---
-    if('SpeechRecognition' in window || 'webkitSpeechRecognition' in window){
-        const SpeechRecognition = window.SpeechRecognition||window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.continuous=false;
-        recognition.lang='en-US';
 
-        voiceInputBtn.addEventListener('click', ()=>{
-            try{ recognition.start(); voiceInputBtn.innerHTML='🎙️...'; voiceInputBtn.style.backgroundColor='gray'; }
-            catch(e){ console.error(e); }
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            const hasImage = uploadedImageBase64 !== null;
+            if (message || hasImage) {
+                appendMessage(message, 'user', uploadedImageBase64);
+                userInput.value = '';
+                uploadedImageBase64 = null;
+                imagePreviewContainer.style.display = 'none';
+
+                const thinkingMessageDiv = document.createElement('div');
+                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+                thinkingMessageDiv.className = 'message bot-message';
+                thinkingMessageDiv.style.display = 'flex';
+                thinkingMessageDiv.style.alignItems = 'center';
+                thinkingMessageDiv.style.gap = '0.5rem';
+                messagesContainer.appendChild(thinkingMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                let botResponse;
+                if (hasImage) {
+                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
+                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
+                } else {
+                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
+                    // Special handling for greetings
+                    const lowerCaseMessage = message.toLowerCase();
+                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
+                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
+                    }
+                    botResponse = await getGeminiTextResponse(aiPrompt);
+                }
+
+                messagesContainer.removeChild(thinkingMessageDiv);
+                appendMessage(botResponse, 'bot');
+            }
+        }
+
+        // Function for the "Get Advice" feature
+        async function getAdvice() {
+            const problem = prompt("What is your crop and what problem are you seeing?");
+            if (!problem) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Function for the "Generate Report" feature
+        async function generateReport() {
+            const topic = prompt("What is the topic for your agricultural report?");
+            if (!topic) return;
+
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
+            const botResponse = await getGeminiTextResponse(aiPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        // Existing function to generate a farm fact
+        async function generateFarmFact() {
+            const thinkingMessageDiv = document.createElement('div');
+            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
+            thinkingMessageDiv.className = 'message bot-message';
+            thinkingMessageDiv.style.display = 'flex';
+            thinkingMessageDiv.style.alignItems = 'center';
+            thinkingMessageDiv.style.gap = '0.5rem';
+            messagesContainer.appendChild(thinkingMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
+            const botResponse = await getGeminiTextResponse(factPrompt);
+
+            messagesContainer.removeChild(thinkingMessageDiv);
+            appendMessage(botResponse, 'bot');
+        }
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            voiceInputBtn.addEventListener('click', () => {
+                try {
+                    recognition.start();
+                    voiceInputBtn.innerHTML = '�';
+                    voiceInputBtn.style.backgroundColor = 'gray';
+                } catch (e) { console.error('Speech recognition start error:', e); }
+            });
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage();
+            };
+            recognition.onend = () => {
+                voiceInputBtn.innerHTML = '🎙️';
+                voiceInputBtn.style.backgroundColor = '#3b82f6';
+            };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
+            };
+        } else {
+            voiceInputBtn.style.display = 'none';
+            console.warn("Speech Recognition API not supported in this browser.");
+        }
+
+        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
+                    imagePreview.src = reader.result;
+                    imagePreviewContainer.style.display = 'block';
+                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        removeImageBtn.addEventListener('click', () => {
+            uploadedImageBase64 = null;
+            imagePreviewContainer.style.display = 'none';
+            userInput.placeholder = "Type a message...";
+            imageInput.value = '';
         });
 
-        recognition.onresult = e=>{
-            const transcript = e.results[0][0].transcript;
-            userInput.value = transcript;
-            sendMessage();
+        chatbotIcon.onclick = () => {
+            chatbotContainer.style.display = "flex";
+            chatbotIcon.style.display = "none";
+            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
         };
-        recognition.onend = ()=>{ voiceInputBtn.innerHTML='🎙️'; voiceInputBtn.style.backgroundColor='#3b82f6'; };
-        recognition.onerror = e=>{ console.error(e); appendMessage("Voice recognition error. Type your message instead.", 'bot'); };
-    } else voiceInputBtn.style.display='none';
-};
+        closeChatbotBtn.onclick = () => {
+            chatbotContainer.style.display = "none";
+            chatbotIcon.style.display = "block";
+            headerText.innerHTML = originalHeaderText;
+        };
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { sendMessage(); }
+        });
+        factBtn.addEventListener('click', generateFarmFact);
+        adviceBtn.addEventListener('click', getAdvice);
+        reportBtn.addEventListener('click', generateReport);
+    };
 </script>
 
 <!-- Section for Feature Cards, now focused on combating misinformation -->
