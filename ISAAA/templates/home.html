@@ -848,6 +848,67 @@ window.addEventListener('resize', () => {
                 <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
                 <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
             </div>
+            <!-- Suggested Topics -->
+    <div>
+        <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🌱 Suggested Topics</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button class="suggest-btn" data-text="Best maize farming practices"
+                style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
+                Maize Farming
+            </button>
+            <button class="suggest-btn" data-text="How to prevent tomato diseases"
+                style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
+                Tomato Diseases
+            </button>
+            <button class="suggest-btn" data-text="How to start poultry farming"
+                style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
+                Poultry
+            </button>
+            <button class="suggest-btn" data-text="Best dairy feeding program"
+                style="background:white; border:1px solid #86efac; color:#166534; padding:6px 14px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
+                Dairy Farming
+            </button>
+        </div>
+    </div>
+
+    <!-- Autocomplete Search Box -->
+    <div>
+        <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🔍 Quick Search</h3>
+        <input id="quick-search" type="text" placeholder="Search farming topics..."
+            style="width:100%; padding:10px; border:1px solid #86efac; border-radius:10px; outline:none;">
+        <div id="search-suggestions" style="background:white; border:1px solid #d1d5db; margin-top:4px; border-radius:8px; display:none;"></div>
+    </div>
+
+    <!-- Webinars Preview -->
+    <div>
+        <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">🎥 Latest Webinar</h3>
+        <div style="background:white; border-radius:12px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <img src="https://images.unsplash.com/photo-1598986645066-4c0460d61abb?auto=format&fit=crop&w=600&q=80"
+                style="width:100%; border-radius:10px;">
+            <p style="font-weight:bold; margin-top:6px;">Smart Irrigation for Dry Seasons</p>
+            <button style="background:#16a34a; color:white; padding:8px 12px; border:none; border-radius:8px; margin-top:6px; cursor:pointer;">
+                Watch Webinar
+            </button>
+        </div>
+    </div>
+
+    <!-- Mini Instagram-Style Farmer Feed -->
+    <div>
+        <h3 style="font-weight:bold; margin-bottom:6px; color:#166534;">📸 Farmer Spotlight</h3>
+        <div style="background:white; padding:10px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <img src="https://randomuser.me/api/portraits/men/40.jpg"
+                    style="width:40px; height:40px; border-radius:50%;">
+                <div>
+                    <strong>John Mwangi</strong>
+                    <p style="font-size:0.8rem; color:gray;">Maize Farmer • Eldoret</p>
+                </div>
+            </div>
+            <p style="margin:8px 0;">My maize this season is 🔥 thanks to drip irrigation!</p>
+            <img src="https://images.unsplash.com/photo-1609799745041-2abd1f3ef1d5?auto=format&fit=crop&w=600&q=80"
+                style="width:100%; border-radius:10px;">
+        </div>
+    </div>
             <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
                 <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
                 <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
@@ -897,6 +958,51 @@ window.addEventListener('resize', () => {
         100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
     }
 </style>
+<script>
+const topics = [
+    "maize farming",
+    "tomato blight",
+    "poultry disease control",
+    "dairy cow feeding program",
+    "best fertilizer for maize",
+    "how to increase milk production",
+    "greenhouse farming",
+    "soil testing methods",
+    "avocado farming"
+];
+
+const quickSearch = document.getElementById('quick-search');
+const suggestionBox = document.getElementById('search-suggestions');
+
+quickSearch.addEventListener('input', () => {
+    const q = quickSearch.value.toLowerCase();
+    if (!q) {
+        suggestionBox.style.display = "none";
+        return;
+    }
+
+    const matched = topics.filter(t => t.toLowerCase().includes(q));
+    suggestionBox.innerHTML = matched.map(m => 
+        `<div class="suggest-item" style="padding:8px; cursor:pointer;">${m}</div>`
+    ).join('');
+
+    suggestionBox.style.display = matched.length ? "block" : "none";
+
+    document.querySelectorAll('.suggest-item').forEach(item => {
+        item.onclick = () => {
+            quickSearch.value = item.innerText;
+            suggestionBox.style.display = "none";
+        };
+    });
+});
+
+// Suggested topic buttons → send message
+document.querySelectorAll('.suggest-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.getElementById("user-input").value = btn.dataset.text;
+    };
+});
+</script>
 
 <script>
     window.onload = function() {
