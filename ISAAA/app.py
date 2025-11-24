@@ -1423,6 +1423,9 @@ def delete_user_admin(user_id):
         flash(f'Error deleting user: {e}', 'danger')
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/donate')
+def donate():
+    return render_template('donate.html')
 
 if __name__ == '__main__':
    
