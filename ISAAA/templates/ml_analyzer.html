@@ -391,439 +391,583 @@
         </div>
     </div>
 
-   <main class="pt-20 pb-16 px-4">
-    <div class="max-w-6xl mx-auto">
+   <!-- Main Content Area -->
+<main class="min-h-screen w-full bg-[#f0fdf4] flex flex-col items-center justify-start pt-20 pb-12 px-4">
 
-      <!-- Landing -->
-      <section id="welcome" class="card p-6 lg:p-10 mb-8">
-        <div class="flex flex-col lg:flex-row gap-6">
-          <div class="flex-1">
-            <h1 class="text-3xl lg:text-4xl font-extrabold text-[#0f766e] flex items-center gap-3">
-              <i class="fa-solid fa-seedling text-green-500"></i> AgriTrue ML Analyzer
-            </h1>
-            <p class="mt-3 text-gray-700 max-w-xl">Upload a photo or document and get an evidence-based analysis with practical remedies. For production keep API keys server-side — this demo includes client-side calls as requested.</p>
-
-            <div class="mt-6 flex gap-3 items-center">
-              <select id="analyzerSelect" class="rounded-lg border p-3">
-                <option value="" selected disabled>Choose analyzer</option>
-                <option value="image">Image Analyzer</option>
-                <option value="document">Document Analyzer</option>
-              </select>
-              <button id="proceedBtn" class="bg-[#10B981] text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-60" disabled>Proceed</button>
-            </div>
-          </div>
-
-          <div class="w-full lg:w-72">
-            <div class="bg-green-50 p-4 rounded-lg">
-              <h3 class="font-semibold text-[#065f46]">Tips</h3>
-              <ul class="mt-2 text-sm text-gray-700 space-y-1">
-                <li>Take close-up + wide field photos.</li>
-                <li>Include leaf undersides for pest detection.</li>
-                <li>Provide recent field history for best results.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Analyzer -->
-      <section id="analyzer" class="card p-6 lg:p-8 hidden">
-        <div class="flex flex-col lg:flex-row gap-6">
-          <div class="lg:w-1/3 space-y-6">
-            <div class="flex items-center justify-between">
-              <h2 class="text-xl font-bold text-[#0f766e]">Analyzer</h2>
-              <button id="back" title="Back" class="text-gray-600 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i></button>
-            </div>
-
-            <div class="flex gap-2">
-              <button id="tabDoc" class="flex-1 py-2 rounded-md border text-sm">Document</button>
-              <button id="tabImage" class="flex-1 py-2 rounded-md border bg-[#ecfdf5] text-sm font-semibold">Image</button>
-            </div>
-
-            <!-- image controls -->
-            <div id="imageControls" class="space-y-3">
-              <label class="block text-sm font-medium">Upload image (JPG/PNG)</label>
-              <input id="imageInput" type="file" accept="image/*" class="block w-full text-sm" />
-              <button id="analyzeImage" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Image</button>
-              <div id="imageSpinner" class="flex items-center gap-3 hidden"><div class="spinner"></div><div class="text-sm text-gray-700">Analyzing image…</div></div>
-            </div>
-
-            <!-- doc controls -->
-            <div id="docControls" class="space-y-3 hidden">
-              <label class="block text-sm font-medium">Upload document (CSV / TXT)</label>
-              <input id="docInput" type="file" accept=".csv,.txt" class="block w-full text-sm" />
-              <button id="analyzeDoc" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Document</button>
-              <div id="docSpinner" class="flex items-center gap-3 hidden"><div class="spinner"></div><div class="text-sm text-gray-700">Analyzing document…</div></div>
-            </div>
-
-            <div>
-              <h3 class="text-sm font-semibold text-[#065f46]">Advice</h3>
-              <p class="text-sm text-gray-700 mt-2">If the model returns no remedies we synthesize practical steps based on analysis so you always get useful next steps.</p>
-            </div>
-          </div>
-
-          <div class="lg:w-2/3 space-y-6 results-scroll">
-            <div id="imageResult" class="hidden p-4">
-              <h3 class="font-bold text-[#065f46]">Image Analysis</h3>
-              <div class="mt-3 lg:flex gap-4">
-                <div class="lg:w-1/2 text-center">
-                  <img id="preview" class="mx-auto rounded-md border" alt="preview" style="max-width:320px;max-height:320px;object-fit:contain" />
-                </div>
-                <div class="lg:w-1/2">
-                  <h4 class="font-semibold">Summary</h4>
-                  <p id="summaryText" class="text-sm text-gray-700 mt-2"></p>
-                  <h4 class="font-semibold mt-3">Detailed analysis</h4>
-                  <p id="analysisText" class="text-sm text-gray-700 mt-2"></p>
-                  <h4 class="font-semibold mt-3">Recommended Remedies</h4>
-                  <ul id="remediesList" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
-                </div>
-              </div>
-            </div>
-
-            <div id="docResult" class="hidden p-4">
-              <h3 class="font-bold text-[#065f46]">Document Analysis</h3>
-              <div class="mt-3">
-                <h4 class="font-semibold">Summary</h4>
-                <p id="docSummaryText" class="text-sm text-gray-700 mt-2"></p>
-                <h4 class="font-semibold mt-3">Key Metrics</h4>
-                <div id="docCharts" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3"></div>
-                <h4 class="font-semibold mt-3">Recommended Remedies</h4>
-                <ul id="docRemediesList" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
-              </div>
-            </div>
-
-            <div id="notice" class="hidden bg-yellow-50 border border-yellow-100 p-3 rounded-md">
-              <p id="noticeMsg" class="text-sm text-yellow-800"></p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <!-- Chat / Floating -->
-  <div id="chatToggle" class="fixed bottom-6 right-6 z-50">
-    <button id="openChat" class="bg-[#10B981] text-white p-4 rounded-full shadow-lg"><i class="fa-solid fa-comments text-xl"></i></button>
+  <!-- Universal Message Box -->
+  <div id="message-box-container" class="message-box-container hidden fixed top-1/4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl p-6 border-t-4 border-green-500 max-w-sm w-full z-50">
+    <h3 class="text-xl font-bold mb-2 text-gray-800">Notification</h3>
+    <p id="message-box-text" class="text-gray-600 mb-4"></p>
+    <button id="message-box-close" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg w-full hover:bg-green-700 transition">OK</button>
   </div>
 
-  <div id="chat" class="fixed bottom-24 right-6 w-80 h-[60vh] card hidden z-50 flex flex-col overflow-hidden">
-    <div class="px-4 py-3 bg-gradient-to-r from-[#0f766e] to-[#10b981] text-white flex items-center justify-between">
-      <div class="font-semibold">Agri-Bot</div>
-      <button id="closeChat" class="text-white text-xl">&times;</button>
+  <!-- Landing Page -->
+  <div id="welcome-page" class="w-full max-w-2xl bg-white bg-opacity-95 p-8 md:p-12 rounded-2xl shadow-2xl text-center">
+    <div class="max-w-md mx-auto">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center justify-center">
+        <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+      </h1>
+      <p class="text-lg text-gray-700 mb-8">
+        Welcome! Please select the type of analysis you need to begin.
+      </p>
+      <div class="mb-6 relative">
+        <select id="analyzer-select" class="w-full p-3 md:p-4 text-lg border border-green-300 rounded-lg bg-white appearance-none focus:ring-2 focus:ring-green-400 focus:outline-none transition-shadow">
+          <option value="" disabled selected>Select an Analyzer</option>
+          <option value="image">Image Analyzer</option>
+          <option value="document">Document Analyzer</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-green-700">
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+      <button id="proceed-btn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition transform hover:scale-105" disabled>
+        Proceed
+      </button>
     </div>
-    <div id="chatStream" class="p-3 flex-1 overflow-auto space-y-2 bg-[#f7fff5]"></div>
-    <div class="p-3 border-t">
-      <div class="flex gap-2">
-        <input id="chatInput" class="flex-1 p-2 border rounded-lg" placeholder="Ask about this image or crop..." />
-        <button id="mic" class="bg-gray-100 p-2 rounded-lg"><i class="fa-solid fa-microphone"></i></button>
-        <button id="send" class="bg-[#10B981] text-white p-2 rounded-lg"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+
+  <!-- Main Analyzer Container -->
+  <div id="main-analyzer-container" class="w-full max-w-5xl bg-white bg-opacity-95 p-8 md:p-12 rounded-2xl shadow-2xl hidden mt-10">
+    <h2 class="text-4xl md:text-5xl font-extrabold text-green-700 mb-6 flex items-center">
+      <i class="fas fa-seedling text-green-500 mr-3"></i> AgriTrue ML Analyzer
+    </h2>
+
+    <!-- Tabbed navigation -->
+    <div class="flex border-b border-gray-200 mb-6">
+      <button id="doc-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-gray-500 border-b-4 border-transparent transition-colors duration-200 hover:bg-green-50">Document Analyzer</button>
+      <button id="image-tab-btn" class="flex-1 py-3 text-center text-lg font-semibold text-green-700 border-b-4 border-green-500 transition-colors duration-200 hover:bg-green-50">Image Analyzer</button>
+    </div>
+
+    <!-- Document Analyzer Section -->
+    <div id="doc-analyzer" style="display: none;">
+      <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+        <div class="mb-4">
+          <label for="doc-file" class="block text-gray-700 font-semibold mb-2">Upload a File (CSV, WORD, PDF)</label>
+          <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="doc-file" accept=".csv,.txt,.pdf,.docx" required>
+        </div>
+        <button id="analyze-doc-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 w-full">
+          Analyze Document
+        </button>
+      </div>
+      <div id="doc-analysis-results" class="hidden">
+        <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h4 class="text-3xl font-bold text-green-700 mb-4">Document Analysis Result</h4>
+          <p id="doc-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <div id="doc-summary-table" class="mb-6"></div>
+          <div id="doc-charts" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+          <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+          <ul id="doc-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+        </section>
       </div>
     </div>
-  </div>
 
-  <!-- Message modal -->
-  <div id="modal" class="fixed inset-0 z-60 flex items-center justify-center hidden">
-    <div class="card p-6 max-w-md">
-      <h3 id="modalTitle" class="font-bold text-lg">Notification</h3>
-      <p id="modalMsg" class="text-sm text-gray-700 mt-2"></p>
-      <div class="mt-4 text-right"><button id="modalOk" class="px-4 py-2 rounded bg-[#10B981] text-white">OK</button></div>
+    <!-- Image Analyzer Section -->
+    <div id="image-analyzer" style="display: block;">
+      <div class="bg-green-50 p-6 rounded-lg shadow-inner mb-8">
+        <div class="mb-4">
+          <label for="image-file" class="block text-gray-700 font-semibold mb-2">Upload an Image (JPG, PNG)</label>
+          <input type="file" class="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none" id="image-file" accept=".jpg,.jpeg,.png" required>
+        </div>
+        <button id="analyze-image-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 w-full">
+          Analyze Image
+        </button>
+      </div>
+      <div id="image-analysis-results" class="hidden">
+        <section class="mt-8 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h4 class="text-3xl font-bold text-green-700 mb-4">Image Analysis Result</h4>
+          <div id="image-display-container" class="mb-4 text-center">
+            <img id="analyzed-image" class="max-w-full h-auto rounded-lg shadow-inner border border-gray-200 mx-auto">
+          </div>
+          <p id="image-summary" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <p id="image-detailed-analysis" class="text-gray-800 text-lg leading-relaxed mb-6"></p>
+          <h5 class="text-2xl font-bold text-green-700 mt-8 mb-4">Recommended Remedies</h5>
+          <ul id="image-remedies-list" class="list-disc list-inside text-gray-800 text-lg space-y-2"></ul>
+        </section>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="analysis-loader" class="analysis-loader-container hidden text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-green-600 mx-auto"></div>
+      <p class="mt-3 text-lg font-semibold text-green-700">Analyzing your data...</p>
     </div>
   </div>
 
-  <script>
-  // NOTE: You've asked for the APIs to be called from front-end directly. This is insecure for production.
-  // Keep keys server-side. This example will place the Gemini API key here only because you requested it.
-  // Replace with your key or leave empty to use a server proxy.
-  const GEMINI_API_KEY = 'AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU'; // <<< PUT YOUR KEY HERE (NOT RECOMMENDED)
+  <!-- Floating Chatbot Icon -->
+  <div id="chatbot-icon" class="fixed bottom-6 right-6 bg-green-600 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-green-700 transition">
+    <i class="fas fa-comments text-2xl"></i>
+  </div>
 
-  // Simple helpers
-  const el = id => document.getElementById(id);
-  const showModal = (t,m) => { el('modalTitle').textContent = t; el('modalMsg').textContent = m; el('modal').classList.remove('hidden'); };
-  el('modalOk').addEventListener('click', ()=> el('modal').classList.add('hidden'));
+  <!-- Chatbot Container -->
+  <div id="chatbot-container" class="hidden fixed bottom-20 right-6 w-80 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-green-500">
+    <div class="bg-green-600 text-white px-4 py-3 flex justify-between items-center">
+      <h3 class="text-lg font-bold">Agri-Bot Assistant</h3>
+      <button id="close-chatbot" class="text-white text-2xl">&times;</button>
+    </div>
+    <div id="chatbot-body" class="flex-1 p-4 overflow-y-auto space-y-3 text-left text-gray-800"></div>
+    <div class="flex items-center p-3 border-t border-gray-200 bg-gray-50">
+      <input type="text" id="chatbot-input" class="flex-grow p-2 border border-green-300 rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ask me anything...">
+      <button id="mic-button" class="bg-green-100 text-green-700 p-2 rounded-lg hover:bg-green-200 transition">
+        <i class="fas fa-microphone"></i>
+      </button>
+      <button id="send-message" class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</main>
 
-  // Exponential backoff fetch
-  async function fetchWithRetry(url, options = {}, retries = 4) {
-    let lastErr;
-    for (let i=0;i<retries;i++){
-      try {
-        const r = await fetch(url, options);
-        if (!r.ok && (r.status === 429 || r.status >= 500)) throw new Error('server '+r.status);
-        return r;
-      } catch (e) {
-        lastErr = e;
-        const wait = Math.pow(2,i)*400 + Math.random()*400;
-        await new Promise(r=>setTimeout(r,wait));
-      }
-    }
-    throw lastErr;
-  }
 
-  // Robust parser for model text
-  function parseSections(text){
-    if (!text) return { summary:'', analysis:'', remedies:[] };
-    // attempt JSON
-    try{ const j = JSON.parse(text); if (j && typeof j === 'object') {
-      return { summary: j.summary || j.Summary || '', analysis: j.analysis || j.detailed || '', remedies: Array.isArray(j.remedies) ? j.remedies : (j.remedies ? [j.remedies] : []) };
-    }}catch(e){}
-    // markdown headings
-    const parts = text.split(/\n#{1,6}\s*/).map(p=>p.trim()).filter(Boolean);
-    if (parts.length>1){
-      let summary='', analysis='', remedies=[];
-      parts.forEach(p=>{
-        const firstLine = p.split('\n')[0].toLowerCase();
-        if (firstLine.includes('summary')) summary = p.replace(/^.+\n/,'').trim();
-        else if (firstLine.includes('detailed')||firstLine.includes('analysis')) analysis = p.replace(/^.+\n/,'').trim();
-        else if (firstLine.includes('remed')) remedies = p.replace(/^.+\n/,'').split('\n').map(l=>l.replace(/^[\-\u2022\d\.\)\s]+/,'').trim()).filter(Boolean);
-      });
-      return { summary, analysis, remedies };
-    }
-    // heuristics
-    const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-    const summary = lines.slice(0,4).join(' ');
-    const analysis = lines.slice(4).join(' ');
-    const remedies = lines.filter(l=>/^[-\u2022*]/.test(l) || /\b(apply|spray|use|treat|remove|prune|fertil|irrigat|mulch)\b/i).map(l=>l.replace(/^[\-\u2022*\d\.\)\s]+/,'').trim());
-    return { summary, analysis, remedies };
-  }
+    <!-- JavaScript to handle all interactivity, including tabs, analysis, and the chatbot -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // --- UI Elements and State Variables ---
+            const welcomePage = document.getElementById('welcome-page');
+            const mainAnalyzerContainer = document.getElementById('main-analyzer-container');
+            const analyzerSelect = document.getElementById('analyzer-select');
+            const proceedBtn = document.getElementById('proceed-btn');
+            
+            const docTabBtn = document.getElementById('doc-tab-btn');
+            const imageTabBtn = document.getElementById('image-tab-btn');
+            const docAnalyzer = document.getElementById('doc-analyzer');
+            const imageAnalyzer = document.getElementById('image-analyzer');
+            const docFile = document.getElementById('doc-file');
+            const analyzeDocBtn = document.getElementById('analyze-doc-btn');
+            const imageFile = document.getElementById('image-file');
+            const analyzeImageBtn = document.getElementById('analyze-image-btn');
+            const analysisLoader = document.getElementById('analysis-loader');
+            const docResults = document.getElementById('doc-analysis-results');
+            const imageResults = document.getElementById('image-analysis-results');
+            const docSummary = document.getElementById('doc-summary');
+            const docSummaryTable = document.getElementById('doc-summary-table');
+            const docCharts = document.getElementById('doc-charts');
+            const docRemediesList = document.getElementById('doc-remedies-list');
+            const analyzedImage = document.getElementById('analyzed-image');
+            const imageSummary = document.getElementById('image-summary');
+            const imageDetailedAnalysis = document.getElementById('image-detailed-analysis');
+            const imageRemediesList = document.getElementById('image-remedies-list');
 
-  function synthesizeRemedies(text){
-    text = (text||'').toLowerCase();
-    const s = new Set();
-    if (/\b(fung(us|al)|mildew|rust|blight)\b/.test(text)){
-      s.add('Remove infected tissue and avoid composting it.');
-      s.add('Apply a labelled fungicide and rotate modes of action.');
-      s.add('Improve air circulation and avoid overhead irrigation.');
-    }
-    if (/\b(aphid|mite|thrip|weevil|worm|caterpillar)\b/.test(text)){
-      s.add('Use insecticidal soap or biological controls appropriate for the pest.');
-      s.add('Encourage natural predators and use monitoring traps.');
-    }
-    if (/\b(nutrient|nitrogen|phosphorus|potassium|chlorosis)\b/.test(text)){
-      s.add('Take a soil test and apply balanced fertilizer according to results.');
-      s.add('Consider foliar feeding for rapid correction if required.');
-    }
-    if (s.size===0){
-      s.add('Take additional photos (close-up + field view) and consult local extension.');
-      s.add('Sanitize tools and avoid overwatering until diagnosis is clear.');
-      s.add('Send samples to a lab if symptoms persist.');
-    }
-    return Array.from(s);
-  }
+            // Message box elements
+            const messageBoxContainer = document.getElementById('message-box-container');
+            const messageBoxText = document.getElementById('message-box-text');
+            const messageBoxCloseBtn = document.getElementById('message-box-close');
 
-  // API calls (client-side). In production use a server proxy to keep key secret.
-  async function callGeminiGenerate(payload) {
-    if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is empty. Set the key or implement a server proxy.');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-    const res = await fetchWithRetry(url, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    }, 4);
-    return res.json();
-  }
+            // Chatbot elements
+            const chatbotIcon = document.getElementById('chatbot-icon');
+            const chatbotContainer = document.getElementById('chatbot-container');
+            const chatbotBody = document.getElementById('chatbot-body');
+            const chatbotInput = document.getElementById('chatbot-input');
+            const sendMessageBtn = document.getElementById('send-message');
+            const micButton = document.getElementById('mic-button');
+            const closeChatbotBtn = document.getElementById('close-chatbot');
 
-  // Image analysis: sends inline data to Gemini (as per user's request)
-  async function analyzeImageFront(file){
-    try {
-      el('imageSpinner').classList.remove('hidden');
-      el('imageResult').classList.add('hidden');
-      // preview
-      const dataUrl = await new Promise((resolve,reject)=>{
-        const r = new FileReader();
-        r.onload = ()=>resolve(r.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
-      el('preview').src = dataUrl;
+            // Chart colors for consistent styling
+            const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
+            let chartInstances = {};
+            let chatHistory = [];
+            
+            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"; 
 
-      const base64 = dataUrl.split(',')[1];
-      const prompt = `You are an agricultural expert. Analyze the attached crop image and identify diseases, pests, nutrient deficiencies or other issues. Return a human-friendly response with headings: Summary, Detailed Analysis, Recommended Remedies. Use bullet points for remedies.`;
-
-      const payload = {
-        contents: [{
-          role: "user",
-          parts: [
-            { text: prompt },
-            { inlineData: { mimeType: file.type, data: base64 } }
-          ]
-        }]
-      };
-
-      const json = await callGeminiGenerate(payload);
-
-      // extract text safely
-      const text = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || '';
-      let {summary, analysis, remedies} = parseSections(text);
-      if (!remedies || remedies.length===0) remedies = synthesizeRemedies(analysis || summary);
-      el('summaryText').textContent = summary || 'No concise summary found.';
-      el('analysisText').textContent = analysis || 'No detailed analysis available.';
-      el('remediesList').innerHTML = remedies.map(r=>`<li>${escapeHtml(r)}</li>`).join('');
-      el('imageResult').classList.remove('hidden');
-    } catch (err){
-      console.error(err);
-      showModal('Analysis failed','Image analysis failed: '+(err.message||'unknown'));
-    } finally {
-      el('imageSpinner').classList.add('hidden');
-    }
-  }
-
-  // Document analysis: send document text to Gemini and request JSON schema as in earlier code
-  async function analyzeDocFront(file){
-    try {
-      el('docSpinner').classList.remove('hidden');
-      el('docResult').classList.add('hidden');
-
-      // read file text
-      const text = await new Promise((resolve,reject)=>{
-        const r = new FileReader();
-        r.onload = ()=>resolve(r.result);
-        r.onerror = reject;
-        r.readAsText(file);
-      });
-
-      const prompt = `Analyze this agricultural document and return a JSON object with keys: summary (string), key_metrics (array of {name, labels[], data[]}), remedies (array of strings). Document content:\n\n${text}`;
-
-      const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              summary: { type: "STRING" },
-              key_metrics: {
-                type: "ARRAY",
-                items: {
-                  type: "OBJECT",
-                  properties: {
-                    name: { type: "STRING" },
-                    labels: { type: "ARRAY", items: { type: "STRING" } },
-                    data: { type: "ARRAY", items: { type: "NUMBER" } }
-                  }
-                }
-              },
-              remedies: { type: "ARRAY", items: { type: "STRING" } }
+            // --- Utility Functions ---
+            function showMessageBox(message) {
+                messageBoxText.textContent = message;
+                messageBoxContainer.classList.remove('hidden');
+                messageBoxContainer.classList.add('visible');
             }
-          }
-        }
-      };
 
-      const json = await callGeminiGenerate(payload);
-      const textResp = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || '';
-      let parsed;
-      try { parsed = JSON.parse(textResp); } catch(e) {
-        // fallback: attempt to parse heuristics
-        parsed = { summary: textResp.slice(0,300), key_metrics: [], remedies: [] };
-      }
-      el('docSummaryText').textContent = parsed.summary || '';
-      el('docRemediesList').innerHTML = (parsed.remedies||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
+            function hideMessageBox() {
+                messageBoxContainer.classList.remove('visible');
+                messageBoxContainer.classList.add('hidden');
+            }
 
-      // render charts
-      el('docCharts').innerHTML = '';
-      Object.values(chartInstances).forEach(c=>c.destroy());
-      chartInstances = {};
-      (parsed.key_metrics||[]).forEach((m,i)=>{
-        const id = `chartDoc${i}`;
-        const wrap = document.createElement('div');
-        wrap.className = 'card p-3';
-        wrap.innerHTML = `<h4 class="font-semibold">${escapeHtml(m.name||'Metric')}</h4><canvas id="${id}" style="max-height:220px"></canvas>`;
-        el('docCharts').appendChild(wrap);
-        const ctx = document.getElementById(id).getContext('2d');
-        chartInstances[id] = new Chart(ctx, {
-          type: 'bar',
-          data: { labels: m.labels||[], datasets:[{label:m.name||'',data:m.data||[],backgroundColor:'#10B981'}] },
-          options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}
+            function showAnalysisLoader(isLoading) {
+                analysisLoader.style.display = isLoading ? 'flex' : 'none';
+                analyzeImageBtn.disabled = isLoading;
+                analyzeDocBtn.disabled = isLoading;
+            }
+
+            function resetUI() {
+                docResults.classList.add('hidden');
+                imageResults.classList.add('hidden');
+                imageSummary.textContent = '';
+                imageDetailedAnalysis.textContent = '';
+                imageRemediesList.innerHTML = '';
+                analyzedImage.src = '';
+                docSummary.textContent = '';
+                docSummaryTable.innerHTML = '';
+                docCharts.innerHTML = '';
+                docRemediesList.innerHTML = '';
+            }
+
+            // --- Tab Switching Logic ---
+            function showTab(tabToShow) {
+                resetUI();
+                if (tabToShow === 'doc') {
+                    docTabBtn.classList.add('border-green-500', 'text-green-700');
+                    docTabBtn.classList.remove('border-transparent', 'text-gray-500');
+                    imageTabBtn.classList.add('border-transparent', 'text-gray-500');
+                    imageTabBtn.classList.remove('border-green-500', 'text-green-700');
+                    docAnalyzer.style.display = 'block';
+                    imageAnalyzer.style.display = 'none';
+                } else {
+                    imageTabBtn.classList.add('border-green-500', 'text-green-700');
+                    imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
+                    docTabBtn.classList.add('border-transparent', 'text-gray-500');
+                    docTabBtn.classList.remove('border-green-500', 'text-green-700');
+                    imageAnalyzer.style.display = 'block';
+                    docAnalyzer.style.display = 'none';
+                }
+            }
+
+            // --- Image Analysis with Gemini API ---
+            async function analyzeImage(file) {
+                showAnalysisLoader(true);
+                imageResults.classList.add('hidden');
+
+                try {
+                    // Read the file as a Data URL (base64)
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = error => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+
+                    // Display the uploaded image
+                    analyzedImage.src = `data:image/jpeg;base64,${base64}`;
+
+                    const prompt = "Analyze this agricultural image. Identify any diseases, pests, or nutrient deficiencies visible on the crops. Provide a summary of the findings, a detailed analysis, and a list of actionable remedies or solutions to address the identified issues. If the image is not agricultural, provide a general description. Format the response with clear headings for 'Summary', 'Detailed Analysis', and 'Recommended Remedies' in Markdown.";
+
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: file.type,
+                                        data: base64
+                                    }
+                                }
+                            ]
+                        }]
+                    };
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    // Send the request to the Gemini API
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    const text = result.candidates[0].content.parts[0].text;
+                    const parts = text.split('### ').slice(1); // Split by markdown heading
+
+                    // Extract and display the sections
+                    let summary = "No summary found.";
+                    let analysis = "No detailed analysis found.";
+                    let remedies = ["No remedies found."];
+
+                    parts.forEach(part => {
+                        const [heading, ...content] = part.split('\n');
+                        const contentStr = content.join('\n').trim();
+                        if (heading.includes('Summary')) {
+                            summary = contentStr;
+                        } else if (heading.includes('Detailed Analysis')) {
+                            analysis = contentStr;
+                        } else if (heading.includes('Recommended Remedies')) {
+                            remedies = contentStr.split('\n').filter(line => line.trim() !== '').map(line => line.replace(/^- /, ''));
+                        }
+                    });
+
+                    imageSummary.textContent = summary;
+                    imageDetailedAnalysis.textContent = analysis;
+                    imageRemediesList.innerHTML = remedies.map(remedy => `<li>${remedy}</li>`).join('');
+                    
+                    imageResults.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Image analysis failed:", error);
+                    showMessageBox("Analysis failed. Please try again with a different image.");
+                    imageResults.classList.add('hidden');
+                } finally {
+                    showAnalysisLoader(false);
+                }
+            }
+
+            // --- Document Analysis with Gemini API ---
+            async function analyzeDocument(file) {
+                showAnalysisLoader(true);
+                docResults.classList.add('hidden');
+
+                try {
+                    const text = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                        reader.readAsText(file);
+                    });
+                    
+                    const prompt = `Analyze the following agricultural document content:
+                    
+${text}
+
+Provide a summary of the document, identify key metrics and their corresponding values in a structured format, and offer a list of actionable remedies based on the analysis. The key metrics should be numeric data suitable for plotting on a graph. The response must be a single JSON object with the following schema:
+{
+  "summary": "A concise summary of the document.",
+  "key_metrics": [
+    {
+      "name": "Name of the metric (e.g., 'Yield (ton/ha)')",
+      "labels": ["Label 1", "Label 2", ...],
+      "data": [1.5, 2.1, 1.8, ...]
+    }
+  ],
+  "remedies": ["Remedy 1", "Remedy 2", "Remedy 3"]
+}`;
+
+                    const payload = {
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }],
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    summary: { type: "STRING" },
+                                    key_metrics: {
+                                        type: "ARRAY",
+                                        items: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                name: { type: "STRING" },
+                                                labels: { type: "ARRAY", items: { type: "STRING" } },
+                                                data: { type: "ARRAY", items: { type: "NUMBER" } }
+                                            },
+                                            propertyOrdering: ["name", "labels", "data"]
+                                        }
+                                    },
+                                    remedies: { type: "ARRAY", items: { type: "STRING" } }
+                                }
+                            }
+                        }
+                    };
+
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    const parsedData = JSON.parse(jsonString);
+                    
+                    // Display summary and remedies
+                    docSummary.textContent = parsedData.summary;
+                    docRemediesList.innerHTML = parsedData.remedies.map(remedy => `<li>${remedy}</li>`).join('');
+
+                    // Render the charts
+                    docCharts.innerHTML = parsedData.key_metrics.map((m, i) => `
+                        <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
+                            <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
+                            <canvas id="chart-${i}"></canvas>
+                        </div>
+                    `).join('');
+
+                    // Destroy old charts and create new ones
+                    Object.values(chartInstances).forEach(chart => chart.destroy());
+                    chartInstances = {};
+
+                    parsedData.key_metrics.forEach((m, i) => {
+                        const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+                        chartInstances[`chart-${i}`] = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: m.labels,
+                                datasets: [{
+                                    label: m.name,
+                                    data: m.data,
+                                    backgroundColor: chartColors[i % chartColors.length],
+                                    borderColor: chartColors[i % chartColors.length],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: { y: { beginAtZero: true } }
+                            }
+                        });
+                    });
+
+                    docResults.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Document analysis failed:", error);
+                    showMessageBox("Document analysis failed. Please ensure the file is a plain text or CSV file with relevant agricultural data.");
+                    docResults.classList.add('hidden');
+                } finally {
+                    showAnalysisLoader(false);
+                }
+            }
+
+            // --- Event Listeners for Analysis Buttons ---
+            analyzeImageBtn.addEventListener('click', () => {
+                const file = imageFile.files[0];
+                if (file) {
+                    analyzeImage(file);
+                } else {
+                    showMessageBox("Please select an image file to analyze.");
+                }
+            });
+
+            analyzeDocBtn.addEventListener('click', () => {
+                const file = docFile.files[0];
+                if (file) {
+                    analyzeDocument(file);
+                } else {
+                    showMessageBox("Please select a document file to analyze.");
+                }
+            });
+
+            // --- Chatbot Logic ---
+            async function sendMessage() {
+                const text = chatbotInput.value.trim();
+                if (!text) return;
+                
+                appendMessage(text, true);
+                chatHistory.push({ role: "user", parts: [{ text: text }] });
+                chatbotInput.value = "";
+
+                const loadingDots = appendLoadingDots();
+
+                try {
+                    const payload = { contents: chatHistory };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetchWithRetry(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    
+                    loadingDots.remove();
+
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const reply = result.candidates[0].content.parts[0].text;
+                        appendMessage(reply, false);
+                        chatHistory.push({ role: "model", parts: [{ text: reply }] });
+                    } else {
+                        appendMessage("Sorry, I could not get a response. Please try again.", false);
+                    }
+                } catch (err) {
+                    loadingDots.remove();
+                    console.error("Chatbot API error:", err);
+                    appendMessage("Error connecting to the AI. Please try again.", false);
+                }
+            }
+
+            function appendMessage(text, isUser) {
+                const msg = document.createElement("div");
+                msg.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? 'user-message bg-green-200 text-gray-900' : 'bot-message bg-gray-100 text-gray-800'}`;
+                msg.textContent = text;
+                chatbotBody.appendChild(msg);
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            }
+
+            function appendLoadingDots() {
+                const loadingContainer = document.createElement("div");
+                loadingContainer.className = "bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 text-gray-800 chat-loading-dots";
+                loadingContainer.innerHTML = '<span></span><span></span><span></span>';
+                chatbotBody.appendChild(loadingContainer);
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+                return loadingContainer;
+            }
+
+            // --- Exponential Backoff for API Calls ---
+            async function fetchWithRetry(url, options, maxRetries = 5) {
+                let lastError = null;
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`Server error: ${response.status}`);
+                        }
+                        return response;
+                    } catch (error) {
+                        lastError = error;
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+                throw lastError;
+            }
+
+            // --- Speech Recognition ---
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    chatbotInput.value = transcript;
+                    sendMessage();
+                };
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error:", event.error);
+                    appendMessage("Sorry, I didn't catch that. Please try typing.", false);
+                };
+                micButton.addEventListener('click', () => {
+                    recognition.start();
+                });
+            } else {
+                micButton.style.display = 'none';
+            }
+
+            // --- General UI Event Listeners ---
+            docTabBtn.addEventListener('click', () => showTab('doc'));
+            imageTabBtn.addEventListener('click', () => showTab('image'));
+            sendMessageBtn.addEventListener('click', sendMessage);
+            chatbotInput.addEventListener('keydown', (e) => {
+                if (e.key === "Enter") sendMessage();
+            });
+            messageBoxCloseBtn.addEventListener('click', hideMessageBox);
+
+            // Chatbot visibility controls
+            chatbotIcon.addEventListener('click', () => {
+                chatbotContainer.classList.remove('hidden');
+                chatbotIcon.classList.add('hidden');
+            });
+            closeChatbotBtn.addEventListener('click', () => {
+                chatbotContainer.classList.add('hidden');
+                chatbotIcon.classList.remove('hidden');
+            });
+            
+            // Landing page logic
+            analyzerSelect.addEventListener('change', () => {
+                proceedBtn.disabled = false;
+                proceedBtn.classList.remove('bg-green-400');
+                proceedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            });
+
+            proceedBtn.addEventListener('click', () => {
+                const selectedAnalyzer = analyzerSelect.value;
+                if (selectedAnalyzer) {
+                    welcomePage.classList.add('hidden');
+                    mainAnalyzerContainer.classList.remove('hidden');
+                    showTab(selectedAnalyzer);
+                }
+            });
         });
-      });
-
-      el('docResult').classList.remove('hidden');
-    } catch(err){
-      console.error(err);
-      showModal('Document analysis failed','Ensure the file contains tabular or textual metrics or use the server-side analyzer.');
-    } finally {
-      el('docSpinner').classList.add('hidden');
-    }
-  }
-
-  // Chat frontend using Gemini
-  async function sendChatFront(){
-    const t = el('chatInput').value.trim(); if (!t) return;
-    appendChat(t,true); el('chatInput').value='';
-    const loading = document.createElement('div'); loading.className='chat-bot chat-bubble chat-bot chat-loading-dots flex gap-1'; loading.innerHTML='<span></span><span></span><span></span>';
-    el('chatStream').appendChild(loading);
-    el('chatStream').scrollTop = el('chatStream').scrollHeight;
-    try {
-      const payload = { contents: [{ role:'user', parts:[{text:t}] }] };
-      const json = await callGeminiGenerate(payload);
-      const text = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || 'No reply.';
-      loading.remove(); appendChat(text,false);
-    } catch(err){
-      loading.remove(); appendChat('Assistant error: '+(err.message||'unknown'), false);
-    }
-  }
-
-  function appendChat(text,isUser){
-    const d = document.createElement('div');
-    d.className = `chat-bubble ${isUser ? 'chat-user' : 'chat-bot'} p-2`;
-    d.textContent = text;
-    el('chatStream').appendChild(d);
-    el('chatStream').scrollTop = el('chatStream').scrollHeight;
-  }
-
-  // small utility
-  function el(id){ return document.getElementById(id); }
-  function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function showModal(t,m){ el('modalTitle').textContent = t; el('modalMsg').textContent = m; el('modal').classList.remove('hidden'); }
-  el('modalOk').addEventListener('click', ()=> el('modal').classList.add('hidden'));
-
-  // UI wiring
-  document.addEventListener('DOMContentLoaded', ()=> {
-    el('analyzerSelect').addEventListener('change', e => el('proceedBtn').disabled = !e.target.value);
-    el('proceedBtn').addEventListener('click', ()=>{
-      el('welcome').classList.add('hidden'); el('analyzer').classList.remove('hidden');
-      if (el('analyzerSelect').value==='image') el('tabImage').click(); else el('tabDoc').click();
-    });
-    el('back').addEventListener('click', ()=>{ el('analyzer').classList.add('hidden'); el('welcome').classList.remove('hidden'); });
-    el('tabImage').addEventListener('click', ()=>{ el('tabImage').classList.add('font-semibold'); el('tabDoc').classList.remove('font-semibold'); el('imageControls').classList.remove('hidden'); el('docControls').classList.add('hidden'); });
-    el('tabDoc').addEventListener('click', ()=>{ el('tabDoc').classList.add('font-semibold'); el('tabImage').classList.remove('font-semibold'); el('docControls').classList.remove('hidden'); el('imageControls').classList.add('hidden'); });
-
-    // analysis triggers
-    el('analyzeImage').addEventListener('click', async ()=>{
-      const f = el('imageInput').files[0];
-      if(!f) return showModal('No file','Please select an image file (jpg/png)');
-      el('imageSpinner').classList.remove('hidden');
-      try { await analyzeImageFront(f); } catch(e){ console.error(e) } finally { el('imageSpinner').classList.add('hidden'); }
-    });
-    el('analyzeDoc').addEventListener('click', async ()=>{
-      const f = el('docInput').files[0];
-      if(!f) return showModal('No file','Please select a CSV or TXT document');
-      el('docSpinner').classList.remove('hidden');
-      try { await analyzeDocFront(f); } catch(e){ console.error(e) } finally { el('docSpinner').classList.add('hidden'); }
-    });
-
-    // chat wiring
-    el('openChat').addEventListener('click', ()=>{ el('chat').classList.remove('hidden'); el('chatToggle').classList.add('hidden'); });
-    el('closeChat').addEventListener('click', ()=>{ el('chat').classList.add('hidden'); el('chatToggle').classList.remove('hidden'); });
-    el('send').addEventListener('click', sendChatFront);
-    el('chatInput').addEventListener('keydown', e => { if (e.key==='Enter') sendChatFront(); });
-    // speech
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const r = new SpeechRecognition();
-      r.lang='en-US';
-      r.onresult = ev => { el('chatInput').value = ev.results[0][0].transcript; sendChatFront(); };
-      r.onerror = e => console.warn(e);
-      el('mic').addEventListener('click', ()=> r.start());
-    } else el('mic').style.display='none';
-
-    // mobile menu
-    el('mobileMenuBtn').addEventListener('click', ()=>{ mobileMenu.classList.add('translate-x-0'); document.getElementById('mobileMenu').classList.remove('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.remove('hidden'); });
-    el('closeMobileMenu').addEventListener('click', ()=>{ document.getElementById('mobileMenu').classList.add('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.add('hidden'); });
-    document.getElementById('mobileMenuOverlay').addEventListener('click', ()=>{ document.getElementById('mobileMenu').classList.add('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.add('hidden'); });
-
-    // initial state
-    el('tabImage').click();
-  });
-  </script>
+    </script>
 </body>
 </html>
