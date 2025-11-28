@@ -7,7 +7,6 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -19,12 +18,6 @@
   /* Donate Card */
   .copy-btn { cursor: pointer; padding: 0.3rem 0.6rem; background:#10b981; color:#fff; border-radius:0.5rem; font-size:0.85rem; transition: all 0.2s; }
   .copy-btn:hover { background:#059669; }
-
-  /* QR Modal */
-  #qrModal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:50; }
-  #qrModalContent { background:white; padding:2rem; border-radius:1rem; text-align:center; position:relative; }
-  #qrModalContent canvas { width:256px; height:256px; margin-bottom:1rem; }
-  #closeQr { position:absolute; top:0.5rem; right:1rem; font-size:1.5rem; cursor:pointer; }
 
   /* Chatbot */
   #chatbot-icon { position:fixed; bottom:24px; right:24px; background:#34d399; color:#fff; width:60px; height:60px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:1.5rem; z-index:50; cursor:pointer; animation:pulse 2s infinite; }
@@ -60,31 +53,23 @@
       <div class="bg-green-50 p-4 rounded-lg border border-green-100">
         <h3 class="font-medium text-green-700">Paybill / Business Number</h3>
         <div class="mt-2 flex justify-between items-center">
-          <span id="paybillNumber">400200</span>
+          <span id="paybillNumber" class="font-semibold text-lg">400200</span>
           <button class="copy-btn" data-copy="400200">Copy</button>
         </div>
       </div>
       <div class="bg-green-50 p-4 rounded-lg border border-green-100">
         <h3 class="font-medium text-green-700">Account Number</h3>
         <div class="mt-2 flex justify-between items-center">
-          <span id="accountNumber">01100929201001</span>
+          <span id="accountNumber" class="font-semibold text-lg">01100929201001</span>
           <button class="copy-btn" data-copy="01100929201001">Copy</button>
         </div>
       </div>
       <div class="bg-green-50 p-4 rounded-lg border border-green-100">
         <h3 class="font-medium text-green-700">Mobile Number</h3>
         <div class="mt-2 flex justify-between items-center">
-          <span id="mobileNumber">0715142906</span>
+          <span id="mobileNumber" class="font-semibold text-lg">0715142906</span>
           <button class="copy-btn" data-copy="0715142906">Copy</button>
         </div>
-      </div>
-    </div>
-
-    <!-- QR Code -->
-    <div class="mt-6 flex justify-center">
-      <div id="qrCard" class="cursor-pointer p-4 bg-white border rounded-lg shadow flex flex-col items-center">
-        <div id="qrCode"></div>
-        <p class="mt-2 text-gray-600 text-sm">Scan to donate</p>
       </div>
     </div>
   </section>
@@ -93,15 +78,6 @@
     © <span id="year"></span> AgriTrue — Building resilient farming communities.
   </footer>
 </main>
-
-<!-- QR Modal -->
-<div id="qrModal" class="flex">
-  <div id="qrModalContent">
-    <span id="closeQr">&times;</span>
-    <canvas id="qrCanvas"></canvas>
-    <p class="text-gray-700 mt-2">Scan to donate via M-Pesa</p>
-  </div>
-</div>
 
 <!-- Chat Icon -->
 <div id="chatbot-icon"><i class="fas fa-comments"></i></div>
@@ -121,25 +97,6 @@
       } catch(e){ alert('Copy failed: '+btn.dataset.copy); }
     });
   });
-
-  // QR Data: Opens M-Pesa menu (Paybill + Account)
-  const paybill = document.getElementById('paybillNumber').textContent.trim();
-  const account = document.getElementById('accountNumber').textContent.trim();
-
-  // Format as M-Pesa dial USSD (*234*1*1*PAYBILL*ACCOUNT#)
-  const mpesaLink = `tel:*234*1*1*${paybill}*${account}#`;
-
-  // Generate QR codes
-  QRCode.toCanvas(document.getElementById('qrCanvas'), mpesaLink, {width:256}, err=>{ if(err) console.error(err); });
-  QRCode.toCanvas(document.getElementById('qrCode'), mpesaLink, {width:128}, err=>{ if(err) console.error(err); });
-
-  // QR Modal toggle
-  const qrCard = document.getElementById('qrCard');
-  const qrModal = document.getElementById('qrModal');
-  const closeQr = document.getElementById('closeQr');
-  qrCard.addEventListener('click', ()=>{ qrModal.style.display='flex'; });
-  closeQr.addEventListener('click', ()=>{ qrModal.style.display='none'; });
-  qrModal.addEventListener('click', e=>{ if(e.target===qrModal) qrModal.style.display='none'; });
 </script>
 </body>
 </html>
