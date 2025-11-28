@@ -1,474 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriTrue Home</title>
- 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2U6nN5D0W9u8i+R5nS22Q+P3G/gX6r2Cj2sQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriTrue</title>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0fdf4;
-            margin: 0;
-            padding: 0;
-        }
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2U6nN5D0W9u8i+R5nS22Q+P3G/gX6r2Cj2sQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        /* Navbar Styles */
-        .custom-navbar {
-            background: linear-gradient(90deg, #0b6623, #90ee90);
-        }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        .hero-content {
-            top: 50%;
-            transform: translateY(-50%);
-        }
+    body { font-family: 'Inter', sans-serif; background: #f0fdf4; margin: 0; }
 
-        /* Loader Styles */
-        #agritrue-loader {
-            position: fixed;
-            z-index: 9999;
-            background: #050806;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease;
-        }
+    /* Loader */
+    #agritrue-loader { position: fixed; inset:0; background:#050806; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; transition:opacity .5s; }
+    .leaf { width:60px; height:60px; background:linear-gradient(45deg,#03f103,#81C784); border-radius:0 50% 50% 50%; animation:spin 1.2s linear infinite; transform:rotate(-45deg); margin:auto; }
+    .loading-text { margin-top:20px; color:#4CAF50; font-weight:600; font-size:1.2rem; }
+    @keyframes spin { 0% {transform:rotate(0deg) scale(1);} 50%{transform:rotate(180deg) scale(1.2);} 100%{transform:rotate(360deg) scale(1);} }
 
-        .leaf {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #03f103, #81C784);
-            border-radius: 0 50% 50% 50%;
-            animation: spin 1.2s linear infinite;
-            transform: rotate(-45deg);
-            margin: auto;
-        }
+    /* Navbar */
+    .custom-navbar { background: linear-gradient(90deg, #0b6623, #90ee90); }
 
-        .loading-text {
-            margin-top: 20px;
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
+    /* Chatbot */
+    #chatbot-icon { position:fixed; bottom:24px; right:24px; width:60px;height:60px; border-radius:50%; background:#34d399;color:#fff; display:flex; align-items:center; justify-content:center; font-size:2rem; box-shadow:0 4px 16px rgba(0,0,0,0.2); cursor:pointer; animation:pulse 2s infinite; z-index:999; }
+    @keyframes pulse {0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}
+    #chatbot-container { position:fixed; bottom:100px; right:24px; width:360px; background:#fff; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,.2); display:none; flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up .4s ease-out;}
+    @keyframes slide-up { from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;} }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Slideshow Styles */
-        #slideshow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #000;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-
-        .dark-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
-            z-index: 2;
-        }
-
-        /* Chatbot Styles */
-        #chatbot-icon {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #34d399;
-            color: #fff;
-            font-size: 2rem;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 999;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        #chatbot-container {
-            position: fixed;
-            bottom: 100px;
-            right: 24px;
-            width: 360px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1000;
-            animation: slide-up 0.4s ease-out;
-        }
-        
-        @keyframes slide-up {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        #chatbot-header {
-            background: linear-gradient(90deg, #34d399, #10b981);
-            color: white;
-            padding: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #chatbot-body {
-            padding: 16px;
-            background: #f0fdf4;
-            overflow-y: auto;
-            max-height: 320px;
-        }
-        
-        #chatbot-input-container {
-            display: flex;
-            padding: 12px;
-            background: #ecfdf5;
-            border-top: 1px solid #d1fae5;
-        }
-        
-        #chatbot-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d1fae5;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        #send-message, #mic-button {
-            background: #34d399;
-            color: white;
-            border: none;
-            padding: 0 12px;
-            margin-left: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .chatbot-message {
-            padding: 10px 14px;
-            border-radius: 14px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background: #34d399;
-            color: white;
-            margin-left: auto;
-        }
-        
-        .bot-message {
-            background: #d1fae5;
-            color: black;
-            margin-right: auto;
-        }
-
-        /* Hide default Bootstrap toggler on larger screens */
-        @media (min-width: 992px) {
-            .navbar-toggler {
-                display: none;
-            }
-        }
-
-        /* Mobile Menu Styles */
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background-color: #f0fdf4;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-            transition: right 0.3s ease-in-out;
-            z-index: 1050;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .mobile-menu.show {
-            right: 0;
-        }
-
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            display: none;
-        }
-
-        .mobile-menu-overlay.show {
-            display: block;
-        }
-    </style>
+    /* Mobile Menu */
+    .mobile-menu { position: fixed; top:0; right:-300px; width:300px; height:100vh; background:#f0fdf4; box-shadow:-4px 0 15px rgba(0,0,0,.1); transition:right .3s ease-in-out; z-index:1050; padding:20px; overflow-y:auto; }
+    .mobile-menu.show { right:0; }
+    .mobile-menu-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; z-index:1040; }
+    .mobile-menu-overlay.show { display:block; }
+  </style>
 </head>
-<body class="bg-f0fdf4 font-inter">
-
-   <!-- Loader -->
-<div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
-    <div class="text-center">
-        <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
-        <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
-    </div>
-</div>
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
-            </a>
-
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
-                    </div>
-                </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                             <a href="/podcast" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Podcast</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                      <a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
-
-
-
-                    </div>
-                </div>  
-                {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
-                            {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
-                {% endif %}
-            </div>
-
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
-            </button>
-        </div>
-    </nav>
-    
-    <!-- Mobile Menu -->
-    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
-        </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/podcast" aria-label="Podcast">
-                    <i class="fas fa-podcast mr-3"></i>Podcast
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
-                </div>
-            </li>
-        </ul>
-        <div class="relative group">
-                    <a href="#"
-   class="nav-link text-green-600 font-medium p-2 rounded-lg transition duration-200 hover:bg-green-700 hover:text-white">
-   Resource & Downloads
-   <i class="fas fa-chevron-down text-xs ml-1"></i>
-</a>
-
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                    </div>
-                </div>  
-<a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
-
-
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
-        </div>
-    </div>
 <body>
-    <div class="container mt-5">
 
-        <div class="donate-card">
-            <h2 class="text-center mb-3">Support AgriTrue</h2>
-            <p class="text-center text-muted">Your contribution helps us continue providing agricultural intelligence to farmers and communities.</p>
 
-            <div class="mt-4 donate-info">
-                <p class="mb-1"><strong>Paybill / Business Number:</strong></p>
-                <p class="number">400200</p>
 
-                <hr>
-
-                <p class="mb-1"><strong>Account Number:</strong></p>
-                <p class="number">01100929201001</p>
-
-                <hr>
-
-                <p class="mb-1"><strong>M-Pesa Mobile Number:</strong></p>
-                <p class="number">0715 142 906</p>
-            </div>
-
-            <p class="text-center mt-4 text-secondary">
-                Thank you for supporting AgriTrue 💚
-            </p>
-
-            <div class="text-center mt-3">
-                <a href="/" class="btn btn-dark">Go Back Home</a>
-            </div>
+<!-- Navbar -->
+<nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+  <div class="container mx-auto px-4 flex items-center justify-between py-3">
+    <a href="/" class="flex items-center space-x-2">
+      <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+      <span class="text-white text-2xl font-bold">AgriTrue</span>
+    </a>
+    <!-- Desktop Menu -->
+    <div class="hidden lg:flex items-center space-x-6">
+      <div class="relative group">
+        <a href="#" class="text-white font-medium p-2 rounded-lg hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+        <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+          <div class="py-1">
+            <a href="/community-notes" class="block px-4 py-2 text-gray-700 hover:bg-green-100">Community Notes</a>
+            <a href="/chatbot" class="block px-4 py-2 text-gray-700 hover:bg-green-100">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block px-4 py-2 text-gray-700 hover:bg-green-100">ML Analyzer</a>
+            <hr class="my-1 border-gray-200">
+            <a href="/ussd" class="block px-4 py-2 text-gray-700 hover:bg-green-100">USSD Service</a>
+          </div>
         </div>
-
+      </div>
+      <a href="/dashboard" class="text-white font-medium p-2 rounded-lg hover:bg-white hover:bg-opacity-10">Farm Truth</a>
+      <a href="/know_your_land" class="text-white font-medium p-2 rounded-lg hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+      <a href="/about" class="text-white font-medium p-2 rounded-lg hover:bg-white hover:bg-opacity-10">About Us</a>
+      <a href="/podcast" class="text-white font-medium p-2 rounded-lg hover:bg-white hover:bg-opacity-10">Podcast</a>
+      <a href="/donate" class="px-4 py-2 rounded-full font-semibold bg-gradient-to-br from-green-600 to-green-700 text-white hover:from-green-500 hover:to-green-600">Donate</a>
     </div>
+
+    <!-- Mobile Toggler -->
+    <button id="mobileMenuBtn" class="lg:hidden text-white text-2xl"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+<div id="mobileMenu" class="mobile-menu lg:hidden">
+  <button id="closeMobileMenu" class="text-3xl text-green-700 mb-5">&times;</button>
+  <ul class="flex flex-col space-y-2">
+    <li><a href="/dashboard" class="p-4 text-green-700 font-medium hover:bg-green-100 rounded-lg flex items-center"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a></li>
+    <li><a href="/about" class="p-4 text-green-700 font-medium hover:bg-green-100 rounded-lg flex items-center"><i class="fas fa-info-circle mr-3"></i>About Us</a></li>
+    <li><a href="/podcast" class="p-4 text-green-700 font-medium hover:bg-green-100 rounded-lg flex items-center"><i class="fas fa-podcast mr-3"></i>Podcast</a></li>
+    <li><a href="/know_your_land" class="p-4 text-green-700 font-medium hover:bg-green-100 rounded-lg flex items-center"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a></li>
+  </ul>
+</div>
+
+<!-- Main Content -->
+<main class="max-w-6xl mx-auto px-4 mt-28">
+  <section class="donate-card flex flex-col lg:flex-row gap-6">
+    <div class="flex-1">
+      <h1 class="text-2xl font-semibold text-[#064a47]">Support AgriTrue — Help us keep farmers informed</h1>
+      <p class="mt-2 text-gray-600">Your donation helps AgriTrue provide free agricultural intelligence, research summaries and digital tools to farmers across the region.</p>
+      <!-- Donation Cards -->
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+          <h3 class="text-sm font-medium text-green-700">Paybill / Business Number</h3>
+          <div class="mt-2 flex justify-between items-center">
+            <div>400200</div>
+            <button class="copy-btn px-2 py-1 bg-green-600 text-white rounded">Copy</button>
+          </div>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+          <h3 class="text-sm font-medium text-green-700">Account Number</h3>
+          <div class="mt-2 flex justify-between items-center">
+            <div>01100929201001</div>
+            <button class="copy-btn px-2 py-1 bg-green-600 text-white rounded">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="w-64 hidden lg:block">
+      <div class="p-4 bg-white rounded-lg border border-green-50 shadow-sm">
+        <h4 class="text-sm font-semibold text-green-800">Impact so far</h4>
+        <ul class="mt-3 text-sm text-gray-700 space-y-2">
+          <li>• 20k farmers reached this year</li>
+          <li>• 300+ research summaries</li>
+          <li>• Free chatbot & tools</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="mt-10 text-center text-sm text-gray-600">© <span id="year"></span> AgriTrue — Building resilient farming communities.</footer>
+</main>
+
+<!-- Chat -->
+<button id="chatbot-icon" aria-label="Chat"><i class="fas fa-comments"></i></button>
+<div id="chatbot-container" aria-hidden="true" class="hidden">
+  <div id="chatbot-header" class="bg-green-600 text-white p-4 flex justify-between items-center">Agri-Bot <button id="close-chat">&times;</button></div>
+  <div id="chatbot-body" class="p-4 overflow-y-auto max-h-80"></div>
+  <div id="chatbot-input-container" class="flex p-2 border-t border-green-100">
+    <input id="chatbot-input" class="flex-1 p-2 border rounded" placeholder="Ask a question..."/>
+    <button id="send-message" class="ml-2 p-2 bg-green-600 text-white rounded"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Mobile menu
+  const mobileBtn = document.getElementById('mobileMenuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileOverlay = document.getElementById('mobileMenuOverlay');
+  const closeMobile = document.getElementById('closeMobileMenu');
+  mobileBtn.addEventListener('click',()=>{mobileMenu.classList.add('show'); mobileOverlay.classList.add('show');});
+  closeMobile.addEventListener('click',()=>{mobileMenu.classList.remove('show'); mobileOverlay.classList.remove('show');});
+  mobileOverlay.addEventListener('click',()=>{mobileMenu.classList.remove('show'); mobileOverlay.classList.remove('show');});
+
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn=>{btn.addEventListener('click',()=>{navigator.clipboard.writeText(btn.previousElementSibling.textContent); btn.textContent='Copied'; setTimeout(()=>btn.textContent='Copy',1600);});});
+
+  // Chat toggle
+  const chatIcon=document.getElementById('chatbot-icon');
+  const chatContainer=document.getElementById('chatbot-container');
+  const closeChat=document.getElementById('close-chat');
+  chatIcon.addEventListener('click',()=>{chatContainer.classList.toggle('hidden'); chatContainer.setAttribute('aria-hidden',chatContainer.classList.contains('hidden')?'true':'false');});
+  closeChat.addEventListener('click',()=>{chatContainer.classList.add('hidden'); chatContainer.setAttribute('aria-hidden','true');});
+</script>
 </body>
 </html>
