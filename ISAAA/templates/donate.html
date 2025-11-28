@@ -23,7 +23,7 @@
   /* QR Modal */
   #qrModal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; justify-content:center; align-items:center; z-index:50; }
   #qrModalContent { background:white; padding:2rem; border-radius:1rem; text-align:center; position:relative; }
-  #qrModalContent img, #qrModalContent canvas { width:256px; height:256px; margin-bottom:1rem; }
+  #qrModalContent canvas { width:256px; height:256px; margin-bottom:1rem; }
   #closeQr { position:absolute; top:0.5rem; right:1rem; font-size:1.5rem; cursor:pointer; }
 
   /* Chatbot */
@@ -107,12 +107,12 @@
 <div id="chatbot-icon"><i class="fas fa-comments"></i></div>
 
 <script>
-  // Set year
+  // Set current year
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Copy buttons
   document.querySelectorAll('.copy-btn').forEach(btn=>{
-    btn.addEventListener('click', async()=>{
+    btn.addEventListener('click', async ()=>{
       try {
         await navigator.clipboard.writeText(btn.dataset.copy);
         const original = btn.textContent;
@@ -122,12 +122,11 @@
     });
   });
 
-  // Dynamic QR generation
-  const paybill = document.getElementById('paybillNumber').textContent;
-  const account = document.getElementById('accountNumber').textContent;
-  const mobile = document.getElementById('mobileNumber').textContent;
+  // QR Data (M-Pesa mobile number)
+  const mobileNumber = document.getElementById('mobileNumber').textContent.trim();
+  const qrData = `tel:${mobileNumber}`; // Scans show the number directly, mobile can initiate M-Pesa payment
 
-  const qrData = `https://mpesa.com/pay?paybill=${paybill}&account=${account}&phone=${mobile}`; // Example URL
+  // Generate QR codes
   QRCode.toCanvas(document.getElementById('qrCanvas'), qrData, {width:256}, err=>{ if(err) console.error(err); });
   QRCode.toCanvas(document.getElementById('qrCode'), qrData, {width:128}, err=>{ if(err) console.error(err); });
 
@@ -135,10 +134,9 @@
   const qrCard = document.getElementById('qrCard');
   const qrModal = document.getElementById('qrModal');
   const closeQr = document.getElementById('closeQr');
-  qrCard.addEventListener('click',()=>{ qrModal.style.display='flex'; });
-  closeQr.addEventListener('click',()=>{ qrModal.style.display='none'; });
+  qrCard.addEventListener('click', ()=>{ qrModal.style.display='flex'; });
+  closeQr.addEventListener('click', ()=>{ qrModal.style.display='none'; });
   qrModal.addEventListener('click', e=>{ if(e.target===qrModal) qrModal.style.display='none'; });
-
 </script>
 </body>
 </html>
