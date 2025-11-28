@@ -1,110 +1,407 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>AgriTrue — ML Analyzer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTrue ML Analyzer</title>
+    <!-- Tailwind CSS for a modern, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Import a custom font to give the page a unique look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
 
-  <!-- Tailwind (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+        /* Styles for the custom gradient navbar */
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        /* Loader animation styles */
+        #agritrue-loader {
+            position: fixed;
+            z-index: 9999;
+            background: #050806;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        .leaf {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #03f103, #81C784);
+            border-radius: 0 50% 50% 50%;
+            animation: spin 1.2s linear infinite;
+            transform: rotate(-45deg);
+            margin: auto;
+        }
 
-  <style>
-    /* Small custom styles on top of Tailwind */
-    :root{
-      --brand-green: #10B981;
-      --brand-dark: #0f766e;
-    }
+        .loading-text {
+            margin-top: 20px;
+            color: #4CAF50;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
 
-    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#f0fdf4; }
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        /* Chatbot and floating icon animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        #chatbot-container {
+            animation: slide-up 0.4s ease-out;
+        }
+        
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Loader for analysis sections */
+        .analysis-loader-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
 
-    /* Simple loader */
-    .spinner {
-      border: 4px solid rgba(0,0,0,0.06);
-      border-top-color: var(--brand-green);
-      border-radius: 9999px;
-      width: 36px;
-      height: 36px;
-      animation: spin 0.9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        .analysis-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #10B981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
 
-    /* small improvements */
-    .card { background: white; border-radius: 1rem; box-shadow: 0 8px 30px rgba(2,12,20,.06); }
-    .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(6px); }
-    .hidden-vis { display:none !important; }
+        /* Chatbot styling */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 90%;
+            max-width: 400px;
+            height: 60vh;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        #chatbot-header {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.125rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        #chatbot-body {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f7ffe8;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+            max-width: 80%;
+        }
+        .bot-message {
+            background-color: #f0f4f7;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            max-width: 80%;
+        }
+        .chatbot-message {
+            padding: 0.75rem;
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+        }
+        #chatbot-input-container {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: #ffffff;
+        }
+        #chatbot-input {
+            flex-grow: 1;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid #cbd5e0;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+        #send-message {
+            padding: 0.75rem;
+            border-radius: 9999px;
+            background-color: #10B981;
+            color: white;
+            border: none;
+        }
 
-    /* chat bubbles */
-    .chat-bubble { padding: 0.6rem 0.9rem; border-radius: 0.9rem; max-width: 78%; word-wrap: break-word; }
-    .chat-user { background: #dcfce7; align-self:flex-end; }
-    .chat-bot  { background: #eef2f7; align-self:flex-start; }
+        .chat-loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: dot-flicker 1.4s infinite ease-in-out both;
+        }
 
-    /* mobile menu */
-    .mobile-menu { transform: translateX(110%); transition: transform .28s ease; }
-    .mobile-menu.open { transform: translateX(0); }
+        .chat-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .chat-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .chat-loading-dots span:nth-child(3) { animation-delay: 0s; }
 
-    /* ensure analyzer results scroll well */
-    .results-scroll { max-height: 56vh; overflow:auto; -webkit-overflow-scrolling: touch; padding-right:6px; }
-  </style>
+        @keyframes dot-flicker {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            height: 100vh;
+            width: 75%;
+            background-color: white;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu.open {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-[#f0fdf4] font-['Inter']">
 
-  <!-- NAV -->
-  <header class="fixed top-0 left-0 right-0 z-40">
-    <nav class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#0f766e] to-[#10b981] text-white">
-      <div class="flex items-center gap-3">
-        <img src="logo.png" alt="AgriTrue" class="h-9 w-9 rounded-full object-cover bg-white/10">
-        <div>
-          <div class="font-bold text-lg">AgriTrue</div>
-          <div class="text-xs opacity-90">Science • Diagnostics • Remedies</div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
+        <div class="container mx-auto px-4 flex items-center justify-between py-3">
+            <a class="flex items-center space-x-2" href="/">
+                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
+                <span class="text-white text-2xl font-bold">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
+                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
+                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
+                  <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+                        </div>
+
+
+                    </div>
+                </div>  
+                <a href="/donate" 
+   style="
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: #fff;
+        padding: 10px 26px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        display: inline-block;
+   "
+   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
+   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+>
+    Donate
+</a>
+
+                {% if current_user.is_authenticated %}
+                <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
+                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Toggler Button -->
+            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
         </div>
-      </div>
-
-      <div class="hidden lg:flex items-center gap-4">
-        <a href="#" class="text-white/90 hover:text-white">Home</a>
-        <a href="#" class="text-white/90 hover:text-white">Analyzer</a>
-        <a href="#" class="text-white/90 hover:text-white">Resources</a>
-        <a href="#" class="bg-white text-[#0f766e] px-4 py-2 rounded-full font-semibold shadow hover:opacity-95">Donate</a>
-      </div>
-
-      <button id="mobileMenuBtn" class="lg:hidden text-white text-2xl"><i class="fa-solid fa-bars"></i></button>
     </nav>
-  </header>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <div id="mobileMenu" class="mobile-menu lg:hidden">
+        <div class="flex justify-between items-center mb-5">
+            <h5 class="text-xl font-bold text-green-700">Menu</h5>
+            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+        </div>
+        <ul class="flex flex-col space-y-2">
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
+                    <i class="fas fa-info-circle mr-3"></i>About Us
+                </a>
+            </li>
+            <li>
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
+            </li>
+            <li class="relative">
+                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
+                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </a>
+                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
+                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+                   
+                </div>
+            </li>
+        </ul>
+        <div class="relative group">
+                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
+                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div class="py-1">
+                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+                        </div>
+                    </div>
+ <a href="/donate" 
+   style="
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: #fff;
+        padding: 10px 26px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        display: inline-block;
+   "
+   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
+   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+>
+    Donate
+</a>
 
-  <!-- Mobile menu (drawer) -->
-  <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/40 z-30 hidden"></div>
-  <aside id="mobileMenu" class="mobile-menu fixed right-0 top-0 h-full w-3/4 bg-white z-40 p-6">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <div class="font-bold text-xl text-[#0f766e]">Menu</div>
-        <div class="text-sm text-gray-600">AgriTrue</div>
-      </div>
-      <button id="closeMobileMenu" class="text-2xl text-gray-700">&times;</button>
+
+                </div>  
+        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
+            {% if current_user.is_authenticated %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
+            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
     </div>
-    <nav class="flex flex-col gap-3">
-      <a href="#" class="py-3 px-3 rounded-md hover:bg-green-50 text-[#0f766e]">Analyzer</a>
-      <a href="#" class="py-3 px-3 rounded-md hover:bg-green-50 text-[#0f766e]">Resources</a>
-      <a href="#" class="py-3 px-3 rounded-md hover:bg-green-50 text-[#0f766e]">Chatbot</a>
-      <a href="#" class="py-3 px-3 rounded-md hover:bg-green-50 text-[#0f766e]">Community notes</a>
-    </nav>
-  </aside>
 
-  <main class="pt-20 pb-16 px-4">
+   <main class="pt-20 pb-16 px-4">
     <div class="max-w-6xl mx-auto">
 
-      <!-- Landing card -->
-      <section id="welcomePage" class="card p-6 lg:p-10 mb-8">
-        <div class="flex flex-col lg:flex-row gap-6 items-center">
+      <!-- Landing -->
+      <section id="welcome" class="card p-6 lg:p-10 mb-8">
+        <div class="flex flex-col lg:flex-row gap-6">
           <div class="flex-1">
             <h1 class="text-3xl lg:text-4xl font-extrabold text-[#0f766e] flex items-center gap-3">
               <i class="fa-solid fa-seedling text-green-500"></i> AgriTrue ML Analyzer
             </h1>
-            <p class="mt-3 text-gray-700 max-w-xl">Upload a photo or a document and get an evidence-focused analysis with actionable remedies for crops, pests, and nutrient issues. For production deploy a secure server-side proxy (do not embed API keys in the browser).</p>
+            <p class="mt-3 text-gray-700 max-w-xl">Upload a photo or document and get an evidence-based analysis with practical remedies. For production keep API keys server-side — this demo includes client-side calls as requested.</p>
 
             <div class="mt-6 flex gap-3 items-center">
               <select id="analyzerSelect" class="rounded-lg border p-3">
@@ -129,554 +426,404 @@
         </div>
       </section>
 
-      <!-- Analyzer container -->
-      <section id="analyzerContainer" class="card p-6 lg:p-8 hidden">
+      <!-- Analyzer -->
+      <section id="analyzer" class="card p-6 lg:p-8 hidden">
         <div class="flex flex-col lg:flex-row gap-6">
-          <!-- Left column: controls -->
           <div class="lg:w-1/3 space-y-6">
             <div class="flex items-center justify-between">
               <h2 class="text-xl font-bold text-[#0f766e]">Analyzer</h2>
-              <button id="backBtn" title="Back to selection" class="text-gray-600 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i></button>
+              <button id="back" title="Back" class="text-gray-600 hover:text-gray-800"><i class="fa-solid fa-arrow-left"></i></button>
             </div>
 
-            <!-- Tabs (visual) -->
             <div class="flex gap-2">
               <button id="tabDoc" class="flex-1 py-2 rounded-md border text-sm">Document</button>
               <button id="tabImage" class="flex-1 py-2 rounded-md border bg-[#ecfdf5] text-sm font-semibold">Image</button>
             </div>
 
-            <!-- Image Upload -->
+            <!-- image controls -->
             <div id="imageControls" class="space-y-3">
               <label class="block text-sm font-medium">Upload image (JPG/PNG)</label>
               <input id="imageInput" type="file" accept="image/*" class="block w-full text-sm" />
-              <button id="analyzeImageBtn" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Image</button>
-              <div id="imageLoader" class="flex items-center gap-3 hidden">
-                <div class="spinner"></div><div class="text-sm text-gray-700">Analyzing image…</div>
-              </div>
+              <button id="analyzeImage" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Image</button>
+              <div id="imageSpinner" class="flex items-center gap-3 hidden"><div class="spinner"></div><div class="text-sm text-gray-700">Analyzing image…</div></div>
             </div>
 
-            <!-- Document Upload -->
+            <!-- doc controls -->
             <div id="docControls" class="space-y-3 hidden">
               <label class="block text-sm font-medium">Upload document (CSV / TXT)</label>
               <input id="docInput" type="file" accept=".csv,.txt" class="block w-full text-sm" />
-              <button id="analyzeDocBtn" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Document</button>
-              <div id="docLoader" class="flex items-center gap-3 hidden">
-                <div class="spinner"></div><div class="text-sm text-gray-700">Analyzing document…</div>
-              </div>
+              <button id="analyzeDoc" class="w-full bg-[#10B981] text-white py-2 rounded-lg font-semibold">Analyze Document</button>
+              <div id="docSpinner" class="flex items-center gap-3 hidden"><div class="spinner"></div><div class="text-sm text-gray-700">Analyzing document…</div></div>
             </div>
 
             <div>
               <h3 class="text-sm font-semibold text-[#065f46]">Advice</h3>
-              <p class="text-sm text-gray-700 mt-2">If the analyzer can't produce structured remedies, the UI will synthesize practical next steps based on the model's analysis to avoid empty results.</p>
+              <p class="text-sm text-gray-700 mt-2">If the model returns no remedies we synthesize practical steps based on analysis so you always get useful next steps.</p>
             </div>
           </div>
 
-          <!-- Right column: results -->
           <div class="lg:w-2/3 space-y-6 results-scroll">
-            <!-- Image Results -->
-            <div id="imageResultCard" class="card p-4 hidden">
-              <h3 class="font-bold text-[#065f46]">Image Analysis Result</h3>
+            <div id="imageResult" class="hidden p-4">
+              <h3 class="font-bold text-[#065f46]">Image Analysis</h3>
               <div class="mt-3 lg:flex gap-4">
                 <div class="lg:w-1/2 text-center">
-                  <img id="previewImage" class="mx-auto rounded-md border" alt="preview" style="max-width:320px; max-height:320px; object-fit:contain">
+                  <img id="preview" class="mx-auto rounded-md border" alt="preview" style="max-width:320px;max-height:320px;object-fit:contain" />
                 </div>
                 <div class="lg:w-1/2">
                   <h4 class="font-semibold">Summary</h4>
-                  <p id="imgSummary" class="text-sm text-gray-700 mt-2"></p>
-
+                  <p id="summaryText" class="text-sm text-gray-700 mt-2"></p>
                   <h4 class="font-semibold mt-3">Detailed analysis</h4>
-                  <p id="imgAnalysis" class="text-sm text-gray-700 mt-2"></p>
-
+                  <p id="analysisText" class="text-sm text-gray-700 mt-2"></p>
                   <h4 class="font-semibold mt-3">Recommended Remedies</h4>
-                  <ul id="imgRemedies" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
+                  <ul id="remediesList" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
                 </div>
               </div>
             </div>
 
-            <!-- Document Results -->
-            <div id="docResultCard" class="card p-4 hidden">
-              <h3 class="font-bold text-[#065f46]">Document Analysis Result</h3>
+            <div id="docResult" class="hidden p-4">
+              <h3 class="font-bold text-[#065f46]">Document Analysis</h3>
               <div class="mt-3">
                 <h4 class="font-semibold">Summary</h4>
-                <p id="docSummary" class="text-sm text-gray-700 mt-2"></p>
-
+                <p id="docSummaryText" class="text-sm text-gray-700 mt-2"></p>
                 <h4 class="font-semibold mt-3">Key Metrics</h4>
                 <div id="docCharts" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3"></div>
-
                 <h4 class="font-semibold mt-3">Recommended Remedies</h4>
-                <ul id="docRemedies" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
+                <ul id="docRemediesList" class="list-disc list-inside text-sm text-gray-700 mt-2"></ul>
               </div>
             </div>
 
-            <!-- Generic notice box -->
-            <div id="noticeBox" class="hidden bg-yellow-50 border border-yellow-100 p-3 rounded-md">
-              <p id="noticeText" class="text-sm text-yellow-800"></p>
+            <div id="notice" class="hidden bg-yellow-50 border border-yellow-100 p-3 rounded-md">
+              <p id="noticeMsg" class="text-sm text-yellow-800"></p>
             </div>
           </div>
         </div>
       </section>
+
     </div>
   </main>
 
-  <!-- Floating Chatbot launcher -->
-  <div id="chatLauncher" class="fixed bottom-6 right-6 z-50">
+  <!-- Chat / Floating -->
+  <div id="chatToggle" class="fixed bottom-6 right-6 z-50">
     <button id="openChat" class="bg-[#10B981] text-white p-4 rounded-full shadow-lg"><i class="fa-solid fa-comments text-xl"></i></button>
   </div>
 
-  <!-- Chatbot UI -->
-  <div id="chatbot" class="fixed bottom-24 right-6 w-80 h-[60vh] card hidden z-50 flex flex-col overflow-hidden">
+  <div id="chat" class="fixed bottom-24 right-6 w-80 h-[60vh] card hidden z-50 flex flex-col overflow-hidden">
     <div class="px-4 py-3 bg-gradient-to-r from-[#0f766e] to-[#10b981] text-white flex items-center justify-between">
       <div class="font-semibold">Agri-Bot</div>
       <button id="closeChat" class="text-white text-xl">&times;</button>
     </div>
-    <div id="chatBody" class="p-3 flex-1 overflow-auto space-y-2 bg-[#f7fff5]"></div>
+    <div id="chatStream" class="p-3 flex-1 overflow-auto space-y-2 bg-[#f7fff5]"></div>
     <div class="p-3 border-t">
       <div class="flex gap-2">
         <input id="chatInput" class="flex-1 p-2 border rounded-lg" placeholder="Ask about this image or crop..." />
-        <button id="micBtn" class="bg-gray-100 p-2 rounded-lg"><i class="fa-solid fa-microphone"></i></button>
-        <button id="sendChat" class="bg-[#10B981] text-white p-2 rounded-lg"><i class="fa-solid fa-paper-plane"></i></button>
+        <button id="mic" class="bg-gray-100 p-2 rounded-lg"><i class="fa-solid fa-microphone"></i></button>
+        <button id="send" class="bg-[#10B981] text-white p-2 rounded-lg"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
 
   <!-- Message modal -->
-  <div id="messageModal" class="fixed inset-0 flex items-center justify-center z-60 hidden">
+  <div id="modal" class="fixed inset-0 z-60 flex items-center justify-center hidden">
     <div class="card p-6 max-w-md">
-      <h3 class="font-bold text-lg" id="modalTitle">Notification</h3>
-      <p class="text-sm text-gray-700 mt-2" id="modalBody"></p>
-      <div class="mt-4 text-right"><button id="modalClose" class="px-4 py-2 rounded bg-[#10B981] text-white">OK</button></div>
+      <h3 id="modalTitle" class="font-bold text-lg">Notification</h3>
+      <p id="modalMsg" class="text-sm text-gray-700 mt-2"></p>
+      <div class="mt-4 text-right"><button id="modalOk" class="px-4 py-2 rounded bg-[#10B981] text-white">OK</button></div>
     </div>
   </div>
 
   <script>
-  // MAIN SCRIPT: UI wiring, analysis flow, robust parsing and fallback remedies.
-  (function () {
-    // Elements
-    const analyzerSelect = document.getElementById('analyzerSelect');
-    const proceedBtn = document.getElementById('proceedBtn');
-    const welcomePage = document.getElementById('welcomePage');
-    const analyzerContainer = document.getElementById('analyzerContainer');
-    const backBtn = document.getElementById('backBtn');
+  // NOTE: You've asked for the APIs to be called from front-end directly. This is insecure for production.
+  // Keep keys server-side. This example will place the Gemini API key here only because you requested it.
+  // Replace with your key or leave empty to use a server proxy.
+  const GEMINI_API_KEY = 'AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU'; // <<< PUT YOUR KEY HERE (NOT RECOMMENDED)
 
-    const tabImage = document.getElementById('tabImage');
-    const tabDoc = document.getElementById('tabDoc');
-    const imageControls = document.getElementById('imageControls');
-    const docControls = document.getElementById('docControls');
+  // Simple helpers
+  const el = id => document.getElementById(id);
+  const showModal = (t,m) => { el('modalTitle').textContent = t; el('modalMsg').textContent = m; el('modal').classList.remove('hidden'); };
+  el('modalOk').addEventListener('click', ()=> el('modal').classList.add('hidden'));
 
-    const imageInput = document.getElementById('imageInput');
-    const analyzeImageBtn = document.getElementById('analyzeImageBtn');
-    const imageLoader = document.getElementById('imageLoader');
-    const imageResultCard = document.getElementById('imageResultCard');
-    const previewImage = document.getElementById('previewImage');
-    const imgSummary = document.getElementById('imgSummary');
-    const imgAnalysis = document.getElementById('imgAnalysis');
-    const imgRemedies = document.getElementById('imgRemedies');
-
-    const docInput = document.getElementById('docInput');
-    const analyzeDocBtn = document.getElementById('analyzeDocBtn');
-    const docLoader = document.getElementById('docLoader');
-    const docResultCard = document.getElementById('docResultCard');
-    const docSummary = document.getElementById('docSummary');
-    const docCharts = document.getElementById('docCharts');
-    const docRemedies = document.getElementById('docRemedies');
-
-    const messageModal = document.getElementById('messageModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const modalClose = document.getElementById('modalClose');
-
-    const openChatBtn = document.getElementById('openChat');
-    const closeChatBtn = document.getElementById('closeChat');
-    const chatbot = document.getElementById('chatbot');
-    const chatBody = document.getElementById('chatBody');
-    const chatInput = document.getElementById('chatInput');
-    const sendChat = document.getElementById('sendChat');
-    const micBtn = document.getElementById('micBtn');
-
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-    const closeMobileMenu = document.getElementById('closeMobileMenu');
-
-    // Charts state
-    let chartInstances = {};
-
-    // IMPORTANT: don't embed production API keys here.
-    // The client should call your server endpoints which hold the API key securely.
-    // This example expects endpoints:
-    // POST /api/analyze-image  -> { summary, analysis, remedies } OR plain text
-    // POST /api/analyze-doc    -> JSON { summary, key_metrics: [{name, labels, data}], remedies }
-    // POST /api/chat           -> chat assistant -> { reply }
-    // If you don't have those endpoints, adjust the code to call your server implementing them.
-    const API = {
-      analyzeImage: '/api/analyze-image',
-      analyzeDoc: '/api/analyze-doc',
-      chat: '/api/chat'
-    };
-
-    // Helpers
-    function showModal(title, text) {
-      modalTitle.textContent = title || 'Notice';
-      modalBody.textContent = text || '';
-      messageModal.classList.remove('hidden');
-    }
-    modalClose.addEventListener('click', () => messageModal.classList.add('hidden'));
-
-    function escapeHtml(s) {
-      if (!s) return '';
-      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    // Robust parsing for free-text responses (JSON / Markdown / free text)
-    function parseTextSections(text) {
-      if (!text || !text.trim()) return { summary: '', analysis: '', remedies: [] };
-
-      // Try parse JSON
+  // Exponential backoff fetch
+  async function fetchWithRetry(url, options = {}, retries = 4) {
+    let lastErr;
+    for (let i=0;i<retries;i++){
       try {
-        const j = JSON.parse(text);
-        if (typeof j === 'object') {
-          const summary = j.summary || j.Summary || '';
-          const analysis = j.analysis || j['Detailed Analysis'] || j.detailed || '';
-          const remedies = Array.isArray(j.remedies) ? j.remedies : (j.remedies ? [j.remedies] : []);
-          return { summary, analysis, remedies };
-        }
-      } catch (e) {}
-
-      // Try markdown headings
-      const mdMatches = text.split(/\n(?=(#{1,6}\s))/).join('\n').split(/\n#{1,6}\s*/).map(s => s.trim()).filter(Boolean);
-      if (text.match(/#{1,6}\s*Summary/i) || text.match(/#{1,6}\s*Recommended/i) ) {
-        // parse by heading names
-        const sections = {};
-        const headingRegex = /^#{1,6}\s*(.+)$/gim;
-        const headings = [];
-        let m;
-        while ((m = headingRegex.exec(text)) !== null) headings.push({ name: m[1].trim(), index: m.index });
-        if (headings.length) {
-          for (let i = 0; i < headings.length; i++) {
-            const start = headings[i].index + headings[i].name.length;
-            const end = (i + 1 < headings.length) ? headings[i+1].index : text.length;
-            const key = headings[i].name.toLowerCase();
-            sections[key] = text.substring(headings[i].index, end).replace(/^#{1,6}\s*.+\n?/i,'').trim();
-          }
-          return {
-            summary: sections['summary'] || '',
-            analysis: sections['detailed analysis'] || sections['analysis'] || '',
-            remedies: (sections['recommended remedies'] || sections['recommended actions'] || '').split(/\n/).map(r => r.replace(/^[\-\d\.\)\s]+/,'').trim()).filter(Boolean)
-          };
-        }
+        const r = await fetch(url, options);
+        if (!r.ok && (r.status === 429 || r.status >= 500)) throw new Error('server '+r.status);
+        return r;
+      } catch (e) {
+        lastErr = e;
+        const wait = Math.pow(2,i)*400 + Math.random()*400;
+        await new Promise(r=>setTimeout(r,wait));
       }
+    }
+    throw lastErr;
+  }
 
-      // Heuristic: first paragraph -> summary; remainder -> analysis; find remedy-like lines
-      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-      const summary = lines.slice(0, Math.min(4, lines.length)).join(' ');
-      const analysis = lines.slice(4).join(' ');
-      const remedyCandidates = lines.filter(l => /^[-\u2022*]/.test(l) || /\b(apply|spray|use|treat|remove|prune|fertil|irrigat|mulch|sanit)/i.test(l));
-      const remedies = remedyCandidates.map(r => r.replace(/^[\-\u2022*\d\.\)\s]+/,'').trim());
+  // Robust parser for model text
+  function parseSections(text){
+    if (!text) return { summary:'', analysis:'', remedies:[] };
+    // attempt JSON
+    try{ const j = JSON.parse(text); if (j && typeof j === 'object') {
+      return { summary: j.summary || j.Summary || '', analysis: j.analysis || j.detailed || '', remedies: Array.isArray(j.remedies) ? j.remedies : (j.remedies ? [j.remedies] : []) };
+    }}catch(e){}
+    // markdown headings
+    const parts = text.split(/\n#{1,6}\s*/).map(p=>p.trim()).filter(Boolean);
+    if (parts.length>1){
+      let summary='', analysis='', remedies=[];
+      parts.forEach(p=>{
+        const firstLine = p.split('\n')[0].toLowerCase();
+        if (firstLine.includes('summary')) summary = p.replace(/^.+\n/,'').trim();
+        else if (firstLine.includes('detailed')||firstLine.includes('analysis')) analysis = p.replace(/^.+\n/,'').trim();
+        else if (firstLine.includes('remed')) remedies = p.replace(/^.+\n/,'').split('\n').map(l=>l.replace(/^[\-\u2022\d\.\)\s]+/,'').trim()).filter(Boolean);
+      });
       return { summary, analysis, remedies };
     }
+    // heuristics
+    const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+    const summary = lines.slice(0,4).join(' ');
+    const analysis = lines.slice(4).join(' ');
+    const remedies = lines.filter(l=>/^[-\u2022*]/.test(l) || /\b(apply|spray|use|treat|remove|prune|fertil|irrigat|mulch)\b/i).map(l=>l.replace(/^[\-\u2022*\d\.\)\s]+/,'').trim());
+    return { summary, analysis, remedies };
+  }
 
-    // Create fallback remedies from keywords in analysis
-    function synthesizeRemedies(analysisText) {
-      const t = (analysisText || '').toLowerCase();
-      const set = new Set();
-
-      if (/\b(fung(us|al)|mildew|rust|blight)\b/.test(t)) {
-        set.add('Remove severely infected tissue and avoid composting it.');
-        set.add('Apply a labelled fungicide, rotating modes of action.');
-        set.add('Improve air circulation and reduce leaf wetness.');
-      }
-      if (/\b(aphid|mite|thrip|weevil|beetle|worm|caterpillar)\b/.test(t)) {
-        set.add('Inspect plants and consider targeted insecticidal soap or biological controls.');
-        set.add('Encourage predators and use pheromone or sticky traps if available.');
-      }
-      if (/\b(nutrient|nitrogen|phosphorus|potassium|chlorosis)\b/.test(t)) {
-        set.add('Perform a soil test and apply balanced fertilizer per recommendations.');
-        set.add('Consider foliar feed for rapid correction where appropriate.');
-      }
-      if (set.size === 0) {
-        set.add('Collect clear close-up and wide photos and consult local extension services.');
-        set.add('Avoid overwatering and sanitize tools to reduce spread.');
-        set.add('Consider lab tests for definitive diagnosis if symptoms persist.');
-      }
-      return Array.from(set);
+  function synthesizeRemedies(text){
+    text = (text||'').toLowerCase();
+    const s = new Set();
+    if (/\b(fung(us|al)|mildew|rust|blight)\b/.test(text)){
+      s.add('Remove infected tissue and avoid composting it.');
+      s.add('Apply a labelled fungicide and rotate modes of action.');
+      s.add('Improve air circulation and avoid overhead irrigation.');
     }
-
-    // Generic fetch with exponential backoff
-    async function fetchWithRetry(url, options = {}, retries = 4) {
-      let err;
-      for (let i = 0; i < retries; i++) {
-        try {
-          const res = await fetch(url, options);
-          if (!res.ok && (res.status === 429 || res.status >= 500)) {
-            throw new Error(`Server ${res.status}`);
-          }
-          return res;
-        } catch (e) {
-          err = e;
-          const wait = Math.pow(2, i) * 300 + Math.random() * 300;
-          await new Promise(r => setTimeout(r, wait));
-        }
-      }
-      throw err;
+    if (/\b(aphid|mite|thrip|weevil|worm|caterpillar)\b/.test(text)){
+      s.add('Use insecticidal soap or biological controls appropriate for the pest.');
+      s.add('Encourage natural predators and use monitoring traps.');
     }
+    if (/\b(nutrient|nitrogen|phosphorus|potassium|chlorosis)\b/.test(text)){
+      s.add('Take a soil test and apply balanced fertilizer according to results.');
+      s.add('Consider foliar feeding for rapid correction if required.');
+    }
+    if (s.size===0){
+      s.add('Take additional photos (close-up + field view) and consult local extension.');
+      s.add('Sanitize tools and avoid overwatering until diagnosis is clear.');
+      s.add('Send samples to a lab if symptoms persist.');
+    }
+    return Array.from(s);
+  }
 
-    // IMAGE analysis (calls server proxy)
-    async function analyzeImage(file) {
-      imageLoader.classList.remove('hidden');
-      imageResultCard.classList.add('hidden');
-      imgSummary.textContent = '';
-      imgAnalysis.textContent = '';
-      imgRemedies.innerHTML = '';
-      previewImage.src = '';
+  // API calls (client-side). In production use a server proxy to keep key secret.
+  async function callGeminiGenerate(payload) {
+    if (!GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is empty. Set the key or implement a server proxy.');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+    const res = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    }, 4);
+    return res.json();
+  }
 
-      // show preview immediately
-      const dataUrl = await new Promise((resolve, reject) => {
+  // Image analysis: sends inline data to Gemini (as per user's request)
+  async function analyzeImageFront(file){
+    try {
+      el('imageSpinner').classList.remove('hidden');
+      el('imageResult').classList.add('hidden');
+      // preview
+      const dataUrl = await new Promise((resolve,reject)=>{
         const r = new FileReader();
-        r.onload = () => resolve(r.result);
+        r.onload = ()=>resolve(r.result);
         r.onerror = reject;
         r.readAsDataURL(file);
       });
-      previewImage.src = dataUrl;
+      el('preview').src = dataUrl;
 
-      // send to server endpoint which must call the LLM/model securely (server should own API keys)
-      try {
-        // Send as FormData for robustness (or base64 in JSON; server decides)
-        const fd = new FormData();
-        fd.append('file', file);
+      const base64 = dataUrl.split(',')[1];
+      const prompt = `You are an agricultural expert. Analyze the attached crop image and identify diseases, pests, nutrient deficiencies or other issues. Return a human-friendly response with headings: Summary, Detailed Analysis, Recommended Remedies. Use bullet points for remedies.`;
 
-        const resp = await fetchWithRetry(API.analyzeImage, {
-          method: 'POST',
-          body: fd
-        });
+      const payload = {
+        contents: [{
+          role: "user",
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: file.type, data: base64 } }
+          ]
+        }]
+      };
 
-        // Expect server to return either structured JSON or text.
-        const json = await resp.json().catch(()=>null);
-        let summary = '', analysis = '', remedies = [];
+      const json = await callGeminiGenerate(payload);
 
-        if (json) {
-          // If server returns structured fields
-          if (json.summary || json.analysis || json.remedies) {
-            summary = json.summary || '';
-            analysis = json.analysis || '';
-            remedies = Array.isArray(json.remedies) ? json.remedies : (json.remedies ? [json.remedies] : []);
-          } else if (json.text) {
-            // server returned plain text
-            const parsed = parseTextSections(json.text || '');
-            summary = parsed.summary; analysis = parsed.analysis; remedies = parsed.remedies;
-          } else {
-            // fallback: stringify
-            const parsed = parseTextSections(JSON.stringify(json));
-            summary = parsed.summary; analysis = parsed.analysis; remedies = parsed.remedies;
-          }
-        } else {
-          // fallback: try reading plain text response
-          const text = await resp.text().catch(()=> '');
-          const parsed = parseTextSections(text);
-          summary = parsed.summary; analysis = parsed.analysis; remedies = parsed.remedies;
-        }
-
-        if (!remedies || remedies.length === 0) remedies = synthesizeRemedies(analysis || summary);
-
-        // update UI
-        imgSummary.textContent = summary || 'No concise summary provided.';
-        imgAnalysis.textContent = analysis || 'No detailed analysis available.';
-        imgRemedies.innerHTML = remedies.map(r => `<li>${escapeHtml(r)}</li>`).join('');
-
-        imageResultCard.classList.remove('hidden');
-
-      } catch (err) {
-        console.error('Image analyze error', err);
-        showModal('Analysis error', 'Could not analyze the image. Please try again or contact support.');
-      } finally {
-        imageLoader.classList.add('hidden');
-      }
+      // extract text safely
+      const text = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || '';
+      let {summary, analysis, remedies} = parseSections(text);
+      if (!remedies || remedies.length===0) remedies = synthesizeRemedies(analysis || summary);
+      el('summaryText').textContent = summary || 'No concise summary found.';
+      el('analysisText').textContent = analysis || 'No detailed analysis available.';
+      el('remediesList').innerHTML = remedies.map(r=>`<li>${escapeHtml(r)}</li>`).join('');
+      el('imageResult').classList.remove('hidden');
+    } catch (err){
+      console.error(err);
+      showModal('Analysis failed','Image analysis failed: '+(err.message||'unknown'));
+    } finally {
+      el('imageSpinner').classList.add('hidden');
     }
+  }
 
-    // DOCUMENT analysis
-    async function analyzeDoc(file) {
-      docLoader.classList.remove('hidden');
-      docResultCard.classList.add('hidden');
-      docSummary.textContent = '';
-      docCharts.innerHTML = '';
-      docRemedies.innerHTML = '';
+  // Document analysis: send document text to Gemini and request JSON schema as in earlier code
+  async function analyzeDocFront(file){
+    try {
+      el('docSpinner').classList.remove('hidden');
+      el('docResult').classList.add('hidden');
 
-      try {
-        const fd = new FormData();
-        fd.append('file', file);
-        const resp = await fetchWithRetry(API.analyzeDoc, { method: 'POST', body: fd });
+      // read file text
+      const text = await new Promise((resolve,reject)=>{
+        const r = new FileReader();
+        r.onload = ()=>resolve(r.result);
+        r.onerror = reject;
+        r.readAsText(file);
+      });
 
-        const json = await resp.json();
-        // Expect: { summary, key_metrics: [{name, labels, data}], remedies }
-        if (!json || typeof json !== 'object') {
-          throw new Error('Invalid server response');
-        }
+      const prompt = `Analyze this agricultural document and return a JSON object with keys: summary (string), key_metrics (array of {name, labels[], data[]}), remedies (array of strings). Document content:\n\n${text}`;
 
-        docSummary.textContent = json.summary || '';
-        const remedies = Array.isArray(json.remedies) ? json.remedies : (json.remedies ? [json.remedies] : []);
-        docRemedies.innerHTML = remedies.map(r => `<li>${escapeHtml(r)}</li>`).join('');
-
-        // Charts
-        if (Array.isArray(json.key_metrics)) {
-          docCharts.innerHTML = '';
-          json.key_metrics.forEach((m, i) => {
-            const id = `docChart${i}`;
-            const wrapper = document.createElement('div');
-            wrapper.className = 'card p-3';
-            wrapper.innerHTML = `<h4 class="font-semibold">${escapeHtml(m.name || 'Metric')}</h4><canvas id="${id}" style="max-height:220px"></canvas>`;
-            docCharts.appendChild(wrapper);
-            // create chart
-            const ctx = document.getElementById(id).getContext('2d');
-            if (chartInstances[id]) chartInstances[id].destroy();
-            chartInstances[id] = new Chart(ctx, {
-              type: 'bar',
-              data: {
-                labels: Array.isArray(m.labels) ? m.labels : [],
-                datasets: [{ label: m.name || '', data: Array.isArray(m.data) ? m.data : [], backgroundColor: '#10B981' }]
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              summary: { type: "STRING" },
+              key_metrics: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    name: { type: "STRING" },
+                    labels: { type: "ARRAY", items: { type: "STRING" } },
+                    data: { type: "ARRAY", items: { type: "NUMBER" } }
+                  }
+                }
               },
-              options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-            });
-          });
+              remedies: { type: "ARRAY", items: { type: "STRING" } }
+            }
+          }
         }
+      };
 
-        docResultCard.classList.remove('hidden');
-
-      } catch (err) {
-        console.error('Doc analyze error', err);
-        showModal('Analysis error', 'Could not analyze the document. Ensure the file is CSV/TXT with numeric metrics or use the server-side analyzer.');
-      } finally {
-        docLoader.classList.add('hidden');
+      const json = await callGeminiGenerate(payload);
+      const textResp = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || '';
+      let parsed;
+      try { parsed = JSON.parse(textResp); } catch(e) {
+        // fallback: attempt to parse heuristics
+        parsed = { summary: textResp.slice(0,300), key_metrics: [], remedies: [] };
       }
-    }
+      el('docSummaryText').textContent = parsed.summary || '';
+      el('docRemediesList').innerHTML = (parsed.remedies||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
 
-    // Chat (client -> server)
-    async function sendChatMessage() {
-      const text = chatInput.value.trim();
-      if (!text) return;
-      appendChat(text, true);
-      chatInput.value = '';
-
-      // display loading dots
-      const loading = document.createElement('div');
-      loading.className = 'chat-bot chat-bubble chat-bot chat-loading-dots flex gap-1';
-      loading.innerHTML = '<span></span><span></span><span></span>';
-      chatBody.appendChild(loading);
-      chatBody.scrollTop = chatBody.scrollHeight;
-
-      try {
-        const resp = await fetchWithRetry(API.chat, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
+      // render charts
+      el('docCharts').innerHTML = '';
+      Object.values(chartInstances).forEach(c=>c.destroy());
+      chartInstances = {};
+      (parsed.key_metrics||[]).forEach((m,i)=>{
+        const id = `chartDoc${i}`;
+        const wrap = document.createElement('div');
+        wrap.className = 'card p-3';
+        wrap.innerHTML = `<h4 class="font-semibold">${escapeHtml(m.name||'Metric')}</h4><canvas id="${id}" style="max-height:220px"></canvas>`;
+        el('docCharts').appendChild(wrap);
+        const ctx = document.getElementById(id).getContext('2d');
+        chartInstances[id] = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: m.labels||[], datasets:[{label:m.name||'',data:m.data||[],backgroundColor:'#10B981'}] },
+          options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}
         });
-        const json = await resp.json().catch(()=>null);
-        loading.remove();
-        const reply = (json && (json.reply || json.text)) ? (json.reply || json.text) : 'Sorry, no response.';
-        appendChat(reply, false);
-      } catch (err) {
-        loading.remove();
-        appendChat('Error contacting the assistant. Try again later.', false);
-        console.error(err);
-      }
+      });
+
+      el('docResult').classList.remove('hidden');
+    } catch(err){
+      console.error(err);
+      showModal('Document analysis failed','Ensure the file contains tabular or textual metrics or use the server-side analyzer.');
+    } finally {
+      el('docSpinner').classList.add('hidden');
     }
+  }
 
-    function appendChat(text, isUser) {
-      const el = document.createElement('div');
-      el.className = `chat-bubble ${isUser ? 'chat-user' : 'chat-bot'} p-2`;
-      el.textContent = text;
-      chatBody.appendChild(el);
-      chatBody.scrollTop = chatBody.scrollHeight;
+  // Chat frontend using Gemini
+  async function sendChatFront(){
+    const t = el('chatInput').value.trim(); if (!t) return;
+    appendChat(t,true); el('chatInput').value='';
+    const loading = document.createElement('div'); loading.className='chat-bot chat-bubble chat-bot chat-loading-dots flex gap-1'; loading.innerHTML='<span></span><span></span><span></span>';
+    el('chatStream').appendChild(loading);
+    el('chatStream').scrollTop = el('chatStream').scrollHeight;
+    try {
+      const payload = { contents: [{ role:'user', parts:[{text:t}] }] };
+      const json = await callGeminiGenerate(payload);
+      const text = (json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts && json.candidates[0].content.parts[0].text) || 'No reply.';
+      loading.remove(); appendChat(text,false);
+    } catch(err){
+      loading.remove(); appendChat('Assistant error: '+(err.message||'unknown'), false);
     }
+  }
 
-    // UI wiring
-    proceedBtn.addEventListener('click', () => {
-      const v = analyzerSelect.value;
-      if (!v) return;
-      welcomePage.classList.add('hidden');
-      analyzerContainer.classList.remove('hidden');
-      if (v === 'image') {
-        tabImage.click();
-      } else {
-        tabDoc.click();
-      }
-    });
-    analyzerSelect.addEventListener('change', () => proceedBtn.disabled = !analyzerSelect.value);
-    backBtn.addEventListener('click', () => {
-      analyzerContainer.classList.add('hidden');
-      welcomePage.classList.remove('hidden');
-    });
+  function appendChat(text,isUser){
+    const d = document.createElement('div');
+    d.className = `chat-bubble ${isUser ? 'chat-user' : 'chat-bot'} p-2`;
+    d.textContent = text;
+    el('chatStream').appendChild(d);
+    el('chatStream').scrollTop = el('chatStream').scrollHeight;
+  }
 
-    // tabs
-    tabImage.addEventListener('click', () => {
-      tabImage.classList.add('font-semibold');
-      tabDoc.classList.remove('font-semibold');
-      imageControls.classList.remove('hidden');
-      docControls.classList.add('hidden');
-      imageResultCard.classList.add('hidden');
-      docResultCard.classList.add('hidden');
-    });
-    tabDoc.addEventListener('click', () => {
-      tabDoc.classList.add('font-semibold');
-      tabImage.classList.remove('font-semibold');
-      docControls.classList.remove('hidden');
-      imageControls.classList.add('hidden');
-      imageResultCard.classList.add('hidden');
-      docResultCard.classList.add('hidden');
-    });
+  // small utility
+  function el(id){ return document.getElementById(id); }
+  function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function showModal(t,m){ el('modalTitle').textContent = t; el('modalMsg').textContent = m; el('modal').classList.remove('hidden'); }
+  el('modalOk').addEventListener('click', ()=> el('modal').classList.add('hidden'));
 
-    // analyze triggers
-    analyzeImageBtn.addEventListener('click', () => {
-      const f = imageInput.files[0];
-      if (!f) return showModal('Missing file', 'Please upload an image (jpg/png).');
-      analyzeImageBtn.disabled = true;
-      analyzeImage(f).finally(() => analyzeImageBtn.disabled = false);
+  // UI wiring
+  document.addEventListener('DOMContentLoaded', ()=> {
+    el('analyzerSelect').addEventListener('change', e => el('proceedBtn').disabled = !e.target.value);
+    el('proceedBtn').addEventListener('click', ()=>{
+      el('welcome').classList.add('hidden'); el('analyzer').classList.remove('hidden');
+      if (el('analyzerSelect').value==='image') el('tabImage').click(); else el('tabDoc').click();
+    });
+    el('back').addEventListener('click', ()=>{ el('analyzer').classList.add('hidden'); el('welcome').classList.remove('hidden'); });
+    el('tabImage').addEventListener('click', ()=>{ el('tabImage').classList.add('font-semibold'); el('tabDoc').classList.remove('font-semibold'); el('imageControls').classList.remove('hidden'); el('docControls').classList.add('hidden'); });
+    el('tabDoc').addEventListener('click', ()=>{ el('tabDoc').classList.add('font-semibold'); el('tabImage').classList.remove('font-semibold'); el('docControls').classList.remove('hidden'); el('imageControls').classList.add('hidden'); });
+
+    // analysis triggers
+    el('analyzeImage').addEventListener('click', async ()=>{
+      const f = el('imageInput').files[0];
+      if(!f) return showModal('No file','Please select an image file (jpg/png)');
+      el('imageSpinner').classList.remove('hidden');
+      try { await analyzeImageFront(f); } catch(e){ console.error(e) } finally { el('imageSpinner').classList.add('hidden'); }
+    });
+    el('analyzeDoc').addEventListener('click', async ()=>{
+      const f = el('docInput').files[0];
+      if(!f) return showModal('No file','Please select a CSV or TXT document');
+      el('docSpinner').classList.remove('hidden');
+      try { await analyzeDocFront(f); } catch(e){ console.error(e) } finally { el('docSpinner').classList.add('hidden'); }
     });
 
-    analyzeDocBtn.addEventListener('click', () => {
-      const f = docInput.files[0];
-      if (!f) return showModal('Missing file', 'Please upload a CSV/TXT document.');
-      analyzeDocBtn.disabled = true;
-      analyzeDoc(f).finally(() => analyzeDocBtn.disabled = false);
-    });
-
-    // Chat UI
-    openChatBtn.addEventListener('click', () => {
-      chatbot.classList.remove('hidden');
-      openChatBtn.classList.add('hidden');
-    });
-    closeChatBtn.addEventListener('click', () => {
-      chatbot.classList.add('hidden');
-      openChatBtn.classList.remove('hidden');
-    });
-    sendChat.addEventListener('click', sendChatMessage);
-    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChatMessage(); });
-
-    // Mobile menu handlers
-    mobileMenuBtn.addEventListener('click', () => { mobileMenu.classList.add('open'); mobileMenuOverlay.classList.remove('hidden'); });
-    closeMobileMenu.addEventListener('click', () => { mobileMenu.classList.remove('open'); mobileMenuOverlay.classList.add('hidden'); });
-    mobileMenuOverlay.addEventListener('click', () => { mobileMenu.classList.remove('open'); mobileMenuOverlay.classList.add('hidden'); });
-
-    // Speech recognition for chat (optional)
+    // chat wiring
+    el('openChat').addEventListener('click', ()=>{ el('chat').classList.remove('hidden'); el('chatToggle').classList.add('hidden'); });
+    el('closeChat').addEventListener('click', ()=>{ el('chat').classList.add('hidden'); el('chatToggle').classList.remove('hidden'); });
+    el('send').addEventListener('click', sendChatFront);
+    el('chatInput').addEventListener('keydown', e => { if (e.key==='Enter') sendChatFront(); });
+    // speech
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
-      const recog = new SpeechRecognition();
-      recog.lang = 'en-US';
-      recog.onresult = (ev) => {
-        const t = ev.results[0][0].transcript;
-        chatInput.value = t;
-        sendChatMessage();
-      };
-      recog.onerror = (e) => console.error('Speech error', e);
-      micBtn.addEventListener('click', () => { try { recog.start(); } catch(e){ console.warn(e); } });
-    } else {
-      micBtn.style.display = 'none';
-    }
+      const r = new SpeechRecognition();
+      r.lang='en-US';
+      r.onresult = ev => { el('chatInput').value = ev.results[0][0].transcript; sendChatFront(); };
+      r.onerror = e => console.warn(e);
+      el('mic').addEventListener('click', ()=> r.start());
+    } else el('mic').style.display='none';
+
+    // mobile menu
+    el('mobileMenuBtn').addEventListener('click', ()=>{ mobileMenu.classList.add('translate-x-0'); document.getElementById('mobileMenu').classList.remove('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.remove('hidden'); });
+    el('closeMobileMenu').addEventListener('click', ()=>{ document.getElementById('mobileMenu').classList.add('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.add('hidden'); });
+    document.getElementById('mobileMenuOverlay').addEventListener('click', ()=>{ document.getElementById('mobileMenu').classList.add('translate-x-full'); document.getElementById('mobileMenuOverlay').classList.add('hidden'); });
 
     // initial state
-    tabImage.click();
-
-    // Expose for debugging
-    window.AgriTrue = { analyzeImage, analyzeDoc, parseTextSections, synthesizeRemedies };
-  })();
+    el('tabImage').click();
+  });
   </script>
 </body>
 </html>
