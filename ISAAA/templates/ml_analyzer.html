@@ -518,456 +518,389 @@
 </main>
 
 
-    <!-- JavaScript to handle all interactivity, including tabs, analysis, and the chatbot -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // --- UI Elements and State Variables ---
-            const welcomePage = document.getElementById('welcome-page');
-            const mainAnalyzerContainer = document.getElementById('main-analyzer-container');
-            const analyzerSelect = document.getElementById('analyzer-select');
-            const proceedBtn = document.getElementById('proceed-btn');
-            
-            const docTabBtn = document.getElementById('doc-tab-btn');
-            const imageTabBtn = document.getElementById('image-tab-btn');
-            const docAnalyzer = document.getElementById('doc-analyzer');
-            const imageAnalyzer = document.getElementById('image-analyzer');
-            const docFile = document.getElementById('doc-file');
-            const analyzeDocBtn = document.getElementById('analyze-doc-btn');
-            const imageFile = document.getElementById('image-file');
-            const analyzeImageBtn = document.getElementById('analyze-image-btn');
-            const analysisLoader = document.getElementById('analysis-loader');
-            const docResults = document.getElementById('doc-analysis-results');
-            const imageResults = document.getElementById('image-analysis-results');
-            const docSummary = document.getElementById('doc-summary');
-            const docSummaryTable = document.getElementById('doc-summary-table');
-            const docCharts = document.getElementById('doc-charts');
-            const docRemediesList = document.getElementById('doc-remedies-list');
-            const analyzedImage = document.getElementById('analyzed-image');
-            const imageSummary = document.getElementById('image-summary');
-            const imageDetailedAnalysis = document.getElementById('image-detailed-analysis');
-            const imageRemediesList = document.getElementById('image-remedies-list');
+<!-- JavaScript to handle all interactivity, including tabs, analysis, and the chatbot -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // --- UI Elements ---
+    const welcomePage = document.getElementById('welcome-page');
+    const mainAnalyzerContainer = document.getElementById('main-analyzer-container');
+    const analyzerSelect = document.getElementById('analyzer-select');
+    const proceedBtn = document.getElementById('proceed-btn');
 
-            // Message box elements
-            const messageBoxContainer = document.getElementById('message-box-container');
-            const messageBoxText = document.getElementById('message-box-text');
-            const messageBoxCloseBtn = document.getElementById('message-box-close');
+    const docTabBtn = document.getElementById('doc-tab-btn');
+    const imageTabBtn = document.getElementById('image-tab-btn');
+    const docAnalyzer = document.getElementById('doc-analyzer');
+    const imageAnalyzer = document.getElementById('image-analyzer');
+    const docFile = document.getElementById('doc-file');
+    const analyzeDocBtn = document.getElementById('analyze-doc-btn');
+    const imageFile = document.getElementById('image-file');
+    const analyzeImageBtn = document.getElementById('analyze-image-btn');
 
-            // Chatbot elements
-            const chatbotIcon = document.getElementById('chatbot-icon');
-            const chatbotContainer = document.getElementById('chatbot-container');
-            const chatbotBody = document.getElementById('chatbot-body');
-            const chatbotInput = document.getElementById('chatbot-input');
-            const sendMessageBtn = document.getElementById('send-message');
-            const micButton = document.getElementById('mic-button');
-            const closeChatbotBtn = document.getElementById('close-chatbot');
+    const analysisLoader = document.getElementById('analysis-loader');
+    const docResults = document.getElementById('doc-analysis-results');
+    const imageResults = document.getElementById('image-analysis-results');
 
-            // Chart colors for consistent styling
-            const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
-            let chartInstances = {};
-            let chatHistory = [];
-            
-            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"; 
+    const docSummary = document.getElementById('doc-summary');
+    const docCharts = document.getElementById('doc-charts');
+    const docRemediesList = document.getElementById('doc-remedies-list');
 
-            // --- Utility Functions ---
-            function showMessageBox(message) {
-                messageBoxText.textContent = message;
-                messageBoxContainer.classList.remove('hidden');
-                messageBoxContainer.classList.add('visible');
+    const analyzedImage = document.getElementById('analyzed-image');
+    const imageSummary = document.getElementById('image-summary');
+    const imageDetailedAnalysis = document.getElementById('image-detailed-analysis');
+    const imageRemediesList = document.getElementById('image-remedies-list');
+
+    // Message Box
+    const messageBoxContainer = document.getElementById('message-box-container');
+    const messageBoxText = document.getElementById('message-box-text');
+    const messageBoxCloseBtn = document.getElementById('message-box-close');
+
+    // Chatbot
+    const chatbotIcon = document.getElementById('chatbot-icon');
+    const chatbotContainer = document.getElementById('chatbot-container');
+    const chatbotBody = document.getElementById('chatbot-body');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const sendMessageBtn = document.getElementById('send-message');
+    const micButton = document.getElementById('mic-button');
+    const closeChatbotBtn = document.getElementById('close-chatbot');
+
+    // Chart colors
+    const chartColors = ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0', '#D1FAE5'];
+    let chartInstances = {};
+    let chatHistory = [];
+
+    const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
+
+    // --- Utility Functions ---
+    const showMessageBox = (msg) => {
+        messageBoxText.textContent = msg;
+        messageBoxContainer.classList.remove('hidden');
+        messageBoxContainer.classList.add('visible');
+    };
+
+    const hideMessageBox = () => {
+        messageBoxContainer.classList.remove('visible');
+        messageBoxContainer.classList.add('hidden');
+    };
+
+    const showAnalysisLoader = (isLoading) => {
+        analysisLoader.style.display = isLoading ? 'flex' : 'none';
+        analyzeImageBtn.disabled = isLoading;
+        analyzeDocBtn.disabled = isLoading;
+    };
+
+    const resetUI = () => {
+        docResults.classList.add('hidden');
+        imageResults.classList.add('hidden');
+        imageSummary.textContent = '';
+        imageDetailedAnalysis.textContent = '';
+        imageRemediesList.innerHTML = '';
+        analyzedImage.src = '';
+        docSummary.textContent = '';
+        docCharts.innerHTML = '';
+        docRemediesList.innerHTML = '';
+    };
+
+    // --- Tab Switching ---
+    const showTab = (tab) => {
+        resetUI();
+        if (tab === 'doc') {
+            docTabBtn.classList.add('border-green-500', 'text-green-700');
+            docTabBtn.classList.remove('border-transparent', 'text-gray-500');
+            imageTabBtn.classList.add('border-transparent', 'text-gray-500');
+            imageTabBtn.classList.remove('border-green-500', 'text-green-700');
+            docAnalyzer.style.display = 'block';
+            imageAnalyzer.style.display = 'none';
+        } else {
+            imageTabBtn.classList.add('border-green-500', 'text-green-700');
+            imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
+            docTabBtn.classList.add('border-transparent', 'text-gray-500');
+            docTabBtn.classList.remove('border-green-500', 'text-green-700');
+            imageAnalyzer.style.display = 'block';
+            docAnalyzer.style.display = 'none';
+        }
+    };
+
+    // --- Fetch with retry (exponential backoff) ---
+    const fetchWithRetry = async (url, options, retries = 5) => {
+        let lastError;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url, options);
+                if (response.status === 429 || response.status >= 500) throw new Error(`Server error: ${response.status}`);
+                return response;
+            } catch (err) {
+                lastError = err;
+                const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                await new Promise(r => setTimeout(r, delay));
             }
+        }
+        throw lastError;
+    };
 
-            function hideMessageBox() {
-                messageBoxContainer.classList.remove('visible');
-                messageBoxContainer.classList.add('hidden');
-            }
+    // --- Image Analysis ---
+    const analyzeImage = async (file) => {
+        showAnalysisLoader(true);
+        imageResults.classList.add('hidden');
 
-            function showAnalysisLoader(isLoading) {
-                analysisLoader.style.display = isLoading ? 'flex' : 'none';
-                analyzeImageBtn.disabled = isLoading;
-                analyzeDocBtn.disabled = isLoading;
-            }
+        try {
+            // Read file as base64
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
 
-            function resetUI() {
-                docResults.classList.add('hidden');
-                imageResults.classList.add('hidden');
-                imageSummary.textContent = '';
-                imageDetailedAnalysis.textContent = '';
-                imageRemediesList.innerHTML = '';
-                analyzedImage.src = '';
-                docSummary.textContent = '';
-                docSummaryTable.innerHTML = '';
-                docCharts.innerHTML = '';
-                docRemediesList.innerHTML = '';
-            }
+            analyzedImage.src = `data:${file.type};base64,${base64}`;
 
-            // --- Tab Switching Logic ---
-            function showTab(tabToShow) {
-                resetUI();
-                if (tabToShow === 'doc') {
-                    docTabBtn.classList.add('border-green-500', 'text-green-700');
-                    docTabBtn.classList.remove('border-transparent', 'text-gray-500');
-                    imageTabBtn.classList.add('border-transparent', 'text-gray-500');
-                    imageTabBtn.classList.remove('border-green-500', 'text-green-700');
-                    docAnalyzer.style.display = 'block';
-                    imageAnalyzer.style.display = 'none';
-                } else {
-                    imageTabBtn.classList.add('border-green-500', 'text-green-700');
-                    imageTabBtn.classList.remove('border-transparent', 'text-gray-500');
-                    docTabBtn.classList.add('border-transparent', 'text-gray-500');
-                    docTabBtn.classList.remove('border-green-500', 'text-green-700');
-                    imageAnalyzer.style.display = 'block';
-                    docAnalyzer.style.display = 'none';
+            const prompt = `Analyze this image. Identify any diseases, pests, or deficiencies. Provide Summary, Detailed Analysis, and Recommended Remedies in Markdown.`;
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: file.type, data: base64 } }
+                    ]
+                }]
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (!text) throw new Error('No analysis returned.');
+
+            const parts = text.split('### ').slice(1);
+            let summary = "No summary found.";
+            let analysis = "No detailed analysis found.";
+            let remedies = ["No remedies found."];
+
+            parts.forEach(p => {
+                const [heading, ...content] = p.split('\n');
+                const contentStr = content.join('\n').trim();
+                if (/summary/i.test(heading)) summary = contentStr;
+                else if (/detailed analysis/i.test(heading)) analysis = contentStr;
+                else if (/recommended remedies/i.test(heading)) {
+                    remedies = contentStr.split('\n').filter(l => l.trim() !== '').map(l => l.replace(/^- /, ''));
                 }
-            }
+            });
 
-            // --- Image Analysis with Gemini API ---
-            async function analyzeImage(file) {
-                showAnalysisLoader(true);
-                imageResults.classList.add('hidden');
+            imageSummary.textContent = summary;
+            imageDetailedAnalysis.textContent = analysis;
+            imageRemediesList.innerHTML = remedies.map(r => `<li>${r}</li>`).join('');
+            imageResults.classList.remove('hidden');
+        } catch (err) {
+            console.error("Image analysis error:", err);
+            showMessageBox("Image analysis failed. Try another file.");
+        } finally {
+            showAnalysisLoader(false);
+        }
+    };
 
-                try {
-                    // Read the file as a Data URL (base64)
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.onerror = error => reject(error);
-                        reader.readAsDataURL(file);
-                    });
+    // --- Document Analysis ---
+    const analyzeDocument = async (file) => {
+        showAnalysisLoader(true);
+        docResults.classList.add('hidden');
 
-                    // Display the uploaded image
-                    analyzedImage.src = `data:image/jpeg;base64,${base64}`;
+        try {
+            const text = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
 
-                    const prompt = "Analyze this agricultural image. Identify any diseases, pests, or nutrient deficiencies visible on the crops. Provide a summary of the findings, a detailed analysis, and a list of actionable remedies or solutions to address the identified issues. If the image is not agricultural, provide a general description. Format the response with clear headings for 'Summary', 'Detailed Analysis', and 'Recommended Remedies' in Markdown.";
+            const prompt = `Analyze this agricultural document:\n\n${text}\n\nReturn JSON with summary, key_metrics, remedies.`;
 
-                    const payload = {
-                        contents: [{
-                            role: "user",
-                            parts: [
-                                { text: prompt },
-                                {
-                                    inlineData: {
-                                        mimeType: file.type,
-                                        data: base64
-                                    }
-                                }
-                            ]
-                        }]
-                    };
-                    
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                    // Send the request to the Gemini API
-                    const response = await fetchWithRetry(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-                    
-                    const text = result.candidates[0].content.parts[0].text;
-                    const parts = text.split('### ').slice(1); // Split by markdown heading
-
-                    // Extract and display the sections
-                    let summary = "No summary found.";
-                    let analysis = "No detailed analysis found.";
-                    let remedies = ["No remedies found."];
-
-                    parts.forEach(part => {
-                        const [heading, ...content] = part.split('\n');
-                        const contentStr = content.join('\n').trim();
-                        if (heading.includes('Summary')) {
-                            summary = contentStr;
-                        } else if (heading.includes('Detailed Analysis')) {
-                            analysis = contentStr;
-                        } else if (heading.includes('Recommended Remedies')) {
-                            remedies = contentStr.split('\n').filter(line => line.trim() !== '').map(line => line.replace(/^- /, ''));
-                        }
-                    });
-
-                    imageSummary.textContent = summary;
-                    imageDetailedAnalysis.textContent = analysis;
-                    imageRemediesList.innerHTML = remedies.map(remedy => `<li>${remedy}</li>`).join('');
-                    
-                    imageResults.classList.remove('hidden');
-
-                } catch (error) {
-                    console.error("Image analysis failed:", error);
-                    showMessageBox("Analysis failed. Please try again with a different image.");
-                    imageResults.classList.add('hidden');
-                } finally {
-                    showAnalysisLoader(false);
-                }
-            }
-
-            // --- Document Analysis with Gemini API ---
-            async function analyzeDocument(file) {
-                showAnalysisLoader(true);
-                docResults.classList.add('hidden');
-
-                try {
-                    const text = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = error => reject(error);
-                        reader.readAsText(file);
-                    });
-                    
-                    const prompt = `Analyze the following agricultural document content:
-                    
-${text}
-
-Provide a summary of the document, identify key metrics and their corresponding values in a structured format, and offer a list of actionable remedies based on the analysis. The key metrics should be numeric data suitable for plotting on a graph. The response must be a single JSON object with the following schema:
-{
-  "summary": "A concise summary of the document.",
-  "key_metrics": [
-    {
-      "name": "Name of the metric (e.g., 'Yield (ton/ha)')",
-      "labels": ["Label 1", "Label 2", ...],
-      "data": [1.5, 2.1, 1.8, ...]
-    }
-  ],
-  "remedies": ["Remedy 1", "Remedy 2", "Remedy 3"]
-}`;
-
-                    const payload = {
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }],
-                        generationConfig: {
-                            responseMimeType: "application/json",
-                            responseSchema: {
-                                type: "OBJECT",
-                                properties: {
-                                    summary: { type: "STRING" },
-                                    key_metrics: {
-                                        type: "ARRAY",
-                                        items: {
-                                            type: "OBJECT",
-                                            properties: {
-                                                name: { type: "STRING" },
-                                                labels: { type: "ARRAY", items: { type: "STRING" } },
-                                                data: { type: "ARRAY", items: { type: "NUMBER" } }
-                                            },
-                                            propertyOrdering: ["name", "labels", "data"]
-                                        }
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            summary: { type: "STRING" },
+                            key_metrics: { 
+                                type: "ARRAY", 
+                                items: { 
+                                    type: "OBJECT",
+                                    properties: {
+                                        name: { type: "STRING" },
+                                        labels: { type: "ARRAY", items: { type: "STRING" } },
+                                        data: { type: "ARRAY", items: { type: "NUMBER" } }
                                     },
-                                    remedies: { type: "ARRAY", items: { type: "STRING" } }
+                                    propertyOrdering: ["name", "labels", "data"]
                                 }
-                            }
-                        }
-                    };
-
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    
-                    const response = await fetchWithRetry(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-                    
-                    const jsonString = result.candidates[0].content.parts[0].text;
-                    const parsedData = JSON.parse(jsonString);
-                    
-                    // Display summary and remedies
-                    docSummary.textContent = parsedData.summary;
-                    docRemediesList.innerHTML = parsedData.remedies.map(remedy => `<li>${remedy}</li>`).join('');
-
-                    // Render the charts
-                    docCharts.innerHTML = parsedData.key_metrics.map((m, i) => `
-                        <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
-                            <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
-                            <canvas id="chart-${i}"></canvas>
-                        </div>
-                    `).join('');
-
-                    // Destroy old charts and create new ones
-                    Object.values(chartInstances).forEach(chart => chart.destroy());
-                    chartInstances = {};
-
-                    parsedData.key_metrics.forEach((m, i) => {
-                        const ctx = document.getElementById(`chart-${i}`).getContext('2d');
-                        chartInstances[`chart-${i}`] = new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: m.labels,
-                                datasets: [{
-                                    label: m.name,
-                                    data: m.data,
-                                    backgroundColor: chartColors[i % chartColors.length],
-                                    borderColor: chartColors[i % chartColors.length],
-                                    borderWidth: 1
-                                }]
                             },
-                            options: {
-                                responsive: true,
-                                scales: { y: { beginAtZero: true } }
-                            }
-                        });
-                    });
-
-                    docResults.classList.remove('hidden');
-
-                } catch (error) {
-                    console.error("Document analysis failed:", error);
-                    showMessageBox("Document analysis failed. Please ensure the file is a plain text or CSV file with relevant agricultural data.");
-                    docResults.classList.add('hidden');
-                } finally {
-                    showAnalysisLoader(false);
-                }
-            }
-
-            // --- Event Listeners for Analysis Buttons ---
-            analyzeImageBtn.addEventListener('click', () => {
-                const file = imageFile.files[0];
-                if (file) {
-                    analyzeImage(file);
-                } else {
-                    showMessageBox("Please select an image file to analyze.");
-                }
-            });
-
-            analyzeDocBtn.addEventListener('click', () => {
-                const file = docFile.files[0];
-                if (file) {
-                    analyzeDocument(file);
-                } else {
-                    showMessageBox("Please select a document file to analyze.");
-                }
-            });
-
-            // --- Chatbot Logic ---
-            async function sendMessage() {
-                const text = chatbotInput.value.trim();
-                if (!text) return;
-                
-                appendMessage(text, true);
-                chatHistory.push({ role: "user", parts: [{ text: text }] });
-                chatbotInput.value = "";
-
-                const loadingDots = appendLoadingDots();
-
-                try {
-                    const payload = { contents: chatHistory };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetchWithRetry(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-                    
-                    loadingDots.remove();
-
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                        const reply = result.candidates[0].content.parts[0].text;
-                        appendMessage(reply, false);
-                        chatHistory.push({ role: "model", parts: [{ text: reply }] });
-                    } else {
-                        appendMessage("Sorry, I could not get a response. Please try again.", false);
-                    }
-                } catch (err) {
-                    loadingDots.remove();
-                    console.error("Chatbot API error:", err);
-                    appendMessage("Error connecting to the AI. Please try again.", false);
-                }
-            }
-
-            function appendMessage(text, isUser) {
-                const msg = document.createElement("div");
-                msg.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? 'user-message bg-green-200 text-gray-900' : 'bot-message bg-gray-100 text-gray-800'}`;
-                msg.textContent = text;
-                chatbotBody.appendChild(msg);
-                chatbotBody.scrollTop = chatbotBody.scrollHeight;
-            }
-
-            function appendLoadingDots() {
-                const loadingContainer = document.createElement("div");
-                loadingContainer.className = "bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 text-gray-800 chat-loading-dots";
-                loadingContainer.innerHTML = '<span></span><span></span><span></span>';
-                chatbotBody.appendChild(loadingContainer);
-                chatbotBody.scrollTop = chatbotBody.scrollHeight;
-                return loadingContainer;
-            }
-
-            // --- Exponential Backoff for API Calls ---
-            async function fetchWithRetry(url, options, maxRetries = 5) {
-                let lastError = null;
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        const response = await fetch(url, options);
-                        if (response.status === 429 || response.status >= 500) {
-                            throw new Error(`Server error: ${response.status}`);
+                            remedies: { type: "ARRAY", items: { type: "STRING" } }
                         }
-                        return response;
-                    } catch (error) {
-                        lastError = error;
-                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
-                throw lastError;
-            }
+            };
 
-            // --- Speech Recognition ---
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'en-US';
-                recognition.interimResults = false;
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    chatbotInput.value = transcript;
-                    sendMessage();
-                };
-                recognition.onerror = (event) => {
-                    console.error("Speech recognition error:", event.error);
-                    appendMessage("Sorry, I didn't catch that. Please try typing.", false);
-                };
-                micButton.addEventListener('click', () => {
-                    recognition.start();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            const jsonString = result?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            const parsedData = JSON.parse(jsonString);
+
+            docSummary.textContent = parsedData.summary || '';
+            docRemediesList.innerHTML = (parsedData.remedies || []).map(r => `<li>${r}</li>`).join('');
+
+            // Render charts
+            docCharts.innerHTML = (parsedData.key_metrics || []).map((m, i) => `
+                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100">
+                    <h5 class="text-xl font-semibold text-gray-800 mb-2">${m.name}</h5>
+                    <canvas id="chart-${i}"></canvas>
+                </div>
+            `).join('');
+
+            Object.values(chartInstances).forEach(c => c.destroy());
+            chartInstances = {};
+
+            (parsedData.key_metrics || []).forEach((m, i) => {
+                const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+                chartInstances[`chart-${i}`] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: m.labels || [],
+                        datasets: [{
+                            label: m.name,
+                            data: m.data || [],
+                            backgroundColor: chartColors[i % chartColors.length],
+                            borderColor: chartColors[i % chartColors.length],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
                 });
-            } else {
-                micButton.style.display = 'none';
-            }
-
-            // --- General UI Event Listeners ---
-            docTabBtn.addEventListener('click', () => showTab('doc'));
-            imageTabBtn.addEventListener('click', () => showTab('image'));
-            sendMessageBtn.addEventListener('click', sendMessage);
-            chatbotInput.addEventListener('keydown', (e) => {
-                if (e.key === "Enter") sendMessage();
-            });
-            messageBoxCloseBtn.addEventListener('click', hideMessageBox);
-
-            // Chatbot visibility controls
-            chatbotIcon.addEventListener('click', () => {
-                chatbotContainer.classList.remove('hidden');
-                chatbotIcon.classList.add('hidden');
-            });
-            closeChatbotBtn.addEventListener('click', () => {
-                chatbotContainer.classList.add('hidden');
-                chatbotIcon.classList.remove('hidden');
-            });
-            
-            // Landing page logic
-            analyzerSelect.addEventListener('change', () => {
-                proceedBtn.disabled = false;
-                proceedBtn.classList.remove('bg-green-400');
-                proceedBtn.classList.add('bg-green-600', 'hover:bg-green-700');
             });
 
-            proceedBtn.addEventListener('click', () => {
-                const selectedAnalyzer = analyzerSelect.value;
-                if (selectedAnalyzer) {
-                    welcomePage.classList.add('hidden');
-                    mainAnalyzerContainer.classList.remove('hidden');
-                    showTab(selectedAnalyzer);
-                }
+            docResults.classList.remove('hidden');
+        } catch (err) {
+            console.error("Document analysis error:", err);
+            showMessageBox("Document analysis failed. Ensure it is plain text or CSV.");
+        } finally {
+            showAnalysisLoader(false);
+        }
+    };
+
+    // --- Event Listeners ---
+    analyzeImageBtn.addEventListener('click', () => {
+        const file = imageFile.files[0];
+        if (file) analyzeImage(file);
+        else showMessageBox("Select an image file first.");
+    });
+
+    analyzeDocBtn.addEventListener('click', () => {
+        const file = docFile.files[0];
+        if (file) analyzeDocument(file);
+        else showMessageBox("Select a document file first.");
+    });
+
+    docTabBtn.addEventListener('click', () => showTab('doc'));
+    imageTabBtn.addEventListener('click', () => showTab('image'));
+
+    proceedBtn.addEventListener('click', () => {
+        const selected = analyzerSelect.value;
+        if (!selected) return;
+        welcomePage.classList.add('hidden');
+        mainAnalyzerContainer.classList.remove('hidden');
+        showTab(selected);
+    });
+
+    analyzerSelect.addEventListener('change', () => {
+        proceedBtn.disabled = false;
+        proceedBtn.classList.replace('bg-green-400', 'bg-green-600');
+        proceedBtn.classList.add('hover:bg-green-700');
+    });
+
+    messageBoxCloseBtn.addEventListener('click', hideMessageBox);
+
+    // --- Chatbot ---
+    const appendMessage = (text, isUser) => {
+        const msg = document.createElement('div');
+        msg.className = `chatbot-message p-3 rounded-xl shadow-md mb-2 ${isUser ? 'user-message bg-green-200 text-gray-900' : 'bot-message bg-gray-100 text-gray-800'}`;
+        msg.textContent = text;
+        chatbotBody.appendChild(msg);
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    };
+
+    const appendLoadingDots = () => {
+        const loading = document.createElement('div');
+        loading.className = 'bot-message p-3 rounded-xl shadow-md mb-2 bg-gray-100 text-gray-800 chat-loading-dots';
+        loading.innerHTML = '<span></span><span></span><span></span>';
+        chatbotBody.appendChild(loading);
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        return loading;
+    };
+
+    const sendMessage = async () => {
+        const text = chatbotInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, true);
+        chatHistory.push({ role: "user", parts: [{ text }] });
+        chatbotInput.value = "";
+
+        const loadingDots = appendLoadingDots();
+
+        try {
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const response = await fetchWithRetry(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-        });
-    </script>
+            const result = await response.json();
+            loadingDots.remove();
+
+            const reply = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, no response.";
+            appendMessage(reply, false);
+            chatHistory.push({ role: "model", parts: [{ text: reply }] });
+        } catch (err) {
+            loadingDots.remove();
+            console.error("Chatbot error:", err);
+            appendMessage("Error connecting to AI. Try again.", false);
+        }
+    };
+
+    sendMessageBtn.addEventListener('click', sendMessage);
+    chatbotInput.addEventListener('keydown', (e) => { if (e.key === "Enter") sendMessage(); });
+
+    // --- Chatbot visibility ---
+    chatbotIcon.addEventListener('click', () => {
+        chatbotContainer.classList.remove('hidden');
+        chatbotIcon.classList.add('hidden');
+    });
+    closeChatbotBtn.addEventListener('click', () => {
+        chatbotContainer.classList.add('hidden');
+        chatbotIcon.classList.remove('hidden');
+    });
+
+    // --- Speech Recognition ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.onresult = (e) => { chatbotInput.value = e.results[0][0].transcript; sendMessage(); };
+        recognition.onerror = (e) => appendMessage("Voice recognition failed. Try typing.", false);
+        micButton.addEventListener('click', () => recognition.start());
+    } else micButton.style.display = 'none';
+});
+</script>
+
 </body>
 </html>
