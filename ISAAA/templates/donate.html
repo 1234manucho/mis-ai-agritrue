@@ -122,13 +122,16 @@
     });
   });
 
-  // QR Data (M-Pesa mobile number)
-  const mobileNumber = document.getElementById('mobileNumber').textContent.trim();
-  const qrData = `tel:${mobileNumber}`; // Scans show the number directly, mobile can initiate M-Pesa payment
+  // QR Data: Opens M-Pesa menu (Paybill + Account)
+  const paybill = document.getElementById('paybillNumber').textContent.trim();
+  const account = document.getElementById('accountNumber').textContent.trim();
+
+  // Format as M-Pesa dial USSD (*234*1*1*PAYBILL*ACCOUNT#)
+  const mpesaLink = `tel:*234*1*1*${paybill}*${account}#`;
 
   // Generate QR codes
-  QRCode.toCanvas(document.getElementById('qrCanvas'), qrData, {width:256}, err=>{ if(err) console.error(err); });
-  QRCode.toCanvas(document.getElementById('qrCode'), qrData, {width:128}, err=>{ if(err) console.error(err); });
+  QRCode.toCanvas(document.getElementById('qrCanvas'), mpesaLink, {width:256}, err=>{ if(err) console.error(err); });
+  QRCode.toCanvas(document.getElementById('qrCode'), mpesaLink, {width:128}, err=>{ if(err) console.error(err); });
 
   // QR Modal toggle
   const qrCard = document.getElementById('qrCard');
