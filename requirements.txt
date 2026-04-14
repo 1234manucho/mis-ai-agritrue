@@ -23,3 +23,4 @@ pillow
 openpyxl
 gunicorn==21.2.0
 Flask-Migrate==4.0.7
+pandas==2.1.4
