@@ -1,23 +1,24 @@
 Flask==3.0.3
 Flask-Login==0.6.3
 Flask-SQLAlchemy==3.1.1
-Flask-Cors==5.0.0
+Flask-Cors==4.0.0
 Werkzeug==3.0.3
+
 openai==1.51.2
+google-generativeai==0.7.2
+
 twilio==9.3.1
-SpeechRecognition==3.11.0
-# pyaudio==0.2.14
-opencv-python==4.10.0.84
-# firebase-admin==6.5.0
-pandas==2.2.2
-python-docx==1.1.2
-PyMuPDF==1.24.9
-Pillow==10.4.0
-gunicorn==22.0.0
-flask-migrate
-tensorflow==2.16.1
+SpeechRecognition==3.10.4
+
+opencv-python-headless==4.10.0.84
+pandas==2.1.4
 numpy==1.26.4
-# requirements.txt
-google-generativeai
-firebase-admin
-PyPDF2
+
+python-docx==1.1.2
+PyPDF2==3.0.1
+Pillow==10.3.0
+
+firebase-admin==6.5.0
+
+gunicorn==22.0.0
+flask-migrate==4.0.7
