@@ -21,3 +21,4 @@ firebase-admin
 python-dotenv
 pillow
 openpyxl
+gunicorn==21.2.0
