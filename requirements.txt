@@ -6,17 +6,18 @@ Werkzeug==3.0.3
 
 openai==1.51.2
 google-generativeai==0.7.2
-
 twilio==9.3.1
 SpeechRecognition==3.10.4
 
 opencv-python-headless==4.10.0.84
 
+
+
 python-docx==1.1.2
 PyPDF2==3.0.1
 Pillow==10.3.0
 
-firebase-admin==6.5.0
-
-gunicorn==22.0.0
-flask-migrate==4.0.7
+firebase-admin
+python-dotenv
+pillow
+openpyxl
