@@ -20,7 +20,7 @@ from PyPDF2 import PdfReader
 from PIL import Image
 
 # ------------------- LOCAL IMPORTS -------------------
-from .extensions import db, migrate
+from extensions import db, migrate
 from models import CommunityNote, Comment, User, DiagnosticResult
 
 # ------------------- FIREBASE -------------------
