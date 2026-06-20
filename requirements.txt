@@ -32,3 +32,4 @@ numpy==1.26.4
 
 # Optional: if using OpenCV for image processing
 opencv-python==4.9.0.80
+Flask-Migrate==4.0.5
