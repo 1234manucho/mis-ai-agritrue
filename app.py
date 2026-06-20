@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, current_app
+from dotenv import load, app_dotenv
+from flask import Flask, app, render_template, request, redirect, url_for, flash, session, jsonify, current_app
+from flask.cli import load_dotenv
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -38,14 +40,22 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    app.secret_key = 'supersecretkey'
+    load_dotenv()
+
+    # --- Configuration ---
+    app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
     app.config['UPLOAD_FOLDER'] = 'uploads/'
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agritrue.db'
+    # Database
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+        'DATABASE_URL',
+        'sqlite:///agritrue.db'          # fallback for local testing
+    )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['FIREBASE_API_KEY'] = "AIzaSyBnnfskPKX1-0jYeIDa1Ua6i0UkqWy6ImI"
 
+    # Firebase (if used)
+    app.config['FIREBASE_API_KEY'] = os.environ.get('FIREBASE_API_KEY', '')
 
     # ------------------- EXTENSIONS -------------------
     db.init_app(app)
