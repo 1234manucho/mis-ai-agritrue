@@ -10,8 +10,7 @@ import requests
 import json
 import uuid
 from datetime import datetime, timedelta
-import numpy as np
-import pandas as pd
+
 import docx
 from PyPDF2 import PdfReader
 from PIL import Image
