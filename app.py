@@ -285,8 +285,12 @@ def register():
             return redirect(url_for('register'))
 
     return render_template('register.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Rollback any pending transaction to avoid PendingRollbackError
+    db.session.rollback()
+
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
@@ -320,25 +324,30 @@ def login():
 
                 user_data = user_doc.to_dict()
 
-                # --- Streak Count Update ---
-                today = datetime.utcnow().date()
+                # --- Streak Count Update (using timezone-aware UTC) ---
+                from datetime import timezone
+                today = datetime.now(timezone.utc).date()
                 streak = user_data.get("streak_count", 1)
                 last_login = user_data.get("last_login")
 
-                last_login_date = (
-                    datetime.fromisoformat(last_login).date()
-                    if isinstance(last_login, str)
-                    else today
-                )
+                last_login_date = None
+                if last_login:
+                    try:
+                        if isinstance(last_login, str):
+                            last_login_date = datetime.fromisoformat(last_login).date()
+                        else:
+                            last_login_date = last_login.date()
+                    except:
+                        last_login_date = today
 
                 if last_login_date == today - timedelta(days=1):
                     streak += 1
-                elif last_login_date < today - timedelta(days=1):
+                elif last_login_date and last_login_date < today - timedelta(days=1):
                     streak = 1
 
                 user_ref.update({
                     "streak_count": streak,
-                    "last_login": datetime.utcnow().isoformat()
+                    "last_login": datetime.now(timezone.utc).isoformat()
                 })
 
                 # --- Sync / Create Local User Record ---
@@ -355,14 +364,14 @@ def login():
                         country=user_data.get('country'),
                         county=user_data.get('county'),
                         is_admin=user_data.get('is_admin', False),
-                        created_at=datetime.utcnow(),
+                        created_at=datetime.now(timezone.utc),
                         streak_count=streak,
-                        last_login=datetime.utcnow()
+                        last_login=datetime.now(timezone.utc)
                     )
                     db.session.add(user)
                 else:
                     user.streak_count = streak
-                    user.last_login = datetime.utcnow()
+                    user.last_login = datetime.now(timezone.utc)
 
                 db.session.commit()
                 login_user(user)
@@ -370,8 +379,10 @@ def login():
                 flash(f"✅ Logged in successfully! Streak: {streak} days.", "success")
                 return redirect(url_for('home'))
 
-        except Exception:
-            pass  # Continue to local login fallback
+        except Exception as e:
+            # Log the error for debugging but continue to local login
+            print(f"Firebase login error: {e}")
+            db.session.rollback()  # ensure session is clean for local attempt
 
         # --- 2️⃣ Local Admin / Local DB Login (only accounts with stored password) ---
         local_user = User.query.filter_by(email=email).first()
@@ -383,8 +394,8 @@ def login():
 
         # If Local user has password → Check normally
         if local_user and local_user.password and check_password_hash(local_user.password, password):
-
-            today = datetime.utcnow().date()
+            from datetime import timezone
+            today = datetime.now(timezone.utc).date()
             last_login_date = local_user.last_login.date() if local_user.last_login else today
 
             if last_login_date == today - timedelta(days=1):
@@ -392,7 +403,7 @@ def login():
             elif last_login_date < today - timedelta(days=1):
                 local_user.streak_count = 1
 
-            local_user.last_login = datetime.utcnow()
+            local_user.last_login = datetime.now(timezone.utc)
             db.session.commit()
 
             login_user(local_user)
