@@ -27,7 +27,7 @@ Pillow>=11.2.1
 SpeechRecognition==3.10.1
 
 # Data processing
-pandas==2.2.2
+#pandas==2.2.2
 numpy==1.26.4
 
 # Optional: if using OpenCV for image processing
