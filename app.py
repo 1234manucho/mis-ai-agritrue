@@ -1,18 +1,20 @@
-from dotenv import load, app_dotenv
-from flask import Flask, app, render_template, request, redirect, url_for, flash, session, jsonify, current_app
-from flask.cli import load_dotenv
+# ------------------- STANDARD LIBRARY -------------------
+import os
+import re
+import json
+import uuid
+from datetime import datetime, timedelta
+
+# ------------------- THIRD-PARTY -------------------
+from dotenv import load_dotenv          # ✅ correct import
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from sqlalchemy import desc
-import os
-import re
-import requests
-import json
-import uuid
-from datetime import datetime, timedelta
 
+import requests
 import docx
 from PyPDF2 import PdfReader
 from PIL import Image
@@ -30,38 +32,38 @@ import google.generativeai as genai
 genai.configure(api_key="AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU")
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-
 # ------------------- OPENAI -------------------
 import openai
-openai.api_key = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"
+openai.api_key = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"   # ← this is a Google key, not OpenAI – fix later
 
 # ------------------- APP FACTORY -------------------
 def create_app():
+    # Load .env file (works locally; Render uses env vars)
+    load_dotenv()
+
     app = Flask(__name__)
     CORS(app)
-
-    load_dotenv()
 
     # --- Configuration ---
     app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
     app.config['UPLOAD_FOLDER'] = 'uploads/'
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Database
+    # Database – use Render's DATABASE_URL or fallback to SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL',
-        'sqlite:///agritrue.db'          # fallback for local testing
+        'sqlite:///agritrue.db'
     )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Firebase (if used)
+    # Firebase API key (if needed)
     app.config['FIREBASE_API_KEY'] = os.environ.get('FIREBASE_API_KEY', '')
 
     # ------------------- EXTENSIONS -------------------
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # ------------------- LOGIN -------------------
+    # ------------------- LOGIN MANAGER -------------------
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
@@ -70,7 +72,7 @@ def create_app():
     def load_user(user_id):
         return User.query.get(user_id)
 
-    # ------------------- FIREBASE INITIALIZATION -------------------
+    # ------------------- FIREBASE INIT -------------------
     if not firebase_admin._apps:
         try:
             cred = credentials.Certificate("serviceAccountKey.json")
@@ -79,8 +81,11 @@ def create_app():
         except Exception as e:
             print(f"Error initializing Firebase Admin SDK: {e}")
 
+    # Store Firestore client globally (or attach to app)
     global firestore_db
     firestore_db = firestore.client()
+
+    # ------------------- (Your routes go here) -------------------
 
     return app
 
