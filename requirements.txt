@@ -26,6 +26,7 @@ Pillow>=11.2.1
 # Audio/AI
 SpeechRecognition==3.10.1
 
-
+Flask-Migrate==4.0.5
+firebase-admin==6.5.0
 # Optional: if using OpenCV for image processing
 opencv-python==4.9.0.80
