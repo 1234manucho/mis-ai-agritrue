@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timedelta
 
 import docx
-from PyPDF2 import PdfReader
+
 from PIL import Image
 
 # ------------------- LOCAL IMPORTS -------------------
