@@ -7,7 +7,7 @@
 
     <title>AgriTrue | Empowering Informed Agriculture</title>
     <meta name="title" content="AgriTrue | Empowering Informed Agriculture">
-    <meta name="description" content="AgriTrue gives farmers access to AI-assisted crop and livestock screening, verified community knowledge, land insights, USSD support and practical agricultural guidance.">
+    <meta name="description" content="Founded in 2025, AgriTrue gives farmers access to AI-assisted crop and livestock screening, verified community knowledge, land insights, USSD support and practical agricultural guidance.">
     <meta name="keywords" content="AgriTrue, agriculture Kenya, crop diagnosis, livestock guidance, farm technology, soil information, USSD farming, agricultural AI">
     <meta name="author" content="AgriTrue">
 
@@ -820,20 +820,31 @@
     <main>
         <!-- Hero -->
         <header class="hero relative overflow-hidden text-white">
-            <div id="heroSlideshow" class="absolute inset-0">
-                <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" alt="Farmer working in a field" class="hero-slide active">
-                <img src="{{ url_for('static', filename='images/milk.jpg') }}" alt="Dairy farming" class="hero-slide">
-                <img src="{{ url_for('static', filename='images/bee1.jpg') }}" alt="Beekeeping" class="hero-slide">
-                <img src="{{ url_for('static', filename='images/pigs.jpg') }}" alt="Livestock farming" class="hero-slide">
+            <div id="heroSlideshow" class="absolute inset-0" aria-label="Moving crop and livestock images">
+                <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" alt="Farmer working in a productive crop field" class="hero-slide active">
+                <img src="{{ url_for('static', filename='images/milk.jpg') }}" alt="Modern dairy farming and milk production" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/final1.jpg') }}" alt="Healthy crops growing on a managed farm" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/pic3.jpeg') }}" alt="Farmer inspecting crops in the field" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/bee1.jpg') }}" alt="Beekeeping and pollinator-friendly agriculture" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/final5.jpg') }}" alt="Agricultural production and farm innovation" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/vital1.jpg') }}" alt="Healthy livestock under professional farm care" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/final4.jpg') }}" alt="Sustainable crop production and farm management" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/pigs.jpg') }}" alt="Professional pig and livestock farming" class="hero-slide">
             </div>
             <div class="hero-overlay absolute inset-0"></div>
             <div class="hero-shine" aria-hidden="true"></div>
 
             <div class="relative z-[3] mx-auto grid min-h-[688px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
                 <div class="max-w-3xl">
-                    <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
-                        <i class="fa-solid fa-leaf"></i>
-                        Practical technology for informed farming
+                    <div class="flex flex-wrap gap-2">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
+                            <i class="fa-solid fa-leaf"></i>
+                            Practical technology for informed farming
+                        </div>
+                        <div class="inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-400/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            Founded in 2025
+                        </div>
                     </div>
 
                     <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.08] sm:text-5xl md:text-6xl lg:text-7xl">
@@ -921,17 +932,16 @@
                 </div>
             </div>
 
-            <div class="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2" aria-label="Hero slideshow controls">
-                <button class="hero-dot h-2.5 w-8 rounded-full bg-white" data-slide="0" aria-label="Show slide 1"></button>
-                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="1" aria-label="Show slide 2"></button>
-                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="2" aria-label="Show slide 3"></button>
-                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="3" aria-label="Show slide 4"></button>
-            </div>
+            <div id="heroDots" class="absolute bottom-6 left-1/2 z-20 flex max-w-[92vw] -translate-x-1/2 flex-wrap justify-center gap-2" aria-label="Hero slideshow controls"></div>
         </header>
 
         <!-- Platform strip -->
         <section class="border-b border-green-100 bg-white">
-            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-green-100 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-green-100 px-4 sm:px-6 md:grid-cols-5 lg:px-8">
+                <div class="bg-white px-4 py-6 text-center">
+                    <i class="fa-solid fa-calendar-check text-xl text-green-600"></i>
+                    <div class="mt-2 text-sm font-extrabold text-green-950">Founded in 2025</div>
+                </div>
                 <div class="bg-white px-4 py-6 text-center">
                     <i class="fa-solid fa-shield-heart text-xl text-green-600"></i>
                     <div class="mt-2 text-sm font-extrabold text-green-950">Trust-focused guidance</div>
@@ -944,7 +954,7 @@
                     <i class="fa-solid fa-mobile-screen text-xl text-green-600"></i>
                     <div class="mt-2 text-sm font-extrabold text-green-950">Mobile-first access</div>
                 </div>
-                <div class="bg-white px-4 py-6 text-center">
+                <div class="col-span-2 bg-white px-4 py-6 text-center md:col-span-1">
                     <i class="fa-solid fa-users text-xl text-green-600"></i>
                     <div class="mt-2 text-sm font-extrabold text-green-950">Community knowledge</div>
                 </div>
@@ -1110,10 +1120,10 @@
                     <span class="section-kicker">Our story</span>
                     <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Technology should make trusted agricultural information easier to reach.</h2>
                     <p class="mt-6 text-base leading-7 text-slate-600">
-                        AgriTrue grew from a simple belief: farmers should not have to choose between inaccessible expert information and unverified advice. The platform combines practical digital tools with community participation to support more informed decisions.
+                        AgriTrue was formed in <strong class="font-extrabold text-green-800">2025</strong> from a simple belief: farmers should not have to choose between inaccessible expert information and unverified advice. The platform combines practical digital tools with community participation to support more informed decisions.
                     </p>
                     <p class="mt-4 text-base leading-7 text-slate-600">
-                        From visual screening and land information to USSD, voice assistance and community notes, AgriTrue is designed to remain useful across different devices, connectivity levels and farming contexts.
+                        Its journey began through agricultural innovation work in 2025, with a focus on combating fake inputs, misleading claims and unreliable farm information. From visual screening and land information to USSD, voice assistance and community notes, AgriTrue is designed to remain useful across different devices, connectivity levels and farming contexts.
                     </p>
 
                     <div class="mt-8 grid gap-4 sm:grid-cols-2">
@@ -1338,7 +1348,7 @@
 
         <div class="border-t border-white/10 px-4 py-6">
             <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-xs text-white/40 sm:flex-row sm:text-left">
-                <p>© <span >2025</span> AgriTrue. All rights reserved.</p>
+                <p>© <span id="currentYear"></span> AgriTrue. All rights reserved.</p>
                 <p>AI-assisted information should be verified for critical farm decisions.</p>
             </div>
         </div>
@@ -1513,18 +1523,41 @@
                 }
             });
 
-            // Hero slideshow
+            // Moving crop and livestock hero slideshow
             const slides = Array.from(document.querySelectorAll(".hero-slide"));
-            const dots = Array.from(document.querySelectorAll(".hero-dot"));
+            const heroDots = byId("heroDots");
+            let dots = [];
             let activeSlide = 0;
             let slideTimer = null;
+
+            function createHeroDots() {
+                if (!heroDots) return;
+
+                heroDots.innerHTML = "";
+                dots = slides.map((slide, index) => {
+                    const dot = document.createElement("button");
+                    dot.type = "button";
+                    dot.className = "hero-dot h-2.5 w-2.5 rounded-full bg-white/45 transition-all duration-300";
+                    dot.dataset.slide = String(index);
+                    dot.setAttribute("aria-label", `Show agricultural image ${index + 1}`);
+                    dot.addEventListener("click", () => {
+                        showSlide(index);
+                        startSlideshow();
+                    });
+                    heroDots.appendChild(dot);
+                    return dot;
+                });
+            }
 
             function showSlide(index) {
                 if (!slides.length) return;
 
                 activeSlide = (index + slides.length) % slides.length;
+
                 slides.forEach((slide, slideIndex) => {
-                    slide.classList.toggle("active", slideIndex === activeSlide);
+                    const isActive = slideIndex === activeSlide;
+                    slide.classList.toggle("active", isActive);
+                    slide.setAttribute("aria-hidden", String(!isActive));
                 });
 
                 dots.forEach((dot, dotIndex) => {
@@ -1533,6 +1566,7 @@
                     dot.classList.toggle("w-2.5", !active);
                     dot.classList.toggle("bg-white", active);
                     dot.classList.toggle("bg-white/45", !active);
+                    dot.setAttribute("aria-current", active ? "true" : "false");
                 });
             }
 
@@ -1540,18 +1574,20 @@
                 window.clearInterval(slideTimer);
                 slideTimer = window.setInterval(() => {
                     showSlide(activeSlide + 1);
-                }, 6000);
+                }, 5500);
             }
 
-            dots.forEach((dot) => {
-                dot.addEventListener("click", () => {
-                    showSlide(Number(dot.dataset.slide));
-                    startSlideshow();
-                });
-            });
-
+            createHeroDots();
             showSlide(0);
             startSlideshow();
+
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden) {
+                    window.clearInterval(slideTimer);
+                } else {
+                    startSlideshow();
+                }
+            });
 
             // Scroll reveal
             const revealItems = document.querySelectorAll(".reveal");
