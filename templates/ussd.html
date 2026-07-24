@@ -232,7 +232,7 @@
                     <div class="invisible absolute left-0 top-full w-56 translate-y-2 rounded-2xl border border-slate-100 bg-white p-2 opacity-0 shadow-2xl transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                         <a href="{{ url_for('community_notes') }}" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">Community Notes</a>
                         <a href="{{ url_for('chatbot_page') }}" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">AI Chatbot</a>
-                        <a href="{{ url_for('ml_analyzer') }}" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">ML Analyzer</a>
+                        <a href="{{ url_for('analyzer.ml_analyzer') }}" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">ML Analyzer</a>
                         <a href="{{ url_for('ussd') }}" class="block rounded-xl bg-green-50 px-4 py-3 text-sm font-bold text-green-800">USSD Service</a>
                     </div>
                 </div>
@@ -292,7 +292,7 @@
             <a href="{{ url_for('know_your_land') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">Know Your Land</a>
             <a href="{{ url_for('community_notes') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">Community Notes</a>
             <a href="{{ url_for('chatbot_page') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">AI Chatbot</a>
-            <a href="{{ url_for('ml_analyzer') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">ML Analyzer</a>
+            <a href="{{ url_for('analyzer.ml_analyzer') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">ML Analyzer</a>
             <a href="{{ url_for('ussd') }}" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">USSD & Voice</a>
             <a href="{{ url_for('about') }}" class="block rounded-xl px-4 py-3 font-semibold text-green-900 hover:bg-green-100">About Us</a>
             <a href="{{ url_for('donate') }}" class="block rounded-xl bg-green-900 px-4 py-3 text-center font-bold text-white">Donate</a>
@@ -553,7 +553,7 @@
             <div>
                 <h3 class="font-extrabold">Farmer tools</h3>
                 <div class="mt-4 space-y-2 text-sm text-white/65">
-                    <a href="{{ url_for('ml_analyzer') }}" class="block hover:text-white">Smart Analyzer</a>
+                    <a href="{{ url_for('analyzer.ml_analyzer') }}" class="block hover:text-white">Smart Analyzer</a>
                     <a href="{{ url_for('know_your_land') }}" class="block hover:text-white">Know Your Land</a>
                     <a href="{{ url_for('community_notes') }}" class="block hover:text-white">Community Notes</a>
                 </div>
@@ -941,4 +941,3 @@
         });
     </script>
 </body>
-</html>
