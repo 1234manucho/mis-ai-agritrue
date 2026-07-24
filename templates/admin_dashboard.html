@@ -2,257 +2,1330 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - AgriTrue</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f6f8;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .sidebar {
-            min-height: 100vh;
-            background-color: #2d6a4f;
-            color: white;
-            padding: 20px;
-        }
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-            display: block;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            transition: 0.3s;
-        }
-        .sidebar a:hover {
-            background-color: #1b4332;
-        }
-        .sidebar h3 {
-            margin-bottom: 20px;
-        }
-        .content {
-            padding: 20px;
-            width: 100%;
-        }
-        table th, table td {
-            vertical-align: middle !important;
-        }
-        .card {
-            border-radius: 10px;
-        }
-        .table-hover tbody tr:hover {
-            background-color: #e6f2e6;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-delete:hover {
-            background-color: #b02a37;
-            color: white;
-        }
-        @media (max-width: 768px) {
-            .d-flex {
-                flex-direction: column;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#052e16">
+
+    <title>Admin Dashboard | AgriTrue</title>
+    <meta name="description" content="AgriTrue administrative dashboard for managing users, diagnostics, community notes and comments.">
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Manrope", "sans-serif"]
+                    },
+                    colors: {
+                        agritrue: {
+                            50: "#f0fdf4",
+                            100: "#dcfce7",
+                            200: "#bbf7d0",
+                            300: "#86efac",
+                            400: "#4ade80",
+                            500: "#22c55e",
+                            600: "#16a34a",
+                            700: "#15803d",
+                            800: "#166534",
+                            900: "#14532d",
+                            950: "#052e16"
+                        }
+                    },
+                    boxShadow: {
+                        soft: "0 24px 70px rgba(5, 46, 22, .12)",
+                        card: "0 14px 40px rgba(15, 23, 42, .08)",
+                        float: "0 28px 80px rgba(2, 44, 21, .28)"
+                    }
+                }
             }
-            .sidebar {
-                min-height: auto;
+        };
+    </script>
+
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --topbar-height: 74px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 8% 5%, rgba(74, 222, 128, .10), transparent 25rem),
+                radial-gradient(circle at 94% 92%, rgba(187, 247, 208, .18), transparent 28rem),
+                #f7faf8;
+        }
+
+        body.drawer-open {
+            overflow: hidden;
+        }
+
+        .admin-sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 50;
+            width: var(--sidebar-width);
+            overflow-y: auto;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(74, 222, 128, .16), transparent 18rem),
+                linear-gradient(180deg, #052e16 0%, #064e3b 52%, #052e16 100%);
+            color: white;
+            box-shadow: 18px 0 55px rgba(5, 46, 22, .18);
+        }
+
+        .admin-main {
+            min-height: 100vh;
+            margin-left: var(--sidebar-width);
+        }
+
+        .admin-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            min-height: var(--topbar-height);
+            border-bottom: 1px solid rgba(15, 118, 54, .10);
+            background: rgba(255, 255, 255, .90);
+            backdrop-filter: blur(18px);
+        }
+
+        .sidebar-link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            width: 100%;
+            border-radius: 1rem;
+            padding: .85rem 1rem;
+            color: rgba(255, 255, 255, .70);
+            font-size: .875rem;
+            font-weight: 700;
+            text-align: left;
+            transition: color .2s ease, background .2s ease, transform .2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, .09);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #052e16;
+            box-shadow: 0 14px 34px rgba(34, 197, 94, .25);
+        }
+
+        .sidebar-link.active::after {
+            content: "";
+            position: absolute;
+            right: -.9rem;
+            height: 2rem;
+            width: .25rem;
+            border-radius: 999px;
+            background: #86efac;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            min-width: 1.8rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .10);
+            padding: .18rem .55rem;
+            color: inherit;
+            font-size: .67rem;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .sidebar-link.active .sidebar-badge {
+            background: rgba(5, 46, 22, .12);
+        }
+
+        .mobile-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: none;
+            background: rgba(2, 25, 12, .62);
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-drawer-overlay.show {
+            display: block;
+        }
+
+        .mobile-drawer {
+            position: fixed;
+            inset: 0 auto 0 min(-92vw, -390px);
+            z-index: 70;
+            width: min(90vw, 340px);
+            overflow-y: auto;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(74, 222, 128, .16), transparent 18rem),
+                linear-gradient(180deg, #052e16 0%, #064e3b 52%, #052e16 100%);
+            color: white;
+            box-shadow: 24px 0 70px rgba(5, 46, 22, .30);
+            transition: left .3s ease;
+        }
+
+        .mobile-drawer.show {
+            left: 0;
+        }
+
+        .dashboard-section {
+            display: none;
+            animation: sectionEnter .32s ease both;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        @keyframes sectionEnter {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform .28s ease, box-shadow .28s ease;
+        }
+
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            right: -2.5rem;
+            bottom: -3.4rem;
+            height: 9rem;
+            width: 9rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .10);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 22px 60px rgba(5, 46, 22, .13);
+        }
+
+        .table-shell {
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.5rem;
+            background: white;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, .06);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 860px;
+        }
+
+        .admin-table thead {
+            background: #f8fafc;
+        }
+
+        .admin-table th {
+            padding: .95rem 1rem;
+            color: #475569;
+            font-size: .7rem;
+            font-weight: 800;
+            letter-spacing: .09em;
+            text-align: left;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .admin-table td {
+            border-top: 1px solid #f1f5f9;
+            padding: 1rem;
+            color: #475569;
+            font-size: .84rem;
+            vertical-align: middle;
+        }
+
+        .admin-table tbody tr {
+            transition: background .2s ease;
+        }
+
+        .admin-table tbody tr:hover {
+            background: #f8fdf9;
+        }
+
+        .admin-table tbody tr.table-row-hidden {
+            display: none;
+        }
+
+        .line-clamp-2-custom {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            border-radius: 999px;
+            padding: .35rem .7rem;
+            font-size: .68rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .table-empty {
+            display: none;
+        }
+
+        .table-empty.show {
+            display: block;
+        }
+
+        .confirm-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(2, 25, 12, .66);
+            backdrop-filter: blur(7px);
+        }
+
+        .confirm-modal.show {
+            display: flex;
+        }
+
+        .confirm-card {
+            animation: modalEnter .28s ease both;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: translateY(18px) scale(.97);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            right: 1rem;
+            top: 1rem;
+            z-index: 110;
+            max-width: min(420px, calc(100vw - 2rem));
+            border-radius: 1rem;
+            padding: 1rem 1.1rem;
+            color: white;
+            font-size: .85rem;
+            font-weight: 700;
+            box-shadow: 0 20px 55px rgba(15, 23, 42, .25);
+            animation: toastEnter .28s ease both;
+        }
+
+        @keyframes toastEnter {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .admin-table {
+                min-width: 760px;
+            }
+
+            .admin-topbar {
+                min-height: 68px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
             }
         }
     </style>
 </head>
-<body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar flex-shrink-0">
-            <h3>Admin Panel</h3>
-            <hr>
-            <a href="#dashboard" onclick="showSection('dashboard')">Dashboard</a>
-            <a href="#users" onclick="showSection('users')">Users</a>
-            <a href="#diagnostics" onclick="showSection('diagnostics')">Diagnostics</a>
-            <a href="#notes" onclick="showSection('notes')">Community Notes</a>
-            <a href="{{ url_for('logout') }}">Logout</a>
+
+<body class="font-sans text-slate-800 antialiased">
+    <!-- Desktop sidebar -->
+    <aside class="admin-sidebar hidden lg:flex lg:flex-col">
+        <div class="border-b border-white/10 p-6">
+            <a href="/" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-12 w-12 rounded-full border-2 border-white/60 object-cover shadow-lg">
+                <div>
+                    <div class="font-display text-xl font-extrabold">AgriTrue</div>
+                    <div class="mt-1 text-[10px] font-extrabold uppercase tracking-[.2em] text-green-300">Administration</div>
+                </div>
+            </a>
         </div>
 
-        <!-- Content -->
-        <div class="content flex-grow-1">
-            <!-- Dashboard -->
-            <div id="dashboard" class="admin-section">
-                <h2>Overview</h2>
-                <div class="row mt-4 g-3">
-                    <div class="col-md-3">
-                        <div class="card p-3 bg-success text-white text-center">
-                            <h5>Total Users</h5>
-                            <h3>{{ total_users }}</h3>
-                        </div>
+        <div class="flex-1 p-4">
+            <div class="mb-3 px-3 text-[10px] font-extrabold uppercase tracking-[.2em] text-white/35">Workspace</div>
+
+            <nav class="space-y-2" aria-label="Admin dashboard sections">
+                <button type="button" class="sidebar-link active" data-section-target="overview">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Overview</span>
+                </button>
+
+                <button type="button" class="sidebar-link" data-section-target="users">
+                    <i class="fa-solid fa-users w-5 text-center"></i>
+                    <span>Users</span>
+                    <span class="sidebar-badge">{{ total_users }}</span>
+                </button>
+
+                <button type="button" class="sidebar-link" data-section-target="diagnostics">
+                    <i class="fa-solid fa-microscope w-5 text-center"></i>
+                    <span>Diagnostics</span>
+                    <span class="sidebar-badge">{{ total_diagnostics }}</span>
+                </button>
+
+                <button type="button" class="sidebar-link" data-section-target="notes">
+                    <i class="fa-solid fa-note-sticky w-5 text-center"></i>
+                    <span>Community Notes</span>
+                    <span class="sidebar-badge">{{ total_notes }}</span>
+                </button>
+
+                <button type="button" class="sidebar-link" data-section-target="comments">
+                    <i class="fa-solid fa-comments w-5 text-center"></i>
+                    <span>Comments</span>
+                    <span class="sidebar-badge">{{ total_comments }}</span>
+                </button>
+            </nav>
+
+            <div class="mb-3 mt-8 px-3 text-[10px] font-extrabold uppercase tracking-[.2em] text-white/35">Platform</div>
+
+            <nav class="space-y-2">
+                <a href="/" class="sidebar-link">
+                    <i class="fa-solid fa-house w-5 text-center"></i>
+                    <span>View Website</span>
+                </a>
+                <a href="/community-notes" class="sidebar-link">
+                    <i class="fa-solid fa-people-group w-5 text-center"></i>
+                    <span>Community Page</span>
+                </a>
+                <a href="/ml-analyzer" class="sidebar-link">
+                    <i class="fa-solid fa-camera-retro w-5 text-center"></i>
+                    <span>Smart Analyzer</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="border-t border-white/10 p-4">
+            <div class="mb-3 rounded-2xl bg-white/7 p-4">
+                <div class="flex items-center gap-3">
+                    <div class="grid h-10 w-10 place-items-center rounded-xl bg-green-400 font-extrabold text-green-950">
+                        {{ (current_user.username or current_user.email or 'A')[:1]|upper }}
                     </div>
-                    <div class="col-md-3">
-                        <div class="card p-3 bg-primary text-white text-center">
-                            <h5>Total Diagnostics</h5>
-                            <h3>{{ total_diagnostics }}</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card p-3 bg-warning text-dark text-center">
-                            <h5>Community Notes</h5>
-                            <h3>{{ total_notes }}</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card p-3 bg-danger text-white text-center">
-                            <h5>Comments</h5>
-                            <h3>{{ total_comments }}</h3>
-                        </div>
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-extrabold">{{ current_user.username or 'Administrator' }}</div>
+                        <div class="truncate text-[11px] text-white/45">{{ current_user.email }}</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Users Table -->
-            <div id="users" class="admin-section" style="display:none;">
-                <h2>All Users</h2>
-                <table class="table table-striped table-hover mt-3">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Full Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Admin</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <td>{{ user.fullname }}</td>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.phone or '-' }}</td>
-                            <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
-                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-delete btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <a href="{{ url_for('logout') }}" class="flex items-center justify-center rounded-2xl border border-red-300/20 bg-red-500/10 px-4 py-3 text-sm font-extrabold text-red-200 transition hover:bg-red-500 hover:text-white">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile drawer -->
+    <div id="mobileDrawerOverlay" class="mobile-drawer-overlay lg:hidden"></div>
+    <aside id="mobileDrawer" class="mobile-drawer p-5 lg:hidden" aria-hidden="true">
+        <div class="flex items-center justify-between border-b border-white/10 pb-5">
+            <a href="/" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full border-2 border-white/50 object-cover">
+                <div>
+                    <div class="font-display text-lg font-extrabold">AgriTrue</div>
+                    <div class="text-[10px] font-bold uppercase tracking-[.18em] text-green-300">Admin Panel</div>
+                </div>
+            </a>
+            <button id="closeMobileDrawer" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-xl text-white" aria-label="Close admin menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="mt-6 space-y-2">
+            <button type="button" class="sidebar-link active" data-section-target="overview">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span>Overview</span>
+            </button>
+            <button type="button" class="sidebar-link" data-section-target="users">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                <span>Users</span>
+                <span class="sidebar-badge">{{ total_users }}</span>
+            </button>
+            <button type="button" class="sidebar-link" data-section-target="diagnostics">
+                <i class="fa-solid fa-microscope w-5 text-center"></i>
+                <span>Diagnostics</span>
+                <span class="sidebar-badge">{{ total_diagnostics }}</span>
+            </button>
+            <button type="button" class="sidebar-link" data-section-target="notes">
+                <i class="fa-solid fa-note-sticky w-5 text-center"></i>
+                <span>Community Notes</span>
+                <span class="sidebar-badge">{{ total_notes }}</span>
+            </button>
+            <button type="button" class="sidebar-link" data-section-target="comments">
+                <i class="fa-solid fa-comments w-5 text-center"></i>
+                <span>Comments</span>
+                <span class="sidebar-badge">{{ total_comments }}</span>
+            </button>
+        </nav>
+
+        <div class="mt-7 border-t border-white/10 pt-5">
+            <a href="/" class="sidebar-link">
+                <i class="fa-solid fa-house w-5 text-center"></i>
+                <span>View Website</span>
+            </a>
+            <a href="/community-notes" class="sidebar-link">
+                <i class="fa-solid fa-people-group w-5 text-center"></i>
+                <span>Community Page</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="mt-4 flex items-center justify-center rounded-2xl border border-red-300/20 bg-red-500/10 px-4 py-3 text-sm font-extrabold text-red-200">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <!-- Top bar -->
+        <header class="admin-topbar flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+            <div class="flex min-w-0 items-center gap-3">
+                <button id="openMobileDrawer" type="button" class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-950 text-lg text-white shadow lg:hidden" aria-label="Open admin menu" aria-controls="mobileDrawer" aria-expanded="false">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="min-w-0">
+                    <div class="text-[10px] font-extrabold uppercase tracking-[.18em] text-green-700">AgriTrue Administration</div>
+                    <h1 id="topbarTitle" class="truncate font-display text-xl font-extrabold text-green-950 sm:text-2xl">Dashboard Overview</h1>
+                </div>
             </div>
 
-            <!-- Diagnostics Table -->
-            <div id="diagnostics" class="admin-section" style="display:none;">
-                <h2>Diagnostic Results</h2>
-                <table class="table table-striped table-hover mt-3">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>User</th>
-                            <th>Diagnosis</th>
-                            <th>Type</th>
-                            <th>Confidence</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for diag in diagnostics %}
-                        <tr>
-                            <td>{{ diag.user.username }}</td>
-                            <td>{{ diag.diagnosis_name }}</td>
-                            <td>{{ diag.diagnosis_type }}</td>
-                            <td>{{ diag.confidence_score or '-' }}</td>
-                            <td>{{ diag.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                <form action="{{ url_for('delete_diagnostic_admin', diagnostic_id=diag.id) }}" method="POST" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-delete btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
+            <div class="flex items-center gap-2">
+                <a href="/" class="hidden rounded-xl border border-green-200 bg-white px-4 py-2.5 text-sm font-extrabold text-green-800 transition hover:bg-green-50 sm:inline-flex">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>Open Site
+                </a>
+
+                <div class="grid h-11 w-11 place-items-center rounded-xl bg-green-100 font-extrabold text-green-800">
+                    {{ (current_user.username or current_user.email or 'A')[:1]|upper }}
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 sm:p-6 lg:p-8">
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-3">
+                        {% for category, message in messages %}
+                            <div class="rounded-2xl border px-5 py-4 text-sm font-bold shadow-card
+                                {% if category in ['success'] %}
+                                    border-green-200 bg-green-50 text-green-800
+                                {% elif category in ['danger', 'error'] %}
+                                    border-red-200 bg-red-50 text-red-700
+                                {% elif category == 'warning' %}
+                                    border-amber-200 bg-amber-50 text-amber-800
+                                {% else %}
+                                    border-blue-200 bg-blue-50 text-blue-700
+                                {% endif %}
+                            ">
+                                <i class="fa-solid
+                                    {% if category in ['success'] %}fa-circle-check
+                                    {% elif category in ['danger', 'error'] %}fa-circle-exclamation
+                                    {% elif category == 'warning' %}fa-triangle-exclamation
+                                    {% else %}fa-circle-info{% endif %}
+                                    mr-2
+                                "></i>
+                                {{ message }}
+                            </div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Overview -->
+            <section id="section-overview" class="dashboard-section active" data-section-name="Dashboard Overview">
+                <div class="mb-7 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-700">Platform health</div>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Administrative overview</h2>
+                        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Manage AgriTrue users, agricultural diagnostics, community notes and discussions from one secure workspace.</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" class="rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-extrabold text-green-800 shadow-sm hover:bg-green-50" data-refresh-page>
+                            <i class="fa-solid fa-rotate mr-2"></i>Refresh Data
+                        </button>
+                        <a href="/community-notes" class="rounded-xl bg-green-700 px-4 py-3 text-sm font-extrabold text-white shadow hover:bg-green-800">
+                            <i class="fa-solid fa-people-group mr-2"></i>Community Notes
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <article class="stat-card rounded-3xl bg-gradient-to-br from-green-950 to-green-700 p-6 text-white shadow-card">
+                        <div class="relative z-[1] flex items-start justify-between">
+                            <div>
+                                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-200">Registered</div>
+                                <div class="mt-3 font-display text-4xl font-extrabold">{{ total_users }}</div>
+                                <div class="mt-2 text-sm text-white/65">Total users</div>
+                            </div>
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/12 text-xl">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card rounded-3xl bg-gradient-to-br from-blue-700 to-cyan-600 p-6 text-white shadow-card">
+                        <div class="relative z-[1] flex items-start justify-between">
+                            <div>
+                                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-blue-100">Recorded</div>
+                                <div class="mt-3 font-display text-4xl font-extrabold">{{ total_diagnostics }}</div>
+                                <div class="mt-2 text-sm text-white/70">Diagnostics</div>
+                            </div>
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/12 text-xl">
+                                <i class="fa-solid fa-microscope"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card rounded-3xl bg-gradient-to-br from-amber-500 to-orange-500 p-6 text-white shadow-card">
+                        <div class="relative z-[1] flex items-start justify-between">
+                            <div>
+                                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-amber-50">Published</div>
+                                <div class="mt-3 font-display text-4xl font-extrabold">{{ total_notes }}</div>
+                                <div class="mt-2 text-sm text-white/75">Community notes</div>
+                            </div>
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/12 text-xl">
+                                <i class="fa-solid fa-note-sticky"></i>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="stat-card rounded-3xl bg-gradient-to-br from-purple-700 to-fuchsia-600 p-6 text-white shadow-card">
+                        <div class="relative z-[1] flex items-start justify-between">
+                            <div>
+                                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-purple-100">Discussion</div>
+                                <div class="mt-3 font-display text-4xl font-extrabold">{{ total_comments }}</div>
+                                <div class="mt-2 text-sm text-white/70">Comments</div>
+                            </div>
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/12 text-xl">
+                                <i class="fa-solid fa-comments"></i>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="mt-7 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
+                    <article class="rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Quick management</div>
+                                <h3 class="mt-2 text-xl font-extrabold text-green-950">Open a management section</h3>
+                            </div>
+                            <div class="grid h-11 w-11 place-items-center rounded-xl bg-green-100 text-green-700">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                            <button type="button" data-section-target="users" class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-green-300 hover:bg-green-50">
+                                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-100 text-green-700"><i class="fa-solid fa-users"></i></div>
+                                <div>
+                                    <div class="font-extrabold text-green-950">Manage users</div>
+                                    <div class="mt-1 text-xs text-slate-500">{{ total_users }} account{% if total_users != 1 %}s{% endif %}</div>
+                                </div>
+                            </button>
+
+                            <button type="button" data-section-target="diagnostics" class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50">
+                                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-blue-100 text-blue-700"><i class="fa-solid fa-microscope"></i></div>
+                                <div>
+                                    <div class="font-extrabold text-slate-900">Review diagnostics</div>
+                                    <div class="mt-1 text-xs text-slate-500">{{ total_diagnostics }} record{% if total_diagnostics != 1 %}s{% endif %}</div>
+                                </div>
+                            </button>
+
+                            <button type="button" data-section-target="notes" class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50">
+                                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700"><i class="fa-solid fa-note-sticky"></i></div>
+                                <div>
+                                    <div class="font-extrabold text-slate-900">Review notes</div>
+                                    <div class="mt-1 text-xs text-slate-500">{{ total_notes }} note{% if total_notes != 1 %}s{% endif %}</div>
+                                </div>
+                            </button>
+
+                            <button type="button" data-section-target="comments" class="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-purple-300 hover:bg-purple-50">
+                                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-purple-100 text-purple-700"><i class="fa-solid fa-comments"></i></div>
+                                <div>
+                                    <div class="font-extrabold text-slate-900">Moderate comments</div>
+                                    <div class="mt-1 text-xs text-slate-500">{{ total_comments }} comment{% if total_comments != 1 %}s{% endif %}</div>
+                                </div>
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="rounded-3xl border border-green-100 bg-green-950 p-6 text-white shadow-card">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl text-green-950">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="mt-5 text-xl font-extrabold">Administrator safety</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Deletion actions are permanent. Review account, diagnostic, note or comment details carefully before confirming removal.</p>
+                        <div class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-5 text-white/58">
+                            You cannot delete your own administrator account. The backend protects this action.
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Users -->
+            <section id="section-users" class="dashboard-section" data-section-name="User Management">
+                <div class="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-700">Accounts</div>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950">User management</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review registered accounts and remove users when necessary.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <div class="relative min-w-[250px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="search" class="table-search w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100" data-table="usersTable" placeholder="Search users...">
+                        </div>
+                        <button type="button" class="export-table rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-extrabold text-green-800 hover:bg-green-50" data-table="usersTable" data-filename="agritrue-users.csv">
+                            <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-shell">
+                    <div class="overflow-x-auto">
+                        <table id="usersTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr data-search-row>
+                                        <td>
+                                            <div class="flex items-center gap-3">
+                                                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-green-100 font-extrabold text-green-800">
+                                                    {{ (user.fullname or user.full_name or user.username or user.email or 'U')[:1]|upper }}
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="max-w-[220px] truncate font-extrabold text-slate-900">
+                                                        {{ user.fullname or user.full_name or user.username or 'Unnamed user' }}
+                                                    </div>
+                                                    <div class="mt-1 text-[11px] text-slate-400">ID: {{ user.id }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ user.username or '—' }}</td>
+                                        <td>
+                                            <a href="mailto:{{ user.email }}" class="font-semibold text-blue-700 hover:underline">{{ user.email }}</a>
+                                        </td>
+                                        <td>{{ user.phone or '—' }}</td>
+                                        <td>
+                                            {% if user.is_admin %}
+                                                <span class="status-badge bg-amber-100 text-amber-800"><i class="fa-solid fa-shield-halved"></i>Administrator</span>
+                                            {% else %}
+                                                <span class="status-badge bg-slate-100 text-slate-600"><i class="fa-regular fa-user"></i>User</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.created_at %}
+                                                {{ user.created_at.strftime('%d %b %Y') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="flex justify-end">
+                                                {% if user.id == current_user.id %}
+                                                    <span class="status-badge bg-green-100 text-green-800"><i class="fa-solid fa-lock"></i>Current admin</span>
+                                                {% else %}
+                                                    <form
+                                                        action="{{ url_for('delete_user_admin', user_id=user.id) }}"
+                                                        method="POST"
+                                                        data-delete-form
+                                                        data-delete-title="Delete user account?"
+                                                        data-delete-message="This will permanently remove {{ user.username or user.email or 'this user' }} and may affect related records."
+                                                    >
+                                                        <button type="submit" class="inline-flex items-center rounded-xl bg-red-50 px-3.5 py-2 text-xs font-extrabold text-red-700 transition hover:bg-red-600 hover:text-white">
+                                                            <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-empty p-10 text-center" data-empty-for="usersTable">
+                        <i class="fa-solid fa-user-slash text-3xl text-slate-300"></i>
+                        <h3 class="mt-4 font-extrabold text-slate-800">No users found</h3>
+                        <p class="mt-2 text-sm text-slate-500">Try another search term.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Diagnostics -->
+            <section id="section-diagnostics" class="dashboard-section" data-section-name="Diagnostic Records">
+                <div class="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-blue-700">Smart Analyzer</div>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950">Diagnostic records</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review saved crop, livestock and agricultural analysis records.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <div class="relative min-w-[250px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="search" class="table-search w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100" data-table="diagnosticsTable" placeholder="Search diagnostics...">
+                        </div>
+                        <button type="button" class="export-table rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-extrabold text-green-800 hover:bg-green-50" data-table="diagnosticsTable" data-filename="agritrue-diagnostics.csv">
+                            <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-shell">
+                    <div class="overflow-x-auto">
+                        <table id="diagnosticsTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Diagnosis</th>
+                                    <th>Type</th>
+                                    <th>Confidence</th>
+                                    <th>Created</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for diag in diagnostics %}
+                                    <tr data-search-row>
+                                        <td>
+                                            {% if diag.user is defined and diag.user %}
+                                                <div class="font-extrabold text-slate-900">{{ diag.user.username or diag.user.email }}</div>
+                                            {% else %}
+                                                <span class="text-slate-500">User #{{ diag.user_id or '—' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="max-w-[300px]">
+                                                <div class="font-extrabold text-slate-900">{{ diag.diagnosis_name or 'Unspecified diagnosis' }}</div>
+                                                {% if diag.cause is defined and diag.cause %}
+                                                    <div class="mt-1 line-clamp-2-custom text-xs leading-5 text-slate-400">{{ diag.cause }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge bg-blue-50 text-blue-700">
+                                                <i class="fa-solid fa-tag"></i>{{ diag.diagnosis_type or 'Unknown' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if diag.confidence_score is not none %}
+                                                <span class="font-extrabold text-green-700">{{ diag.confidence_score }}</span>
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if diag.created_at %}
+                                                {{ diag.created_at.strftime('%d %b %Y') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="flex justify-end">
+                                                <form
+                                                    action="{{ url_for('delete_diagnostic_admin', diagnostic_id=diag.id) }}"
+                                                    method="POST"
+                                                    data-delete-form
+                                                    data-delete-title="Delete diagnostic record?"
+                                                    data-delete-message="This diagnostic result will be permanently removed from AgriTrue."
+                                                >
+                                                    <button type="submit" class="inline-flex items-center rounded-xl bg-red-50 px-3.5 py-2 text-xs font-extrabold text-red-700 transition hover:bg-red-600 hover:text-white">
+                                                        <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-empty p-10 text-center" data-empty-for="diagnosticsTable">
+                        <i class="fa-solid fa-microscope text-3xl text-slate-300"></i>
+                        <h3 class="mt-4 font-extrabold text-slate-800">No diagnostics found</h3>
+                        <p class="mt-2 text-sm text-slate-500">Try another search term.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes -->
+            <section id="section-notes" class="dashboard-section" data-section-name="Community Notes">
+                <div class="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-amber-700">Community moderation</div>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950">Community notes</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review farmer observations, verification status and community engagement.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <div class="relative min-w-[250px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="search" class="table-search w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100" data-table="notesTable" placeholder="Search notes...">
+                        </div>
+                        <button type="button" class="export-table rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-extrabold text-green-800 hover:bg-green-50" data-table="notesTable" data-filename="agritrue-community-notes.csv">
+                            <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-shell">
+                    <div class="overflow-x-auto">
+                        <table id="notesTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Note</th>
+                                    <th>Tags</th>
+                                    <th>Status</th>
+                                    <th>Upvotes</th>
+                                    <th>Created</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for note in notes %}
+                                    {% set note_text = note.note if note.note is defined and note.note else note.content if note.content is defined else '' %}
+                                    {% set note_date = note.created_at if note.created_at is defined and note.created_at else note.timestamp if note.timestamp is defined else none %}
+                                    <tr data-search-row>
+                                        <td>
+                                            {% if note.author is defined and note.author %}
+                                                <div class="font-extrabold text-slate-900">{{ note.author.username or note.author.email }}</div>
+                                            {% elif note.user is defined and note.user %}
+                                                <div class="font-extrabold text-slate-900">{{ note.user.username or note.user.email }}</div>
+                                            {% else %}
+                                                <span class="text-slate-500">User #{{ note.user_id or '—' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="max-w-[360px] line-clamp-2-custom font-medium leading-6 text-slate-700">{{ note_text or 'Empty note' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="max-w-[180px] truncate text-xs font-semibold text-green-700">{{ note.tags or 'No tags' }}</div>
+                                        </td>
+                                        <td>
+                                            {% if note.verified %}
+                                                <span class="status-badge bg-green-100 text-green-800"><i class="fa-solid fa-circle-check"></i>Verified</span>
+                                            {% else %}
+                                                <span class="status-badge bg-amber-100 text-amber-800"><i class="fa-solid fa-clock"></i>Needs review</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="font-extrabold text-slate-700">{{ note.upvotes or 0 }}</span>
+                                        </td>
+                                        <td>
+                                            {% if note_date %}
+                                                {{ note_date.strftime('%d %b %Y') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="flex justify-end">
+                                                <form
+                                                    action="{{ url_for('delete_note_admin', note_id=note.id) }}"
+                                                    method="POST"
+                                                    data-delete-form
+                                                    data-delete-title="Delete community note?"
+                                                    data-delete-message="This note and any dependent discussion data may be permanently removed."
+                                                >
+                                                    <button type="submit" class="inline-flex items-center rounded-xl bg-red-50 px-3.5 py-2 text-xs font-extrabold text-red-700 transition hover:bg-red-600 hover:text-white">
+                                                        <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-empty p-10 text-center" data-empty-for="notesTable">
+                        <i class="fa-solid fa-note-sticky text-3xl text-slate-300"></i>
+                        <h3 class="mt-4 font-extrabold text-slate-800">No notes found</h3>
+                        <p class="mt-2 text-sm text-slate-500">Try another search term.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comments -->
+            <section id="section-comments" class="dashboard-section" data-section-name="Comment Moderation">
+                <div class="mb-6 flex flex-col justify-between gap-4 xl:flex-row xl:items-end">
+                    <div>
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-purple-700">Community discussion</div>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950">Comment moderation</h2>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review and remove comments that violate AgriTrue community standards.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <div class="relative min-w-[250px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="search" class="table-search w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100" data-table="commentsTable" placeholder="Search comments...">
+                        </div>
+                        <button type="button" class="export-table rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-extrabold text-green-800 hover:bg-green-50" data-table="commentsTable" data-filename="agritrue-comments.csv">
+                            <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-shell">
+                    <div class="overflow-x-auto">
+                        <table id="commentsTable" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Author</th>
+                                    <th>Comment</th>
+                                    <th>Note ID</th>
+                                    <th>Created</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comment in comments %}
+                                    {% set comment_text = comment.text if comment.text is defined and comment.text else comment.content if comment.content is defined else '' %}
+                                    {% set comment_date = comment.created_at if comment.created_at is defined and comment.created_at else comment.timestamp if comment.timestamp is defined else none %}
+                                    <tr data-search-row>
+                                        <td>
+                                            {% if comment.user is defined and comment.user %}
+                                                <div class="font-extrabold text-slate-900">{{ comment.user.username or comment.user.email }}</div>
+                                            {% elif comment.author is defined and comment.author %}
+                                                <div class="font-extrabold text-slate-900">{{ comment.author.username or comment.author.email }}</div>
+                                            {% else %}
+                                                <span class="text-slate-500">User #{{ comment.user_id or '—' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="max-w-[520px] line-clamp-2-custom leading-6 text-slate-700">{{ comment_text or 'Empty comment' }}</div>
+                                        </td>
+                                        <td>
+                                            <a href="/community-notes#note-{{ comment.note_id }}" class="font-extrabold text-green-700 hover:underline">#{{ comment.note_id or '—' }}</a>
+                                        </td>
+                                        <td>
+                                            {% if comment_date %}
+                                                {{ comment_date.strftime('%d %b %Y') }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="flex justify-end">
+                                                <form
+                                                    action="{{ url_for('delete_comment_admin', comment_id=comment.id) }}"
+                                                    method="POST"
+                                                    data-delete-form
+                                                    data-delete-title="Delete comment?"
+                                                    data-delete-message="This community comment will be permanently removed."
+                                                >
+                                                    <button type="submit" class="inline-flex items-center rounded-xl bg-red-50 px-3.5 py-2 text-xs font-extrabold text-red-700 transition hover:bg-red-600 hover:text-white">
+                                                        <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-empty p-10 text-center" data-empty-for="commentsTable">
+                        <i class="fa-solid fa-comments text-3xl text-slate-300"></i>
+                        <h3 class="mt-4 font-extrabold text-slate-800">No comments found</h3>
+                        <p class="mt-2 text-sm text-slate-500">Try another search term.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="border-t border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-center justify-between gap-2 text-center text-xs text-slate-400 sm:flex-row sm:text-left">
+                <p>© <span id="currentYear"></span> AgriTrue Administration. Founded in 2025.</p>
+                <p>Restricted to authorized administrators.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="confirmModal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-hidden="true">
+        <div class="confirm-card w-full max-w-md overflow-hidden rounded-[2rem] bg-white shadow-float">
+            <div class="bg-gradient-to-r from-red-700 to-red-500 p-6 text-white">
+                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-xl">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h2 id="confirmTitle" class="mt-5 font-display text-2xl font-extrabold">Confirm deletion</h2>
+                <p class="mt-2 text-sm text-white/72">This administrative action cannot be undone.</p>
             </div>
 
-            <!-- Community Notes -->
-            <div id="notes" class="admin-section" style="display:none;">
-                <h2>Community Notes</h2>
-                <table class="table table-striped table-hover mt-3">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Author</th>
-                            <th>Note</th>
-                            <th>Tags</th>
-                            <th>Verified</th>
-                            <th>Upvotes</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for note in notes %}
-                        <tr>
-                            <td>{{ note.author.username }}</td>
-                            <td>{{ note.note[:50] }}...</td>
-                            <td>{{ note.tags }}</td>
-                            <td>{{ 'Yes' if note.verified else 'No' }}</td>
-                            <td>{{ note.upvotes }}</td>
-                            <td>{{ note.created_at.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                <form action="{{ url_for('delete_note_admin', note_id=note.id) }}" method="POST" style="display:inline-block;">
-                                    <button type="submit" class="btn btn-delete btn-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="p-6">
+                <p id="confirmMessage" class="text-sm leading-6 text-slate-600">Are you sure you want to delete this record?</p>
+
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button id="cancelDeleteBtn" type="button" class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-extrabold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button id="confirmDeleteBtn" type="button" class="rounded-xl bg-red-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-red-700">
+                        <i class="fa-solid fa-trash-can mr-2"></i>Delete
+                    </button>
+                </div>
             </div>
-            <a href="#analyzer_logs" onclick="showSection('analyzer_logs')">Analyzer Logs</a>
-
-<div id="analyzer_logs" class="admin-section" style="display:none;">
-    <h2>Analyzer Logs</h2>
-    <table class="table table-striped table-hover mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>User</th>
-                <th>Type</th>
-                <th>Filename</th>
-                <th>Summary</th>
-                <th>Created At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in analyzer_logs %}
-            <tr>
-                <td>{{ log.user.username }}</td>
-                <td>{{ log.type }}</td>
-                <td>{{ log.filename }}</td>
-                <td>{{ log.summary[:50] }}...</td>
-                <td>{{ log.created_at.strftime('%Y-%m-%d') }}</td>
-                <td>
-                    <form action="{{ url_for('delete_log', log_id=log.id) }}" method="POST">
-                        <button type="submit" class="btn btn-delete btn-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
         </div>
     </div>
 
     <script>
-        function showSection(sectionId) {
-            const sections = document.querySelectorAll('.admin-section');
-            sections.forEach(sec => sec.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const byId = (id) => document.getElementById(id);
+            const sectionButtons = Array.from(document.querySelectorAll("[data-section-target]"));
+            const sections = Array.from(document.querySelectorAll(".dashboard-section"));
+            const topbarTitle = byId("topbarTitle");
+            const mobileDrawer = byId("mobileDrawer");
+            const mobileDrawerOverlay = byId("mobileDrawerOverlay");
+            const openMobileDrawer = byId("openMobileDrawer");
+            const closeMobileDrawer = byId("closeMobileDrawer");
+            const confirmModal = byId("confirmModal");
+            const confirmTitle = byId("confirmTitle");
+            const confirmMessage = byId("confirmMessage");
+            const cancelDeleteBtn = byId("cancelDeleteBtn");
+            const confirmDeleteBtn = byId("confirmDeleteBtn");
+            let pendingDeleteForm = null;
+
+            function openDrawer() {
+                mobileDrawer.classList.add("show");
+                mobileDrawerOverlay.classList.add("show");
+                mobileDrawer.setAttribute("aria-hidden", "false");
+                openMobileDrawer.setAttribute("aria-expanded", "true");
+                document.body.classList.add("drawer-open");
+            }
+
+            function closeDrawer() {
+                mobileDrawer.classList.remove("show");
+                mobileDrawerOverlay.classList.remove("show");
+                mobileDrawer.setAttribute("aria-hidden", "true");
+                openMobileDrawer.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("drawer-open");
+            }
+
+            openMobileDrawer.addEventListener("click", openDrawer);
+            closeMobileDrawer.addEventListener("click", closeDrawer);
+            mobileDrawerOverlay.addEventListener("click", closeDrawer);
+
+            function activateSection(sectionName, updateHash = true) {
+                const selected = byId(`section-${sectionName}`) || byId("section-overview");
+                const selectedName = selected.id.replace("section-", "");
+
+                sections.forEach((section) => {
+                    section.classList.toggle("active", section === selected);
+                });
+
+                sectionButtons.forEach((button) => {
+                    button.classList.toggle(
+                        "active",
+                        button.dataset.sectionTarget === selectedName
+                    );
+                });
+
+                topbarTitle.textContent = selected.dataset.sectionName || "AgriTrue Administration";
+
+                if (updateHash) {
+                    history.replaceState(null, "", `#${selectedName}`);
+                }
+
+                closeDrawer();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+
+            sectionButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    activateSection(button.dataset.sectionTarget);
+                });
+            });
+
+            const initialSection = window.location.hash.replace("#", "") || "overview";
+            activateSection(initialSection, false);
+
+            window.addEventListener("hashchange", () => {
+                activateSection(window.location.hash.replace("#", "") || "overview", false);
+            });
+
+            document.querySelectorAll("[data-refresh-page]").forEach((button) => {
+                button.addEventListener("click", () => window.location.reload());
+            });
+
+            // Search each table independently.
+            document.querySelectorAll(".table-search").forEach((input) => {
+                input.addEventListener("input", () => {
+                    const tableId = input.dataset.table;
+                    const table = byId(tableId);
+                    const keyword = input.value.trim().toLowerCase();
+                    const rows = Array.from(table.querySelectorAll("tbody [data-search-row]"));
+                    let visibleCount = 0;
+
+                    rows.forEach((row) => {
+                        const visible = !keyword || row.textContent.toLowerCase().includes(keyword);
+                        row.classList.toggle("table-row-hidden", !visible);
+                        if (visible) visibleCount += 1;
+                    });
+
+                    const emptyState = document.querySelector(`[data-empty-for="${tableId}"]`);
+                    emptyState.classList.toggle("show", visibleCount === 0);
+                });
+            });
+
+            // Client-side CSV export.
+            document.querySelectorAll(".export-table").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const table = byId(button.dataset.table);
+                    const rows = Array.from(table.querySelectorAll("tr"))
+                        .filter((row) => !row.classList.contains("table-row-hidden"));
+
+                    const csv = rows.map((row) => {
+                        const cells = Array.from(row.querySelectorAll("th, td"));
+                        return cells
+                            .slice(0, -1)
+                            .map((cell) => {
+                                const value = cell.innerText.replace(/\s+/g, " ").trim();
+                                return `"${value.replace(/"/g, '""')}"`;
+                            })
+                            .join(",");
+                    }).join("\n");
+
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const anchor = document.createElement("a");
+                    anchor.href = url;
+                    anchor.download = button.dataset.filename || "agritrue-export.csv";
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    anchor.remove();
+                    URL.revokeObjectURL(url);
+                });
+            });
+
+            // Professional delete confirmation.
+            document.querySelectorAll("[data-delete-form]").forEach((form) => {
+                form.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    pendingDeleteForm = form;
+                    confirmTitle.textContent = form.dataset.deleteTitle || "Confirm deletion";
+                    confirmMessage.textContent = form.dataset.deleteMessage || "This record will be permanently deleted.";
+                    confirmModal.classList.add("show");
+                    confirmModal.setAttribute("aria-hidden", "false");
+                    document.body.classList.add("drawer-open");
+                });
+            });
+
+            function closeConfirmModal() {
+                confirmModal.classList.remove("show");
+                confirmModal.setAttribute("aria-hidden", "true");
+                pendingDeleteForm = null;
+                document.body.classList.remove("drawer-open");
+            }
+
+            cancelDeleteBtn.addEventListener("click", closeConfirmModal);
+
+            confirmModal.addEventListener("click", (event) => {
+                if (event.target === confirmModal) {
+                    closeConfirmModal();
+                }
+            });
+
+            confirmDeleteBtn.addEventListener("click", () => {
+                if (!pendingDeleteForm) return;
+
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Deleting';
+                pendingDeleteForm.submit();
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeDrawer();
+                    if (confirmModal.classList.contains("show")) {
+                        closeConfirmModal();
+                    }
+                }
+            });
+
+            byId("currentYear").textContent = new Date().getFullYear();
+        });
     </script>
 </body>
 </html>
