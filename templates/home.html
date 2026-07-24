@@ -2,1997 +2,1554 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriTrue</title>
- 
-   <meta name="title" content="JUAN VALUERS | Financial Valuation Platform">
-    <meta name="description" content="Access curated investment opportunities with defined returns. Professional-grade asset management for modern investors.">
-    <meta name="keywords" content="investment, structured assets, ROI, portfolio, capital management">
-    <meta name="author" content="JUAN VALUERS">
-    
-    <!-- Favicon & Social Media -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b6623">
+
+    <title>AgriTrue | Empowering Informed Agriculture</title>
+    <meta name="title" content="AgriTrue | Empowering Informed Agriculture">
+    <meta name="description" content="AgriTrue gives farmers access to AI-assisted crop and livestock screening, verified community knowledge, land insights, USSD support and practical agricultural guidance.">
+    <meta name="keywords" content="AgriTrue, agriculture Kenya, crop diagnosis, livestock guidance, farm technology, soil information, USSD farming, agricultural AI">
+    <meta name="author" content="AgriTrue">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
+
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://agritrue.org/">
     <meta property="og:title" content="AgriTrue | Empowering Informed Agriculture">
-    <meta property="og:description" content="Access curated investment opportunities with defined returns. Professional-grade asset management for modern investors.">
+    <meta property="og:description" content="Practical digital tools, AI-assisted screening and verified agricultural knowledge for farmers and communities.">
     <meta property="og:image" content="{{ url_for('static', filename='images/logo.jpg', _external=True) }}">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
-    
+
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="AgriTrue | Empowering Informed Agriculture">
-    <meta name="twitter:description" content="Access curated investment opportunities with defined returns. Professional-grade asset management for modern investors.">
+    <meta name="twitter:description" content="Practical digital tools, AI-assisted screening and verified agricultural knowledge for farmers and communities.">
     <meta name="twitter:image" content="{{ url_for('static', filename='images/logo.jpg', _external=True) }}">
-    
-    <meta name="theme-color" content="#000000">
-    
-    <!-- Tailwind CSS + Custom Fonts -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0fdf4;
-            margin: 0;
-            padding: 0;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-        /* Navbar Styles */
-        .custom-navbar {
-            background: linear-gradient(90deg, #0b6623, #90ee90);
-        }
-
-        .hero-content {
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* Loader Styles */
-        #agritrue-loader {
-            position: fixed;
-            z-index: 9999;
-            background: #050806;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease;
-        }
-
-        .leaf {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #03f103, #81C784);
-            border-radius: 0 50% 50% 50%;
-            animation: spin 1.2s linear infinite;
-            transform: rotate(-45deg);
-            margin: auto;
-        }
-
-        .loading-text {
-            margin-top: 20px;
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Slideshow Styles */
-        #slideshow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #000;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-
-        .dark-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
-            z-index: 2;
-        }
-
-        /* Chatbot Styles */
-        #chatbot-icon {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #34d399;
-            color: #fff;
-            font-size: 2rem;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 999;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        #chatbot-container {
-            position: fixed;
-            bottom: 100px;
-            right: 24px;
-            width: 360px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1000;
-            animation: slide-up 0.4s ease-out;
-        }
-        
-        @keyframes slide-up {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        #chatbot-header {
-            background: linear-gradient(90deg, #34d399, #10b981);
-            color: white;
-            padding: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #chatbot-body {
-            padding: 16px;
-            background: #f0fdf4;
-            overflow-y: auto;
-            max-height: 320px;
-        }
-        
-        #chatbot-input-container {
-            display: flex;
-            padding: 12px;
-            background: #ecfdf5;
-            border-top: 1px solid #d1fae5;
-        }
-        
-        #chatbot-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d1fae5;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        #send-message, #mic-button {
-            background: #34d399;
-            color: white;
-            border: none;
-            padding: 0 12px;
-            margin-left: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .chatbot-message {
-            padding: 10px 14px;
-            border-radius: 14px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background: #34d399;
-            color: white;
-            margin-left: auto;
-        }
-        
-        .bot-message {
-            background: #d1fae5;
-            color: black;
-            margin-right: auto;
-        }
-
-        /* Hide default Bootstrap toggler on larger screens */
-        @media (min-width: 992px) {
-            .navbar-toggler {
-                display: none;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Manrope", "sans-serif"]
+                    },
+                    colors: {
+                        agritrue: {
+                            50: "#f0fdf4",
+                            100: "#dcfce7",
+                            200: "#bbf7d0",
+                            300: "#86efac",
+                            400: "#4ade80",
+                            500: "#22c55e",
+                            600: "#16a34a",
+                            700: "#15803d",
+                            800: "#166534",
+                            900: "#14532d",
+                            950: "#052e16"
+                        },
+                        earth: {
+                            50: "#fbf8f1",
+                            100: "#f4ead4",
+                            700: "#765b2d",
+                            900: "#3d2f18"
+                        }
+                    },
+                    boxShadow: {
+                        soft: "0 20px 70px rgba(5, 46, 22, .10)",
+                        card: "0 14px 40px rgba(15, 23, 42, .08)",
+                        float: "0 24px 70px rgba(5, 46, 22, .22)"
+                    }
+                }
             }
+        };
+    </script>
+
+    <style>
+        :root {
+            --nav-height: 72px;
         }
 
-        /* Mobile Menu Styles */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 5% 15%, rgba(134, 239, 172, .20), transparent 26rem),
+                radial-gradient(circle at 95% 80%, rgba(187, 247, 208, .24), transparent 30rem),
+                #f8fbf8;
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        .custom-navbar {
+            background: linear-gradient(100deg, #064e3b 0%, #0b6623 48%, #4fae62 100%);
+        }
+
+        .nav-dropdown {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+        }
+
+        .nav-group:hover .nav-dropdown,
+        .nav-group:focus-within .nav-dropdown {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: none;
+            background: rgba(2, 25, 12, .62);
+            backdrop-filter: blur(4px);
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+
         .mobile-menu {
             position: fixed;
             top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background-color: #f0fdf4;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-            transition: right 0.3s ease-in-out;
-            z-index: 1050;
-            padding: 20px;
+            right: min(-92vw, -380px);
+            z-index: 70;
+            width: min(90vw, 360px);
+            height: 100dvh;
             overflow-y: auto;
+            background: #f0fdf4;
+            box-shadow: -24px 0 70px rgba(5, 46, 22, .25);
+            transition: right .3s ease;
         }
 
         .mobile-menu.show {
             right: 0;
         }
 
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            display: none;
+        .hero {
+            min-height: 760px;
+            padding-top: var(--nav-height);
         }
 
-        .mobile-menu-overlay.show {
-            display: block;
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transform: scale(1.04);
+            transition: opacity 1.1s ease, transform 7s ease;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .hero-overlay {
+            background:
+                linear-gradient(90deg, rgba(2, 24, 13, .92) 0%, rgba(4, 52, 27, .74) 46%, rgba(3, 29, 17, .38) 72%, rgba(3, 29, 17, .58) 100%),
+                linear-gradient(0deg, rgba(2, 25, 12, .84), transparent 55%);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .18);
+            backdrop-filter: blur(18px);
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            color: #15803d;
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+        }
+
+        .section-kicker::before {
+            content: "";
+            width: 2.25rem;
+            height: 2px;
+            border-radius: 999px;
+            background: #22c55e;
+        }
+
+        .feature-card,
+        .tool-card,
+        .impact-card,
+        .article-card {
+            transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+        }
+
+        .feature-card:hover,
+        .tool-card:hover,
+        .impact-card:hover,
+        .article-card:hover {
+            transform: translateY(-7px);
+            border-color: rgba(34, 197, 94, .38);
+            box-shadow: 0 22px 60px rgba(5, 46, 22, .13);
+        }
+
+        .tool-card .tool-arrow {
+            transition: transform .25s ease;
+        }
+
+        .tool-card:hover .tool-arrow {
+            transform: translateX(5px);
+        }
+
+        .story-image::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(0deg, rgba(5, 46, 22, .42), transparent 52%);
+            pointer-events: none;
+        }
+
+        .ticker-mask {
+            mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+            -webkit-mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+        }
+
+        .ticker-track {
+            width: max-content;
+            animation: tickerMove 34s linear infinite;
+        }
+
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes tickerMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .chatbot-panel {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 6.4rem;
+            z-index: 80;
+            display: none;
+            width: min(390px, calc(100vw - 2rem));
+            height: min(620px, calc(100dvh - 8rem));
+            overflow: hidden;
+            border: 1px solid rgba(34, 197, 94, .18);
+            border-radius: 1.75rem;
+            background: white;
+            box-shadow: 0 28px 90px rgba(5, 46, 22, .25);
+        }
+
+        .chatbot-panel.show {
+            display: flex;
+            animation: chatEnter .28s ease both;
+        }
+
+        @keyframes chatEnter {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(.97);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .chat-message {
+            max-width: 86%;
+            border-radius: 1.15rem;
+            padding: .8rem 1rem;
+            font-size: .9rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            border-bottom-right-radius: .3rem;
+            background: #166534;
+            color: white;
+        }
+
+        .chat-message.bot {
+            align-self: flex-start;
+            border: 1px solid #dcfce7;
+            border-bottom-left-radius: .3rem;
+            background: white;
+            color: #334155;
+        }
+
+        .typing-dot {
+            height: .42rem;
+            width: .42rem;
+            border-radius: 999px;
+            background: #22c55e;
+            animation: typingPulse 1s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: .15s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: .3s;
+        }
+
+        @keyframes typingPulse {
+            0%, 80%, 100% {
+                opacity: .28;
+                transform: translateY(0);
+            }
+            40% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        .newsletter-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 95;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(2, 25, 12, .62);
+            backdrop-filter: blur(7px);
+        }
+
+        .newsletter-modal.show {
+            display: flex;
+        }
+
+        .newsletter-card {
+            animation: modalEnter .32s ease both;
+        }
+
+        @keyframes modalEnter {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(.97);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .65s ease, transform .65s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            :root {
+                --nav-height: 68px;
+            }
+
+            .hero {
+                min-height: 720px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero {
+                min-height: 740px;
+            }
+
+            .chatbot-panel {
+                right: .75rem;
+                bottom: 5.6rem;
+                width: calc(100vw - 1.5rem);
+                height: min(640px, calc(100dvh - 7rem));
+                border-radius: 1.35rem;
+            }
         }
     </style>
 </head>
-<body class="bg-f0fdf4 font-inter">
 
-   <!-- Loader -->
-<div id="agritrue-loader" class="fixed inset-0 z-[9999] bg-[#050806] flex flex-col items-center justify-center transition-opacity duration-500">
-    <div class="text-center">
-        <div class="leaf w-[60px] h-[60px] bg-gradient-to-br from-[#03f103] to-[#81C784] rounded-tr-[50%] rounded-b-[50%] animate-spin-slow transform -rotate-45 mx-auto"></div>
-        <h3 class="loading-text mt-5 text-[#4CAF50] font-semibold text-lg">AgriTrue Hello farmer please wait...</h3>
-    </div>
-</div>
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
+<body class="font-sans text-slate-800 antialiased">
+    <!-- Navigation -->
+    <nav class="custom-navbar fixed inset-x-0 top-0 z-50 shadow-lg">
+        <div class="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+            <a href="/" class="flex items-center gap-3" aria-label="AgriTrue home">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-10 w-10 rounded-full border-2 border-white/70 object-cover shadow">
+                <div>
+                    <div class="font-display text-xl font-extrabold leading-none text-white sm:text-2xl">AgriTrue</div>
+                    <div class="mt-1 hidden text-[9px] font-bold uppercase tracking-[.24em] text-green-100 sm:block">Empowering informed agriculture</div>
+                </div>
             </a>
 
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
+            <div class="hidden items-center gap-1 lg:flex">
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+                        Utilities <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 top-full mt-2 w-60 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/community-notes" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">
+                            <i class="fa-solid fa-people-group mr-2 text-green-600"></i>Community Notes
+                        </a>
+                        <a href="/chatbot" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">
+                            <i class="fa-solid fa-comments mr-2 text-green-600"></i>AI Chatbot
+                        </a>
+                        <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">
+                            <i class="fa-solid fa-microscope mr-2 text-green-600"></i>Smart Analyzer
+                        </a>
+                        <a href="/ussd" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">
+                            <i class="fa-solid fa-mobile-screen-button mr-2 text-green-600"></i>USSD & Voice
+                        </a>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                             <a href="/podcast" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Podcast</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                      <a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
 
+                <a href="/dashboard" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Farm Truth</a>
+                <a href="/know_your_land" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Know Your Land</a>
+                <a href="/about" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">About</a>
+                <a href="/podcast" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Podcast</a>
 
-
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+                        Resources <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i>
+                    </button>
+                    <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/research" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Research Hub</a>
+                        <a href="/faqs" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Frequently Asked Questions</a>
                     </div>
-                </div>  
+                </div>
+
+                <a href="/donate" class="ml-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-green-800 shadow-lg transition hover:-translate-y-0.5 hover:bg-green-50">Donate</a>
+
                 {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
+                    <div class="nav-group relative ml-1">
+                        <button type="button" class="rounded-full bg-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25">
+                            <i class="fa-regular fa-user mr-2"></i>Profile
+                        </button>
+                        <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                            <a href="/profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Profile</a>
+                            <a href="/edit_profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Edit Profile</a>
+                            <a href="/streak" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Streak</a>
                             {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
+                                <a href="/admin" class="block rounded-xl px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50">Admin Panel</a>
                             {% endif %}
+                            <a href="/logout" class="block rounded-xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50">Logout</a>
                         </div>
                     </div>
-                </div>
                 {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
+                    <a href="/login" class="ml-1 rounded-full border border-white/40 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-white/10">Login</a>
+                    <a href="/register" class="rounded-full bg-green-900 px-5 py-2.5 text-sm font-extrabold text-white shadow transition hover:bg-green-950">Register</a>
                 {% endif %}
             </div>
 
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
+            <button id="mobileMenuBtn" type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-xl text-white lg:hidden" aria-label="Open navigation menu" aria-controls="mobileMenu" aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
             </button>
         </div>
     </nav>
-    
-    <!-- Mobile Menu -->
-    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
-        </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/podcast" aria-label="Podcast">
-                    <i class="fas fa-podcast mr-3"></i>Podcast
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
-                </div>
-            </li>
-        </ul>
-        <div class="relative group">
-                    <a href="#"
-   class="nav-link text-green-600 font-medium p-2 rounded-lg transition duration-200 hover:bg-green-700 hover:text-white">
-   Resource & Downloads
-   <i class="fas fa-chevron-down text-xs ml-1"></i>
-</a>
 
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+    <!-- Mobile navigation -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <aside id="mobileMenu" class="mobile-menu p-5 lg:hidden" aria-hidden="true">
+        <div class="flex items-center justify-between border-b border-green-200 pb-5">
+            <a href="/" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full object-cover">
+                <div>
+                    <div class="font-display text-lg font-extrabold text-green-950">AgriTrue</div>
+                    <div class="text-xs font-semibold text-green-600">Farmer services</div>
+                </div>
+            </a>
+            <button id="closeMobileMenu" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl text-green-800 shadow" aria-label="Close navigation menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="mt-5 space-y-2">
+            <a href="/" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">Home</a>
+            <a href="/dashboard" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Farm Truth</a>
+            <a href="/know_your_land" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Know Your Land</a>
+            <a href="/community-notes" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Community Notes</a>
+            <a href="/chatbot" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Smart Analyzer</a>
+            <a href="/ussd" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">USSD & Voice</a>
+            <a href="/research" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Research Hub</a>
+            <a href="/podcast" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Podcast</a>
+            <a href="/about" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">About Us</a>
+            <a href="/faqs" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">FAQs</a>
+            <a href="/donate" class="block rounded-xl bg-green-950 px-4 py-3 text-center font-bold text-white">Donate to AgriTrue</a>
+        </nav>
+
+        <div class="mt-6 border-t border-green-200 pt-5">
+            {% if current_user.is_authenticated %}
+                <a href="/profile" class="block rounded-xl bg-white px-4 py-3 text-center font-bold text-green-800 shadow">My Profile</a>
+                {% if current_user.is_admin %}
+                    <a href="/admin" class="mt-3 block rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-amber-800">Admin Panel</a>
+                {% endif %}
+                <a href="/logout" class="mt-3 block rounded-xl border border-red-300 px-4 py-3 text-center font-bold text-red-600">Logout</a>
+            {% else %}
+                <a href="/login" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">Login</a>
+                <a href="/register" class="mt-3 block rounded-xl border border-green-700 px-4 py-3 text-center font-bold text-green-800">Create Account</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main>
+        <!-- Hero -->
+        <header class="hero relative overflow-hidden text-white">
+            <div id="heroSlideshow" class="absolute inset-0">
+                <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" alt="Farmer working in a field" class="hero-slide active">
+                <img src="{{ url_for('static', filename='images/milk.jpg') }}" alt="Dairy farming" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/bee1.jpg') }}" alt="Beekeeping" class="hero-slide">
+                <img src="{{ url_for('static', filename='images/pigs.jpg') }}" alt="Livestock farming" class="hero-slide">
+            </div>
+            <div class="hero-overlay absolute inset-0"></div>
+
+            <div class="relative mx-auto grid min-h-[688px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
+                <div class="max-w-3xl">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
+                        <i class="fa-solid fa-leaf"></i>
+                        Practical technology for informed farming
+                    </div>
+
+                    <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.08] sm:text-5xl md:text-6xl lg:text-7xl">
+                        Make better agricultural decisions with trusted digital tools.
+                    </h1>
+
+                    <p class="mt-6 max-w-2xl text-base leading-7 text-white/78 sm:text-lg md:text-xl">
+                        AgriTrue brings together AI-assisted screening, land information, community verification, USSD access and practical agricultural guidance for farmers, researchers and communities.
+                    </p>
+
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                        {% if current_user.is_authenticated %}
+                            <a href="/ml-analyzer" class="inline-flex items-center justify-center rounded-full bg-green-500 px-7 py-3.5 font-extrabold text-white shadow-xl transition hover:-translate-y-1 hover:bg-green-400">
+                                <i class="fa-solid fa-camera mr-2"></i>Analyze a Crop or Animal
+                            </a>
+                        {% else %}
+                            <a href="/register" class="inline-flex items-center justify-center rounded-full bg-green-500 px-7 py-3.5 font-extrabold text-white shadow-xl transition hover:-translate-y-1 hover:bg-green-400">
+                                Create Free Account
+                            </a>
+                        {% endif %}
+                        <a href="#tools" class="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/10 px-7 py-3.5 font-extrabold text-white backdrop-blur transition hover:bg-white/20">
+                            Explore Farmer Tools
+                        </a>
+                    </div>
+
+                    <div class="mt-10 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div class="glass-panel rounded-2xl p-4">
+                            <div class="text-xl font-extrabold text-green-300">AI</div>
+                            <div class="mt-1 text-xs leading-5 text-white/65">Visual screening</div>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-4">
+                            <div class="text-xl font-extrabold text-green-300">USSD</div>
+                            <div class="mt-1 text-xs leading-5 text-white/65">Accessible guidance</div>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-4">
+                            <div class="text-xl font-extrabold text-green-300">47</div>
+                            <div class="mt-1 text-xs leading-5 text-white/65">County-ready design</div>
+                        </div>
+                        <div class="glass-panel rounded-2xl p-4">
+                            <div class="text-xl font-extrabold text-green-300">24/7</div>
+                            <div class="mt-1 text-xs leading-5 text-white/65">Digital availability</div>
                         </div>
                     </div>
-                </div>  
-<a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
-
-
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
-        </div>
-    </div>
-
-
-    <header class="relative w-full min-h-screen pt-[56px] lg:pt-[72px]">
-        <div id="slideshow" class="absolute inset-0">
-            <img src="{{ url_for('static', filename='images/pic1.jpeg') }}" class="slide active">
-            <img src="{{ url_for('static', filename='images/milk.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/final1.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/pic3.jpeg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/bee1.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/final5.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/vital1.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/final4.jpg') }}" class="slide">
-            <img src="{{ url_for('static', filename='images/pigs.jpg') }}" class="slide">
-
-        </div>
-        <div class="dark-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-black/80 z-10"></div>
-        <div class="hero-content relative z-20 text-white text-left p-5"
-             style="position: absolute; top: 50%; left: 6%; transform: translateY(-50%); max-width: 600px;">
-            <h1 class="hero-title text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 text-shadow-lg"
-            style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">
-            Empowering Informed Agriculture
-            </h1>
-            <p class="hero-subtitle text-lg sm:text-xl md:text-2xl max-w-2xl mb-6 sm:mb-8 leading-relaxed text-shadow-lg"
-               style="text-shadow: 1px 1px 6px rgba(0,0,0,0.4);">
-            Join AgriTrue to access cutting-edge tools, data insights, and community-driven solutions that transform agriculture for a sustainable future.
-            </p>
-            <div class="hero-buttons flex gap-4 sm:gap-6 flex-wrap"
-             style="justify-content: flex-start;">
-            <a href="/register" class="bg-green-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
-                Get Started
-            </a>
-            <a href="/donate" class="border-2 border-green-500 text-green-500 font-bold italic py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 hover:bg-green-500 hover:text-white">
-                Donate Now to support AgriTrue
-            </a>
-            </div>
-        </div>
-    </header>
-    <!-- why choose AgriTrue -->
-    <!-- Why Choose AgriTrue Section -->
-    <section id="why-choose" style="max-width:1200px; margin:50px auto; font-family:Arial, sans-serif; text-align:center; padding:0 20px;">
-        
-        <!-- Headline -->
-        <h2 style="font-size:36px; font-weight:700; color:#065f46; margin-bottom:40px; text-shadow:1px 1px 2px rgba(0,0,0,0.1);">
-            Why Choose AgriTrue?
-        </h2>
-
-        <!-- Content Grid - 3 Columns -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:30px; margin-top:30px;">
-
-            <!-- 1: Combat Misinformation -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Combat Misinformation</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    AI-driven tools detect misleading claims, ensuring farmers access only accurate, trustworthy information.
-                </p>
-            </div>
-
-            <!-- 2: Precision Insights -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Precision Insights</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    Localized soil, fertility, and climate insights empower data-backed farming strategies.
-                </p>
-            </div>
-
-            <!-- 3: Visual Progress -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Visualize Progress</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    Farm Truth converts images & logs into interactive charts, making growth measurable.
-                </p>
-            </div>
-
-            <!-- 4: Multi-channel Access -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Built for Connectivity</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    Web, mobile, USSD, and offline tools ensure all farmers can access AgriTrue.
-                </p>
-            </div>
-
-            <!-- 5: Boost Productivity -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Boost Productivity</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    Real-time AI diagnostics minimize waste and maximize harvest outcomes.
-                </p>
-            </div>
-
-            <!-- 6: Transparency -->
-            <div style="background:linear-gradient(135deg, #16a34a 0%, #059669 100%); padding:30px; border-radius:50%; 
-                                    aspect-ratio:1; display:flex; flex-direction:column; justify-content:center; align-items:center; 
-                                    text-align:center; box-shadow:0 8px 20px rgba(22,163,74,0.4); transition:transform 0.3s ease;"
-                     onmouseover="this.style.transform='translateY(-10px)'" 
-                     onmouseout="this.style.transform='translateY(0)'">
-                <h3 style="font-size:18px; font-weight:700; color:#ffffff; margin-bottom:10px;">Trust & Transparency</h3>
-                <p style="color:#d1fae5; font-size:14px; line-height:1.6; max-width:90%;">
-                    Community notes and expert validation build a trusted knowledge ecosystem.
-                </p>
-            </div>
-
-        </div>
-    </section>
-<!-- our story -->
- <!-- Professional Live Agriculture Feed Ticker (Scrolling, Custom Colors, Stock Exchange Style, 3s Update) -->
-<section class="container mx-auto px-4 py-8">
-  <h3 class="text-2xl font-bold mb-2 flex items-center" style="color:#197278;">
-    <span class="mr-2">🌱</span> Live Agriculture Performance Feed
-  </h3>
-  <p style="color:#444;max-width:600px;" class="mb-4 text-sm">
-    Stay updated with real-time agricultural insights across the region. This live ticker scrolls like a stock exchange display, showing constantly changing statistics – from crop yields to soil data and farm input availability. Updated every 3 seconds, it reflects ongoing agricultural trends for instant, informed decisions.
-  </p>
-  <!-- Ticker Container -->
-  <div class="relative overflow-hidden rounded-2xl border-4 shadow-xl"
-       style="border-color:#197278;background:linear-gradient(90deg,#eef6f7 0%,#e0f2e7 50%,#e1ebf5 100%);height:58px;">
-    <div id="tickerTrack" class="flex items-center h-full absolute left-0 top-0 whitespace-nowrap transition-transform duration-700"
-      style="will-change:transform;">
-      <!-- Ticker stats will be rendered here -->
-    </div>
-    <!-- Gradient fade for ticker effect -->
-    <div class="absolute left-0 top-0 h-full w-20"
-      style="background:linear-gradient(90deg,#eef6f7 80%,transparent);pointer-events:none;"></div>
-    <div class="absolute right-0 top-0 h-full w-20"
-      style="background:linear-gradient(270deg,#eef6f7 80%,transparent);pointer-events:none;"></div>
-  </div>
-</section>
-
-<script>
-// Custom color palette
-const statBg = [
-  "background:#197278;color:#fff;box-shadow:0 2px 8px #19727822;",             // Maize Yield
-  "background:#49a078;color:#fff;box-shadow:0 2px 8px #49a07822;",             // Livestock Count
-  "background:#3d7068;color:#fff;box-shadow:0 2px 8px #3d706822;",             // Rainfall Index
-  "background:#d6d1b1;color:#197278;box-shadow:0 2px 8px #d6d1b122;",         // Potato Production
-  "background:#9cc5a1;color:#197278;box-shadow:0 2px 8px #9cc5a122;",         // Soil Moisture
-  "background:#f9f7f3;color:#197278;box-shadow:0 2px 8px #19727812;"          // Farm Input
-];
-
-// Feed data
-let agriTickerData = [
-  { icon: "🌾", label: "Maize Yield", value: 12430, unit: "tons", min: 12000, max: 13000 },
-  { icon: "🐄", label: "Livestock Count", value: 8920, unit: "", min: 8700, max: 9000 },
-  { icon: "🌧️", label: "Rainfall Index", value: 62, unit: "mm", min: 55, max: 75 },
-  { icon: "🥔", label: "Potato Production", value: 7850, unit: "tons", min: 7700, max: 8100 },
-  { icon: "🪴", label: "Soil Moisture", value: 48, unit: "%", min: 42, max: 55 },
-  { icon: "🚜", label: "Farm Input Availability", value: 91, unit: "%", min: 85, max: 95 }
-];
-
-// Utility to animate value change
-function animateTickerValue(span, start, end, duration) {
-  if (start === end) { span.textContent = end.toLocaleString(); return; }
-  let range = end - start, current = start, increment = range / (duration / 16);
-  function update() {
-    current += increment;
-    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) current = end;
-    span.textContent = Math.round(current).toLocaleString();
-    if (current !== end) requestAnimationFrame(update);
-  }
-  update();
-}
-
-// Render all stats in ticker
-function renderTicker(stats) {
-  const track = document.getElementById('tickerTrack');
-  track.innerHTML = '';
-  stats.forEach((stat, i) => {
-    // Up/down indicator for change
-    let upDown = stat.trend === undefined ? "" :
-      stat.trend > 0 ? `<span style="margin-left:8px;color:#22c55e;font-weight:bold;">&#9650;</span>` :
-      stat.trend < 0 ? `<span style="margin-left:8px;color:#ef4444;font-weight:bold;">&#9660;</span>` : "";
-    track.innerHTML += `
-      <div class="flex items-center px-5 py-2 mx-2 rounded-xl font-semibold text-xs md:text-base"
-           style="min-width: 175px;${statBg[i % statBg.length]};transition:box-shadow 0.3s,background 0.3s;">
-        <span style="font-size:1.5rem;margin-right:8px;">${stat.icon}</span>
-        <span class="font-bold" style="margin-right:8px;">${stat.label}:</span>
-        <span class="font-bold" style="font-size:1.2rem;" id="ticker-val-${i}">${stat.value.toLocaleString()}</span>
-        <span class="ml-1" style="color:#444;font-size:0.9em;">${stat.unit}</span>
-        ${upDown}
-      </div>
-    `;
-  });
-}
-
-// Initial render
-renderTicker(agriTickerData);
-
-// Ticker scroll logic
-let tickerPos = 0;
-function scrollTicker() {
-  const track = document.getElementById('tickerTrack');
-  tickerPos += 1;
-  if (tickerPos > agriTickerData.length) tickerPos = 0;
-  track.style.transform = `translateX(${-tickerPos * 175}px)`;
-}
-
-// Every 3s, change values and scroll
-setInterval(() => {
-  agriTickerData = agriTickerData.map((stat, i) => {
-    let prev = stat.value;
-    let change = Math.floor(Math.random() * 7 + 1) * (Math.random() > 0.5 ? 1 : -1);
-    let next = Math.min(stat.max, Math.max(stat.min, prev + change));
-    stat.trend = next - prev;
-    // Animate number change
-    const span = document.getElementById(`ticker-val-${i}`);
-    if (span) animateTickerValue(span, prev, next, 400);
-    return { ...stat, value: next };
-  });
-  scrollTicker();
-}, 3000);
-
-// Responsive fallback: If screen is small, reduce stat width
-window.addEventListener('resize', () => {
-  const track = document.getElementById('tickerTrack');
-  if (window.innerWidth < 460) track.querySelectorAll('div').forEach(div => div.style.minWidth = "120px");
-});
-</script>
- <!-- Our Story Section -->
-<section id="our-story" class="bg-gray-50 py-16">
-  <div class="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center gap-12">
-    
-    <!-- Image on the Left -->
-    <div class="w-full lg:w-1/2 relative group">
-      <img src="/static/images/isa.jpg" 
-           alt="A person using a smartphone in a field" 
-           class="w-full h-auto rounded-2xl shadow-xl transform transition duration-500 group-hover:scale-105">
-      <!-- Decorative Overlay -->
-      <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
-    </div>
-    
-    <!-- Content on the Right -->
-    <div class="w-full lg:w-1/2 text-center lg:text-left">
-      <h2 class="text-4xl md:text-5xl font-extrabold text-green-800 mb-6 leading-tight">
-        Our Story<br class="hidden md:inline"> 
-      </h2>
-      <p class="text-lg text-gray-600 italic mb-6">
-        AgriTrue was born from a simple belief: every farmer deserves accurate, actionable information. 
-        In a world of agricultural misinformation, our mission is to restore trust and empower communities.
-      </p>
-      <p class="text-gray-700 mb-4 leading-relaxed">
-        Our journey began at the <span class="font-semibold">2025 AfriCenter hackathon</span>, 
-        where we developed AI-powered tools to combat fake fertilizers and misleading data. 
-        We stand apart by making our technology inclusive and accessible to all farmers, regardless of connectivity.
-      </p>
-      <p class="text-gray-700 mb-6 leading-relaxed">
-        We envision a future where farmers make data-driven decisions that boost productivity and nurture sustainable growth. 
-        With every insight we deliver, we're planting seeds of confidence for a more resilient agricultural future.
-      </p>
-      <a href="/about" 
-         class="inline-block px-8 py-3 text-white text-sm font-medium rounded-full shadow-lg bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300">
-        Learn More About Us
-      </a>
-    </div>
-    
-  </div>
-</section>
-<!-- ✅ AgriTrue Newsletter Popup (Two-Step Animated Version for Farmers) -->
-<div id="newsletter-popup" style="
-  position: fixed;
-  bottom: -600px;
-  right: 30px;
-  width: 90%;
-  max-width: 380px;
-  background: #ffffff;
-  color: #111827;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-  text-align: left;
-  padding: 26px;
-  transition: bottom 0.8s ease;
-  z-index: 9999;
-  font-family: 'Segoe UI', Roboto, sans-serif;
-">
-  <!-- Step 1: Intro Message -->
-  <div id="popup-intro" style="display:block;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">🌾 Join AgriTrue Newsletter</h2>
-      <button id="close-popup" style="
-        background:none;
-        border:none;
-        color:#64748b;
-        font-size:22px;
-        cursor:pointer;
-        line-height:1;
-      ">&times;</button>
-    </div>
-    <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
-      Stay updated with <b>crop tips, market trends, weather alerts,</b> and AgriTrue insights for farmers.
-    </p>
-  </div>
-
-  <!-- Step 2: Full Signup Form -->
-  <div id="popup-form" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="margin:0; font-size:19px; font-weight:700; color:#0f172a;">📝 AgriTrue Signup</h2>
-      <button id="close-popup-2" style="
-        background:none;
-        border:none;
-        color:#64748b;
-        font-size:22px;
-        cursor:pointer;
-        line-height:1;
-      ">&times;</button>
-    </div>
-
-    <p style="margin-top:10px; font-size:14px; color:#334155; line-height:1.55;">
-      Get practical farming insights, <b>crop management tips</b>, and <b>market updates</b> delivered straight to your inbox.
-    </p>
-
-    <form id="amsa-form" action="https://formspree.io/f/xkgplzaj" method="POST"
-      style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:18px;">
-      <input type="text" name="name" placeholder="Full Name" required
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <input type="email" name="email" placeholder="Email Address" required
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <input type="text" name="phone" placeholder="Phone Number"
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <input type="text" name="location" placeholder="County / Area"
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <input type="number" name="age" placeholder="Age"
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-      <select name="gender" required
-        style="padding:10px; border:1px solid #e2e8f0; border-radius:8px; outline:none; font-size:14px;">
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-      <button type="submit" style="
-        background:#16a34a;
-        color:#ffffff;
-        border:none;
-        padding:12px;
-        border-radius:8px;
-        cursor:pointer;
-        font-size:15px;
-        font-weight:600;
-        transition:background 0.3s ease;
-      ">Sign Up</button>
-    </form>
-
-    <p style="font-size:12px; text-align:center; color:#64748b; margin-top:10px;">
-      We respect your privacy. Unsubscribe anytime.
-    </p>
-  </div>
-</div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const popup = document.getElementById("newsletter-popup");
-    const intro = document.getElementById("popup-intro");
-    const formDiv = document.getElementById("popup-form");
-    const close1 = document.getElementById("close-popup");
-    const close2 = document.getElementById("close-popup-2");
-    const form = document.getElementById("amsa-form");
-
-    // ✅ Show popup only if user hasn't subscribed
-    if (!localStorage.getItem("agriTrueSubscribed")) {
-      setTimeout(() => {
-        popup.style.bottom = "30px";
-      }, 3000);
-
-      // Show intro first
-      setTimeout(() => {
-        intro.style.display = "block";
-      }, 3200);
-
-      // After 5s, switch to form
-      setTimeout(() => {
-        intro.style.display = "none";
-        formDiv.style.display = "block";
-      }, 8000);
-    }
-
-    // ❌ Close buttons
-    [close1, close2].forEach(btn => {
-      btn.addEventListener("click", () => {
-        popup.style.bottom = "-600px";
-      });
-    });
-
-    // ✅ Handle Formspree submission
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const response = await fetch(form.action, {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
-
-      if (response.ok) {
-        popup.innerHTML = `
-          <div style="text-align:center; padding:30px;">
-            <h3 style="margin:0; color:#15803d;">🎉 Thank you for subscribing!</h3>
-            <p style="font-size:14px; color:#334155;">You’ll receive AgriTrue farming updates soon.</p>
-          </div>
-        `;
-        localStorage.setItem("agriTrueSubscribed", "true");
-        setTimeout(() => popup.style.bottom = "-600px", 4000);
-      } else {
-        alert("There was an issue sending your message. Please try again later.");
-      }
-    });
-  });
-</script>
-
-    <!-- Chatbot Icon -->
-    <div class="container-fluid py-5"></div>
-    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
-        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
-                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
-            </span>
-            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
-        </div>
-        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
-            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
-                Hello! I am AgriTrue AI. How can I help you today?
-                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
-            </div>
-        </div>
-        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
-                
-                 <input type="file" id="image-input" accept="image/*" style="display:none;">
-                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
-                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
-                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
-               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
-                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
-                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
-                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
-            </div>
-            
-            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
-                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
-                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
-            </div>
-            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
-                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-phone-alt"></i>
-                </a>
-                <a href="mailto:enyongesa462@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-envelope"></i>
-                </a>
-                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-sms"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
-        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
-    </button>
-
-<style>
-    @keyframes slide-up {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
-    .dot-pulse {
-        position: relative;
-        width: 10px; height: 10px; border-radius: 50%;
-        background-color: #22c55e; color: #22c55e;
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .dot-pulse::before, .dot-pulse::after {
-        content: ''; position: absolute; width: 10px; height: 10px;
-        border-radius: 50%; background-color: #22c55e;
-        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-    }
-    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
-    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
-    @keyframes dot-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
-        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    }
-</style>
-<script>
-const topics = [
-    "maize farming",
-    "tomato blight",
-    "poultry disease control",
-    "dairy cow feeding program",
-    "best fertilizer for maize",
-    "how to increase milk production",
-    "greenhouse farming",
-    "soil testing methods",
-    "avocado farming"
-];
-
-const quickSearch = document.getElementById('quick-search');
-const suggestionBox = document.getElementById('search-suggestions');
-
-quickSearch.addEventListener('input', () => {
-    const q = quickSearch.value.toLowerCase();
-    if (!q) {
-        suggestionBox.style.display = "none";
-        return;
-    }
-
-    const matched = topics.filter(t => t.toLowerCase().includes(q));
-    suggestionBox.innerHTML = matched.map(m => 
-        `<div class="suggest-item" style="padding:8px; cursor:pointer;">${m}</div>`
-    ).join('');
-
-    suggestionBox.style.display = matched.length ? "block" : "none";
-
-    document.querySelectorAll('.suggest-item').forEach(item => {
-        item.onclick = () => {
-            quickSearch.value = item.innerText;
-            suggestionBox.style.display = "none";
-        };
-    });
-});
-
-// Suggested topic buttons → send message
-document.querySelectorAll('.suggest-btn').forEach(btn => {
-    btn.onclick = () => {
-        document.getElementById("user-input").value = btn.dataset.text;
-    };
-});
-</script>
-
-<script>
-    window.onload = function() {
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeChatbotBtn = document.getElementById("close-chatbot");
-        const userInput = document.getElementById("user-input");
-        const sendBtn = document.getElementById("send-btn");
-        const voiceInputBtn = document.getElementById("voice-input-btn");
-        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
-        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
-        const reportBtn = document.getElementById("report-btn"); // New button for Report
-        const messagesContainer = document.getElementById("chatbot-messages");
-        const headerText = document.getElementById("header-text");
-        const originalHeaderText = headerText.innerHTML;
-
-        const imageInput = document.getElementById("image-input");
-        const imageUploadBtn = document.getElementById("image-upload-btn");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
-        const imagePreview = document.getElementById("image-preview");
-        const removeImageBtn = document.getElementById("remove-image-btn");
-        let uploadedImageBase64 = null;
-
-        // Helper functions for TTS
-        function base64ToArrayBuffer(base64) {
-            const binaryString = atob(base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-        function pcmToWav(pcm16, sampleRate) {
-            const wavHeader = new ArrayBuffer(44);
-            const view = new DataView(wavHeader);
-            view.setUint32(0, 0x46464952, true); // "RIFF"
-            view.setUint32(4, 36 + pcm16.length * 2, true);
-            view.setUint32(8, 0x45564157, true); // "WAVE"
-            view.setUint32(12, 0x20746d66, true); // "fmt "
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, 1, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true);
-            view.setUint32(36, 0x61746164, true); // "data"
-            view.setUint32(40, pcm16.length * 2, true);
-            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
-            buffer.set(new Uint8Array(wavHeader), 0);
-            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
-            return new Blob([buffer], { type: "audio/wav" });
-        }
-        async function speakMessage(text) {
-            const audio = new Audio();
-            audio.src = '#';
-            const payload = {
-                contents: [{ parts: [{ text: text }] }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
-                }
-            };
-            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const audioData = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-                if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    audio.src = audioUrl;
-                    audio.play();
-                } else {
-                    console.error("TTS response is not a valid audio format.");
-                }
-            } catch (error) {
-                console.error('Error with TTS:', error);
-            }
-        }
-
-        // Function to append a new message to the chat
-        function appendMessage(message, sender, imageBase64 = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.maxWidth = '80%';
-            messageDiv.style.padding = '10px 14px';
-            messageDiv.style.borderRadius = '18px';
-            messageDiv.style.lineHeight = '1.4';
-            messageDiv.style.fontSize = '0.95rem';
-            messageDiv.style.position = 'relative';
-
-            if (sender === 'user') {
-                messageDiv.style.backgroundColor = '#e2e8f0';
-                messageDiv.style.color = '#333';
-                messageDiv.style.alignSelf = 'flex-end';
-                messageDiv.style.borderBottomRightRadius = '4px';
-            } else {
-                messageDiv.style.backgroundColor = '#22c55e';
-                messageDiv.style.color = 'white';
-                messageDiv.style.alignSelf = 'flex-start';
-                messageDiv.style.borderBottomLeftRadius = '4px';
-            }
-
-            if (imageBase64) {
-                const img = document.createElement('img');
-                img.src = `data:image/jpeg;base64,${imageBase64}`;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '8px';
-                img.style.marginBottom = '8px';
-                messageDiv.appendChild(img);
-            }
-            const textNode = document.createTextNode(message);
-            messageDiv.appendChild(textNode);
-            messagesContainer.appendChild(messageDiv);
-
-            if (sender === 'bot') {
-                const ttsButton = document.createElement('button');
-                ttsButton.textContent = '🔊';
-                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
-                ttsButton.onclick = () => speakMessage(message);
-                messageDiv.appendChild(ttsButton);
-            }
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        async function getGeminiTextResponse(prompt) {
-            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response at this time.";
-                } catch (error) {
-                    console.error('Error calling Gemini API:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
-        }
-
-        async function getGeminiImageResponse(prompt, imageBase64) {
-            const apiKey = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
-                }]
-            };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response for this image.";
-                } catch (error) {
-                    console.error('Error calling Gemini API with image:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
-        }
-
-
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            const hasImage = uploadedImageBase64 !== null;
-            if (message || hasImage) {
-                appendMessage(message, 'user', uploadedImageBase64);
-                userInput.value = '';
-                uploadedImageBase64 = null;
-                imagePreviewContainer.style.display = 'none';
-
-                const thinkingMessageDiv = document.createElement('div');
-                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-                thinkingMessageDiv.className = 'message bot-message';
-                thinkingMessageDiv.style.display = 'flex';
-                thinkingMessageDiv.style.alignItems = 'center';
-                thinkingMessageDiv.style.gap = '0.5rem';
-                messagesContainer.appendChild(thinkingMessageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                let botResponse;
-                if (hasImage) {
-                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
-                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
-                } else {
-                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
-                    // Special handling for greetings
-                    const lowerCaseMessage = message.toLowerCase();
-                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
-                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
-                    }
-                    botResponse = await getGeminiTextResponse(aiPrompt);
-                }
-
-                messagesContainer.removeChild(thinkingMessageDiv);
-                appendMessage(botResponse, 'bot');
-            }
-        }
-
-        // Function for the "Get Advice" feature
-        async function getAdvice() {
-            const problem = prompt("What is your crop and what problem are you seeing?");
-            if (!problem) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Function for the "Generate Report" feature
-        async function generateReport() {
-            const topic = prompt("What is the topic for your agricultural report?");
-            if (!topic) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Existing function to generate a farm fact
-        async function generateFarmFact() {
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            thinkingMessageDiv.style.display = 'flex';
-            thinkingMessageDiv.style.alignItems = 'center';
-            thinkingMessageDiv.style.gap = '0.5rem';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
-            const botResponse = await getGeminiTextResponse(factPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            voiceInputBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
-                    voiceInputBtn.innerHTML = '�';
-                    voiceInputBtn.style.backgroundColor = 'gray';
-                } catch (e) { console.error('Speech recognition start error:', e); }
-            });
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                sendMessage();
-            };
-            recognition.onend = () => {
-                voiceInputBtn.innerHTML = '🎙️';
-                voiceInputBtn.style.backgroundColor = '#3b82f6';
-            };
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
-            };
-        } else {
-            voiceInputBtn.style.display = 'none';
-            console.warn("Speech Recognition API not supported in this browser.");
-        }
-
-        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
-                    imagePreview.src = reader.result;
-                    imagePreviewContainer.style.display = 'block';
-                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        removeImageBtn.addEventListener('click', () => {
-            uploadedImageBase64 = null;
-            imagePreviewContainer.style.display = 'none';
-            userInput.placeholder = "Type a message...";
-            imageInput.value = '';
-        });
-
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
-        };
-        closeChatbotBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "block";
-            headerText.innerHTML = originalHeaderText;
-        };
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { sendMessage(); }
-        });
-        factBtn.addEventListener('click', generateFarmFact);
-        adviceBtn.addEventListener('click', getAdvice);
-        reportBtn.addEventListener('click', generateReport);
-    };
-</script>
-
-<!-- Section for Feature Cards, now focused on combating misinformation -->
-<section class="mb-12">
-    <h2 class="text-3xl font-bold text-center text-green-700 mb-8">Explore Our Tools</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-        <!-- Community Fact-Checks Card -->
-        <a href="/community-notes" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/comm.jpeg" alt="Community Fact-Checks" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">Community Notes</h3>
-                <h5 class="text-xl font-semibold mb-2 text-green-600">Community Fact-Checks</h5>
-                <p class="text-gray-600">AgriTrue thrives on community. Our platform supports peer learning and collaboration, much like innovation ,hubs and digital forums fostering mutual Growth.This allows you to report and verify misleading information with insights from experienced farmers and agricultural experts.
-
-                </p>
-            </div>
-        </a>
-
-        <!-- AI-Powered Verification Card -->
-        <a href="/ml-analyzer" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/aiv.jpg" alt="AI-Powered Verification" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">ML Analyzer</h3>
-                <h5 class="text-xl font-semibold mb-2 text-green-600">AI-Powered Verification</h5>
-                <p class="text-gray-600">Our machine learning engine lets farmers flag potential misinformation, analyse environmental and agronomic factors and receives real time recommendations to boost yields and productivity. It provides users with confidence scores and evidence-based assessments to help you make informed decisions about agricultural practices. 
-
-                </p>
-            </div>
-        </a>
-
-        <!-- Data-Backed Truths Card -->
-        <a href="/know_your_land" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/Lan2.jpg" alt="Data-Backed Truths" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">Know Your Land</h3>
-                 <h5 class="text-xl font-semibold mb-2 text-green-600">Data-Backed Truths</h5>
-                <p class="text-gray-600">Designed to help farmers understand their land deeply. 
-                    This tool provides insights into soil types, fertility , crop performance, and localised weather insights using data from local agricultural research institutions and satellite imagery.
-                </p>
-            </div>
-        </a>
-        <!-- farm truth -->
-            <a href="/know_your_land" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/FarmT.jpg" alt="Data-Backed Truths" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">Farm Truth</h3>
-                 <h5 class="text-xl font-semibold mb-2 text-green-600">Progress Analytics</h5>
-                <p class="text-gray-600">With The Farm Truth tool,
- farmers can see the bigger picture
- Farm Truth analyzes agricultural data to generate detailed reports on farm outputs, losses, water usage,  rainfall, and other critical farming metrics — empowering farmers to make smarter, and data-driven decisions.
-                </p>
-            </div>
-        </a>
-         <a href="/ussd" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/usd.jpg" alt="Data-Backed Truths" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">USSD and Voice Agent services</h3>
-                 <h5 class="text-xl font-semibold mb-2 text-green-600">Go Live</h5>
-                <p class="text-gray-600">Our USSD and Voice Agent services ensure that even farmers without smartphones or reliable internet access can benefit from AgriTrue. By dialing a simple code or using voice commands, farmers can access critical information, report issues, and receive guidance in real-time.
-                </p>
-            </div>
-        </a>
-        <a href="/chat" class="animated-card bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-            <img src="/static/images/aiF.jpg" alt="Data-Backed Truths" class="w-full h-48 object-cover rounded-t-xl">
-            <div class="p-6">
-                <h3 class="text-xl font-semibold mb-2 text-green-600">AI Chatbot</h3>
-                 <h5 class="text-xl font-semibold mb-2 text-green-600">Boost Yields</h5>
-                <p class="text-gray-600">Our AI Chatbot is available 24/7 to assist farmers with their queries. Whether you need advice on pest control, crop management, or soil health, our chatbot provides instant, reliable answers to help you make informed decisions.
-                </p>
-            </div>
-        </a>
-    </div>
-</section>
-<!-- NEW: Types of Agriculture Section with Image Carousels -->
-<section id="types-of-agriculture" 
-         style="max-width:1280px; margin:3rem auto; padding-top:2rem; font-family:Arial, sans-serif;">
-  
-  <!-- Section Title -->
-  <h2 style="font-size:1.875rem; font-weight:bold; text-align:center; color:#166534; margin-bottom:2rem;">
-    Exploring Types of Agriculture
-  </h2>
-  
-  <!-- Grid Container -->
-  <div style="display:grid; grid-template-columns:1fr; gap:2rem;" id="agriculture-grid">
-    
-    <!-- Crop Farming Card -->
-    <div style="display:flex; flex-direction:column; align-items:center; padding:1rem; border-radius:0.75rem; 
-                background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;">
-      
-      <!-- Moving Images (Marquee style) -->
-      <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
-        <div style="display:flex; gap:1rem; width:max-content; animation:scrollCrop 20s linear infinite;">
-          <img src="/static/images/crop1.jpg" class="carousel-img">
-          <img src="/static/images/Lan1.jpg" class="carousel-img">
-          <img src="/static/images/crop3.jpg" class="carousel-img">
-          <img src="/static/images/crop4.jpg" class="carousel-img">
-          <!-- Duplicate for seamless loop -->
-          <img src="/static/images/crop1.jpg" class="carousel-img">
-          <img src="/static/images/Lan1.jpg" class="carousel-img">
-          <img src="/static/images/crop3.jpg" class="carousel-img">
-          <img src="/static/images/crop4.jpg" class="carousel-img">
-        </div>
-      </div>
-      
-      <!-- Title -->
-      <h4 style="font-size:1.5rem; font-weight:600; color:#15803d; margin-bottom:0.5rem;">
-        Crop Farming
-      </h4>
-      
-      <!-- Description -->
-      <p style="color:#4b5563; text-align:center; font-size:1rem; line-height:1.6;">
-        <b>Empowering Crop Growth with Trustworthy Insights</b><br>
-        At AgriTrue, we provide farmers with reliable, real-time agricultural information to maximize crop yields and resist the spread of harmful myths and rumors. Our ML Analyzer interprets patterns from weather, pest activity, and soil data—helping you adapt swiftly and make informed decisions that elevate productivity across Africa and beyond.
-      </p>
-    </div>
-    
-    <!-- Livestock & Poultry Farming Card -->
-    <div style="display:flex; flex-direction:column; align-items:center; padding:1rem; border-radius:0.75rem; 
-                background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); overflow:hidden;">
-      
-      <!-- Moving Images -->
-      <div style="width:100%; overflow:hidden; margin-bottom:1rem; position:relative;">
-        <div style="display:flex; gap:1rem; width:max-content; animation:scrollLivestock 22s linear infinite;">
-          <img src="/static/images/kul1.jpg" class="carousel-img">
-          <img src="/static/images/an2.jpg" class="carousel-img">
-          <img src="/static/images/an3.jpg" class="carousel-img">
-          <img src="/static/images/an4.jpg" class="carousel-img">
-          <!-- Duplicate for seamless loop -->
-          <img src="/static/images/kul1.jpg" class="carousel-img">
-          <img src="/static/images/an2.jpg" class="carousel-img">
-          <img src="/static/images/an3.jpg" class="carousel-img">
-          <img src="/static/images/an4.jpg" class="carousel-img">
-        </div>
-      </div>
-      
-      <!-- Title -->
-      <h4 style="font-size:1.5rem; font-weight:600; color:#15803d; margin-bottom:0.5rem;">
-        Livestock & Poultry Farming
-      </h4>
-      
-      <!-- Description -->
-      <p style="color:#4b5563; text-align:center; font-size:1rem; line-height:1.6;">
-        <b>Strengthening Livestock Resilience through Smart Analysis</b><br>
-        In livestock farming, AgriTrue bridges information gaps. Whether identifying counterfeit feeds or optimizing animal health, our ML Analyzer gives you actionable insights. Track health trends, manage feeding, and safeguard your herd with AI-powered intelligence tailored for pastoralists and dairy producers alike.<br><br>
-        AgriTrue’s mission is to debunk misinformation—from fake veterinary advice to misleading disease rumors. Using machine learning, we empower poultry and pig farmers with validated solutions for feed, disease prevention, and production efficiency—protecting livelihoods with clarity and accuracy.
-      </p>
-    </div>
-    
-  </div>
-</section>
-
-<!-- Animations + Responsive Styling -->
-<style>
-  @keyframes scrollCrop {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  @keyframes scrollLivestock {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-
-  /* Default image size (desktop/laptop) */
-  .carousel-img {
-    width: 400px;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  /* On tablets */
-  @media (max-width: 1024px) {
-    .carousel-img {
-      width: 300px;
-      height: 200px;
-    }
-  }
-
-  /* On small devices (mobile) */
-  @media (max-width: 767px) {
-    .carousel-img {
-      width: 180px;
-      height: 120px;
-    }
-  }
-
-  /* Responsive: 2 columns on larger screens */
-  @media (min-width: 768px) {
-    #agriculture-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* Hover zoom effect */
-  #agriculture-grid img:hover {
-    transform: scale(1.05);
-    transition: transform 0.3s;
-  }
-</style>
-<!-- NEW: Get Started Section -->
-<section id="get-started" class="max-w-7xl mx-auto my-12 pt-8" style="font-family: Arial, sans-serif;">
-  <h2 class="text-3xl font-bold text-center text-green-800 mb-8">How it works</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    
-    <!-- Step 1 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-user"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 1: Register or Sign In</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Create a free AgriTrue account—choose web, mobile, or USSD. Just share your farm details, and you’re ready to start.</p>
-    </div>
-
-    <!-- Step 2 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-map-pin"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 2: Set Your Region</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Tell AgriTrue where you farm. We tailor soil, weather, and advice based on your zone.</p>
-    </div>
-
-    <!-- Step 3 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-camera"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 3: Upload or Capture</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Snap photos of your crops or input farm activity. Alternatively, input growing parameters manually or flag dubious claims.</p>
-    </div>
-
-    <!-- Step 4 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-brain"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 4: Analyze with Smart Tools</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Leverage ML Analyzer for real-time insights. Or use 'Know Your Land' for soil type, fertility, and weather-informed recommendations. Plus, Farm Truth generates visuals to help you understand progress.</p>
-    </div>
-
-    <!-- Step 5 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 5: Get Actionable Insights</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Receive easy-to-understand guidance—crop inputs, pest alerts, irrigation scheduling, localized weather, and yield optimizations.</p>
-    </div>
-
-    <!-- Step 6 Card -->
-    <div class="card" style="padding: 2rem; text-align: center; border-radius: 1.5rem; background:#fff;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-                transition: all 0.3s ease-in-out;">
-      <div style="font-size: 2.5rem; color: #10b981; margin-bottom: 1rem;"><i class="fas fa-chart-line"></i></div>
-      <h4 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Step 6: Monitor & Improve</h4>
-      <p style="font-size: 1rem; color: #4b5563;">Track your farm’s growth with dashboards and progress trends. Learn what works and adjust dynamically.</p>
-    </div>
-
-  </div>
-
-  <!-- Button -->
-  <div style="text-align: center; margin-top: 2rem;">
-    <a href="/register" style="display: inline-block; padding: 1rem 2rem; font-size: 1.125rem; font-weight: 700; color: #fff; background-color: #16a34a; border-radius: 9999px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); transition: all 0.3s ease-in-out;">
-      Start Growing with Truth
-    </a>
-  </div>
-</section>
-
-<!-- Hover Effect -->
-<style>
-  #get-started .card:hover {
-    background-color: #d1fae5; /* light green */
-    transform: translateY(-5px);
-  }
-</style>
-
-
-<!-- Section with Image on Left, Text on Right, now focused on fighting misinformation -->
-<section class="mb-12" id="combating-misinformation">
-    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col md:flex-row-reverse items-center gap-8">
-        <!-- Image Container on the Left -->
-        <div class="md:w-1/2">
-            <img src="/static/images/data1.jpg" alt="Ensuring accurate agricultural data" class="w-full rounded-xl shadow-md">
-        </div>
-        <!-- Text and Table Container on the Right -->
-        <div class="md:w-1/2 flex flex-col justify-center h-full">
-            <h2 class="text-3xl font-bold text-green-700 mb-4">Empowering Farmers with Verified Information</h2>
-            <p class="text-gray-600 leading-relaxed mb-6">
-                Misinformation in agriculture can lead to poor yields, financial loss, and environmental harm. Our platform is dedicated to providing a safe, reliable space where farmers can find accurate information, share verified insights, and avoid common pitfalls caused by false claims.
-            </p>
-            
-            <!-- Example Table focused on verification metrics -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
-                    <thead class="bg-green-100">
-                        <tr>
-                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">Metric</th>
-                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">Last Month</th>
-                            <th class="py-3 px-4 border-b text-left text-sm font-semibold text-green-600">This Month</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="py-3 px-4 border-b text-gray-700">Misinformation Claims Flagged</td>
-                            <td class="py-3 px-4 border-b text-gray-700">85</td>
-                            <td class="py-3 px-4 border-b text-gray-700">120</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="py-3 px-4 border-b text-gray-700">Verified Reports Published</td>
-                            <td class="py-3 px-4 border-b text-gray-700">18</td>
-                            <td class="py-3 px-4 border-b text-gray-700">24</td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="py-3 px-4 border-b text-gray-700">Engagement with Verified Content</td>
-                            <td class="py-3 px-4 border-b text-gray-700">+12%</td>
-                            <td class="py-3 px-4 border-b text-gray-700">+15%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Section for Impact & Testimonials -->
-<section class="mb-12 py-12 bg-white rounded-xl shadow-lg" id="case-study">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-center text-green-700 mb-4">Proving Our Value</h2>
-        <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
-            See how AgriTrue transforms challenges into triumphs. This case study demonstrates the direct financial impact of our platform on a farmer's operations.
-        </p>
-
-        <!-- Case Study Content -->
-        <div class="flex flex-col md:flex-row gap-8 items-center">
-            <!-- Problem Description -->
-            <div class="md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-3 text-red-600">The Problem: Misinformation Costs</h3>
-                <p class="text-gray-600 mb-4">
-                    A farmer, Sarah, adopted a widely-shared but unproven natural pesticide recipe she found online. The mixture failed to protect her crop, leading to a severe pest infestation.
-                </p>
-                <ul class="list-disc list-inside text-gray-700 space-y-2">
-                    <li><span class="font-bold">Misinformation Source:</span> Social Media Post</li>
-                    <li><span class="font-bold">Initial Cost of Spray:</span> $500</li>
-                    <li><span class="font-bold">Resulting Crop Loss:</span> 25% of her harvest</li>
-                    <li><span class="font-bold">Estimated Financial Loss:</span> <span class="text-red-600 font-bold">$10,000</span></li>
-                </ul>
-            </div>
-
-            <!-- Solution and Results -->
-            <div class="md:w-1/2 p-6 bg-green-50 rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-3 text-green-700">The AgriTrue Solution</h3>
-                <p class="text-gray-600 mb-4">
-                    After joining AgriTrue, Sarah used our AI-Powered Verification tool for a new pest issue. The tool flagged a similar solution as misinformation, recommending a proven, verified alternative from our database.
-                </p>
-                <ul class="list-disc list-inside text-gray-700 space-y-2">
-                    <li><span class="font-bold">Platform Tool Used:</span> AI-Powered Verification</li>
-                    <li><span class="font-bold">Verified Solution Cost:</span> $213</li>
-                    <li><span class="font-bold">Pest Infestation Rate:</span> 0%</li>
-                    <li><span class="font-bold">Financial Benefit:</span> <span class="text-green-700 font-bold">Crop saved, preventing another $10,000 loss.</span></li>
-                </ul>
-            </div>
-        </div>        <!-- Call to Action -->
-        <div class="mt-12 text-center">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Ready to See Results Like Sarah?</h3>
-            <a href="/register" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
-                Join AgriTrue Today
-            </a>
-        </div>
-    </div>
-</section>
-<!-- Section for the Final "Gem" content -->
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-4xl font-extrabold text-center text-green-800 mb-6 tracking-tight">A Brighter Future for Agriculture</h2>
-        <p class="text-center text-gray-700 mb-12 max-w-2xl mx-auto text-lg">
-            Discover verified news, expert insights, and inspiring success stories that drive agricultural innovation and sustainability.
-        </p>
-        <div class="flex flex-col lg:flex-row gap-10">
-            <!-- Left side: YouTube Video -->
-            <div class="lg:w-1/2 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.03] bg-white">
-                <div class="relative w-full" style="padding-top: 56.25%;">
-                    <iframe
-    class="absolute top-0 left-0 w-full h-full rounded-t-2xl"
-    src="https://www.youtube.com/embed/iqvHxZaMjF4"
-    title="Sustainable Farming Video"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-</iframe>
-
                 </div>
-                <div class="p-8">
-                    <h3 class="text-2xl font-semibold mb-3 text-green-700">The Power of Sustainable Farming</h3>
-                    <p class="text-gray-600 text-base">
-                        Sustainable farming is more than a trend—it's a proven approach that combines scientific research, community wisdom, and technology to improve productivity and protect the environment. By using verified, data-driven techniques, farmers can optimize water usage, reduce chemical inputs, and boost soil health. These practices not only increase yields but also help prevent crop losses from pests and disease, ensuring food security for communities. AgriTrue empowers farmers with access to expert insights, real-time analytics, and collaborative tools, enabling them to make informed decisions that benefit both their land and their livelihoods. Join the movement towards a greener, more resilient future in agriculture.
+
+                <div class="glass-panel hidden rounded-[2rem] p-6 shadow-float lg:block">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-200">AgriTrue Toolkit</div>
+                            <h2 class="mt-2 font-display text-2xl font-extrabold">One platform, multiple farmer needs</h2>
+                        </div>
+                        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-400 text-2xl text-green-950">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-3">
+                        <a href="/ml-analyzer" class="flex items-center gap-4 rounded-2xl bg-white/10 p-4 transition hover:bg-white/18">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/15 text-green-200"><i class="fa-solid fa-microscope"></i></div>
+                            <div class="min-w-0">
+                                <div class="font-bold">Smart Analyzer</div>
+                                <div class="mt-1 text-xs text-white/60">Screen crops, livestock and farm documents.</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right ml-auto text-green-300"></i>
+                        </a>
+
+                        <a href="/know_your_land" class="flex items-center gap-4 rounded-2xl bg-white/10 p-4 transition hover:bg-white/18">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/15 text-green-200"><i class="fa-solid fa-map-location-dot"></i></div>
+                            <div class="min-w-0">
+                                <div class="font-bold">Know Your Land</div>
+                                <div class="mt-1 text-xs text-white/60">Review county-based soil and crop information.</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right ml-auto text-green-300"></i>
+                        </a>
+
+                        <a href="/ussd" class="flex items-center gap-4 rounded-2xl bg-white/10 p-4 transition hover:bg-white/18">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/15 text-green-200"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                            <div class="min-w-0">
+                                <div class="font-bold">USSD & Voice</div>
+                                <div class="mt-1 text-xs text-white/60">Type, dial or speak an agricultural question.</div>
+                            </div>
+                            <i class="fa-solid fa-arrow-right ml-auto text-green-300"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2" aria-label="Hero slideshow controls">
+                <button class="hero-dot h-2.5 w-8 rounded-full bg-white" data-slide="0" aria-label="Show slide 1"></button>
+                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="1" aria-label="Show slide 2"></button>
+                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="2" aria-label="Show slide 3"></button>
+                <button class="hero-dot h-2.5 w-2.5 rounded-full bg-white/45" data-slide="3" aria-label="Show slide 4"></button>
+            </div>
+        </header>
+
+        <!-- Platform strip -->
+        <section class="border-b border-green-100 bg-white">
+            <div class="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-green-100 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
+                <div class="bg-white px-4 py-6 text-center">
+                    <i class="fa-solid fa-shield-heart text-xl text-green-600"></i>
+                    <div class="mt-2 text-sm font-extrabold text-green-950">Trust-focused guidance</div>
+                </div>
+                <div class="bg-white px-4 py-6 text-center">
+                    <i class="fa-solid fa-language text-xl text-green-600"></i>
+                    <div class="mt-2 text-sm font-extrabold text-green-950">English & Kiswahili</div>
+                </div>
+                <div class="bg-white px-4 py-6 text-center">
+                    <i class="fa-solid fa-mobile-screen text-xl text-green-600"></i>
+                    <div class="mt-2 text-sm font-extrabold text-green-950">Mobile-first access</div>
+                </div>
+                <div class="bg-white px-4 py-6 text-center">
+                    <i class="fa-solid fa-users text-xl text-green-600"></i>
+                    <div class="mt-2 text-sm font-extrabold text-green-950">Community knowledge</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why choose -->
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center">
+                    <span class="section-kicker justify-center">Why AgriTrue</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">
+                        Built to make agricultural information more useful and accessible.
+                    </h2>
+                    <p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">
+                        Each tool is designed around practical farmer workflows—from identifying visible problems to checking claims, understanding land conditions and sharing local knowledge.
                     </p>
                 </div>
+
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-circle-check"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Combat misinformation</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review agricultural claims and promote information that can be checked against professional or institutional sources.</p>
+                    </article>
+
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-location-crosshairs"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Localized insights</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Explore county-oriented soil, crop and farming information designed for Kenyan users.</p>
+                    </article>
+
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-camera"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Visual screening</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Photograph a crop or animal and receive AI-assisted observations, practical measures and escalation guidance.</p>
+                    </article>
+
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-signal"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Multiple access channels</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Use web, mobile, USSD simulation, voice input and community tools from one connected platform.</p>
+                    </article>
+
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-chart-line"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Better farm decisions</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Turn observations and records into clearer next steps instead of relying on unverified advice.</p>
+                    </article>
+
+                    <article class="feature-card reveal rounded-3xl border border-green-100 bg-white p-6 shadow-card">
+                        <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-people-roof"></i></div>
+                        <h3 class="mt-5 text-xl font-extrabold text-green-950">Community transparency</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Share notes, comments and verified observations within an accountable agricultural community.</p>
+                    </article>
+                </div>
             </div>
-            <!-- Right side: Articles and Good News -->
-            <div class="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Article Card 1 -->
-                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-                    <div class="p-6">
-                        <h4 class="text-lg font-bold text-green-800 mb-2">New Pest-Resistant Crop Variety Released</h4>
-                        <p class="text-xs text-gray-400 mb-3">Dec 15, 2024</p>
-                        <p class="text-gray-600 mb-4">Breakthrough research delivers new crop varieties, helping farmers protect harvests and boost productivity.</p>
-                        <a href="/research" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+        </section>
+
+        <!-- Capability ticker -->
+        <section class="border-y border-green-100 bg-green-950 py-5 text-white">
+            <div class="ticker-mask overflow-hidden">
+                <div class="ticker-track flex gap-3 px-3">
+                    {% for _ in range(2) %}
+                        <div class="flex shrink-0 gap-3">
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-wheat-awn mr-2 text-green-300"></i>Crop health screening</div>
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-cow mr-2 text-green-300"></i>Livestock observations</div>
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-flask mr-2 text-green-300"></i>Soil information</div>
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-file-shield mr-2 text-green-300"></i>Document screening</div>
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-microphone mr-2 text-green-300"></i>Voice assistance</div>
+                            <div class="rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-bold"><i class="fa-solid fa-users mr-2 text-green-300"></i>Community verification</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools -->
+        <section id="tools" class="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+                    <div class="max-w-3xl">
+                        <span class="section-kicker">Explore the platform</span>
+                        <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Farmer tools designed for practical use.</h2>
+                        <p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">Choose the service that matches the decision you need to make today.</p>
+                    </div>
+                    <a href="/about" class="inline-flex self-start items-center rounded-full border border-green-300 px-5 py-3 text-sm font-extrabold text-green-800 transition hover:bg-green-50">
+                        Learn about AgriTrue <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <a href="/community-notes" class="tool-card reveal group rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-2xl text-emerald-700"><i class="fa-solid fa-people-group"></i></div>
+                            <i class="tool-arrow fa-solid fa-arrow-right text-green-700"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold text-green-950">Community Notes</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Share agricultural observations, comment on local experiences and review verified community knowledge.</p>
+                    </a>
+
+                    <a href="/ml-analyzer" class="tool-card reveal group rounded-3xl border border-green-200 bg-green-950 p-6 text-white shadow-xl">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-400 text-2xl text-green-950"><i class="fa-solid fa-microscope"></i></div>
+                            <span class="rounded-full bg-white/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-green-200">Featured</span>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold">Smart Analyzer</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/65">Take a photo of a crop or animal, or scan a farm document for AI-assisted screening.</p>
+                        <div class="mt-5 inline-flex items-center text-sm font-extrabold text-green-300">Open analyzer <i class="tool-arrow fa-solid fa-arrow-right ml-2"></i></div>
+                    </a>
+
+                    <a href="/know_your_land" class="tool-card reveal group rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-map-location-dot"></i></div>
+                            <i class="tool-arrow fa-solid fa-arrow-right text-green-700"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold text-green-950">Know Your Land</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Review available county-based soil, pH, crop and fertiliser information.</p>
+                    </a>
+
+                    <a href="/dashboard" class="tool-card reveal group rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-blue-100 text-2xl text-blue-700"><i class="fa-solid fa-chart-pie"></i></div>
+                            <i class="tool-arrow fa-solid fa-arrow-right text-green-700"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold text-green-950">Farm Truth</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Explore visual agricultural information, trends and decision-support content.</p>
+                    </a>
+
+                    <a href="/ussd" class="tool-card reveal group rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-purple-100 text-2xl text-purple-700"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                            <i class="tool-arrow fa-solid fa-arrow-right text-green-700"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold text-green-950">USSD & Voice</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Simulate *456# or ask an agricultural question using text or microphone input.</p>
+                    </a>
+
+                    <a href="/chatbot" class="tool-card reveal group rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-14 w-14 place-items-center rounded-2xl bg-rose-100 text-2xl text-rose-700"><i class="fa-solid fa-comments"></i></div>
+                            <i class="tool-arrow fa-solid fa-arrow-right text-green-700"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold text-green-950">AI Chatbot</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Ask practical farming questions and receive concise agricultural guidance.</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story -->
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                <div class="story-image reveal relative overflow-hidden rounded-[2rem] shadow-soft">
+                    <img src="{{ url_for('static', filename='images/isa.jpg') }}" alt="Farmer using agricultural technology" class="h-[430px] w-full object-cover sm:h-[540px]">
+                    <div class="absolute bottom-5 left-5 right-5 z-10 rounded-2xl border border-white/20 bg-green-950/75 p-5 text-white backdrop-blur">
+                        <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">Our purpose</div>
+                        <p class="mt-2 text-sm leading-6 text-white/75">Help farmers distinguish useful information from harmful misinformation and act with greater confidence.</p>
                     </div>
                 </div>
-                <!-- Article Card 2 -->
-                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-                    <div class="p-6">
-                        <h4 class="text-lg font-bold text-green-800 mb-2">Government Announces New Grant for Small Farms</h4>
-                        <p class="text-xs text-gray-400 mb-3">Dec 12, 2024</p>
-                        <p class="text-gray-600 mb-4">A new initiative supports sustainable practices and technology adoption for small-scale farmers.</p>
-                        <a href="/research" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+
+                <div class="reveal">
+                    <span class="section-kicker">Our story</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Technology should make trusted agricultural information easier to reach.</h2>
+                    <p class="mt-6 text-base leading-7 text-slate-600">
+                        AgriTrue grew from a simple belief: farmers should not have to choose between inaccessible expert information and unverified advice. The platform combines practical digital tools with community participation to support more informed decisions.
+                    </p>
+                    <p class="mt-4 text-base leading-7 text-slate-600">
+                        From visual screening and land information to USSD, voice assistance and community notes, AgriTrue is designed to remain useful across different devices, connectivity levels and farming contexts.
+                    </p>
+
+                    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-green-100 bg-white p-5 shadow-card">
+                            <div class="text-sm font-extrabold text-green-800">Inclusive access</div>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Mobile-first layouts, voice support and USSD-inspired workflows.</p>
+                        </div>
+                        <div class="rounded-2xl border border-green-100 bg-white p-5 shadow-card">
+                            <div class="text-sm font-extrabold text-green-800">Responsible assistance</div>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Clear reminders when professional inspection or testing is necessary.</p>
+                        </div>
+                    </div>
+
+                    <a href="/about" class="mt-8 inline-flex items-center rounded-full bg-green-700 px-6 py-3.5 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-800">
+                        Learn more about AgriTrue <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="bg-green-950 px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center">
+                    <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">How it works</div>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl lg:text-5xl">Move from observation to an informed next step.</h2>
+                    <p class="mt-5 text-base leading-7 text-white/65 sm:text-lg">AgriTrue supports the process without pretending that digital screening replaces local professional expertise.</p>
+                </div>
+
+                <div class="mt-12 grid gap-5 md:grid-cols-3">
+                    <article class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">1</div>
+                            <i class="fa-solid fa-camera text-2xl text-green-300"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold">Capture or describe</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Photograph visible symptoms, upload a document, select your county or write the agricultural question.</p>
+                    </article>
+
+                    <article class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">2</div>
+                            <i class="fa-solid fa-magnifying-glass-chart text-2xl text-green-300"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold">Review the guidance</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Read the likely concerns, visible indicators, practical actions and limitations of the result.</p>
+                    </article>
+
+                    <article class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="flex items-center justify-between">
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">3</div>
+                            <i class="fa-solid fa-user-doctor text-2xl text-green-300"></i>
+                        </div>
+                        <h3 class="mt-6 text-xl font-extrabold">Verify and act</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Escalate urgent or uncertain cases to an agronomist, extension officer, veterinarian, laboratory or issuing institution.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Impact -->
+        <section class="bg-earth-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+                    <div>
+                        <span class="section-kicker">The value of verification</span>
+                        <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">A wrong recommendation can cost more than the input itself.</h2>
+                        <p class="mt-5 text-base leading-7 text-slate-600">AgriTrue encourages farmers to verify claims before committing money, applying products or delaying professional intervention.</p>
+                        <a href="/community-notes" class="mt-7 inline-flex items-center rounded-full bg-green-700 px-6 py-3.5 font-extrabold text-white shadow transition hover:bg-green-800">
+                            Review Community Notes <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <article class="impact-card rounded-3xl border border-red-100 bg-white p-6 shadow-card">
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-red-100 text-red-600"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <h3 class="mt-5 text-xl font-extrabold text-slate-900">The risk</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Unverified pesticide, fertiliser or animal-health advice may waste money, delay treatment or harm production.</p>
+                        </article>
+
+                        <article class="impact-card rounded-3xl border border-green-200 bg-green-900 p-6 text-white shadow-card">
+                            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-green-950"><i class="fa-solid fa-shield-heart"></i></div>
+                            <h3 class="mt-5 text-xl font-extrabold">The AgriTrue approach</h3>
+                            <p class="mt-3 text-sm leading-6 text-white/65">Use digital screening for direction, then verify critical decisions with qualified local professionals and trusted institutions.</p>
+                        </article>
                     </div>
                 </div>
-                <!-- Article Card 3 -->
-                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-                    <div class="p-6">
-                        <h4 class="text-lg font-bold text-green-800 mb-2">AI-Powered Tools Boost Crop Health by 20%</h4>
-                        <p class="text-xs text-gray-400 mb-3">Dec 8, 2024</p>
-                        <p class="text-gray-600 mb-4">Recent studies show platforms like AgriTrue help farmers increase yields and reduce waste through smart insights.</p>
-                        <a href="/research" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+            </div>
+        </section>
+
+        <!-- Learning and research -->
+        <section class="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+                    <div class="max-w-3xl">
+                        <span class="section-kicker">Learn and grow</span>
+                        <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Knowledge for a more resilient agricultural future.</h2>
+                    </div>
+                    <a href="/research" class="inline-flex self-start items-center rounded-full border border-green-300 px-5 py-3 text-sm font-extrabold text-green-800 hover:bg-green-50">
+                        Visit Research Hub <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="mt-12 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+                    <article class="reveal overflow-hidden rounded-[2rem] bg-green-950 text-white shadow-soft">
+                        <div class="relative aspect-video overflow-hidden">
+                            <iframe
+                                class="absolute inset-0 h-full w-full"
+                                src="https://www.youtube.com/embed/iqvHxZaMjF4"
+                                title="Sustainable farming video"
+                                loading="lazy"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="p-6 sm:p-8">
+                            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-300">Featured learning</div>
+                            <h3 class="mt-3 font-display text-2xl font-extrabold">The power of sustainable farming</h3>
+                            <p class="mt-4 text-sm leading-6 text-white/65">Sustainable practices combine soil care, efficient resource use, crop diversity and locally verified knowledge to support stronger farm systems.</p>
+                        </div>
+                    </article>
+
+                    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
+                        <a href="/research" class="article-card reveal rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                            <div class="text-xs font-extrabold uppercase tracking-[.15em] text-green-700">Research</div>
+                            <h3 class="mt-3 text-xl font-extrabold text-green-950">Understand the evidence behind agricultural recommendations</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Review resources and practical knowledge that can support safer farm decisions.</p>
+                        </a>
+
+                        <a href="/podcast" class="article-card reveal rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                            <div class="text-xs font-extrabold uppercase tracking-[.15em] text-green-700">Podcast</div>
+                            <h3 class="mt-3 text-xl font-extrabold text-green-950">Listen to conversations on farming, technology and trust</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Explore agricultural ideas in a format that works while travelling or working.</p>
+                        </a>
+
+                        <a href="/faqs" class="article-card reveal rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                            <div class="text-xs font-extrabold uppercase tracking-[.15em] text-green-700">Support</div>
+                            <h3 class="mt-3 text-xl font-extrabold text-green-950">Find answers about accounts, tools and platform use</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Review common questions before contacting the AgriTrue support team.</p>
+                        </a>
                     </div>
                 </div>
-                <!-- Article Card 4 -->
-                <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-                    <div class="p-6">
-                        <h4 class="text-lg font-bold text-green-800 mb-2">New Community Forum Connects Farmers Nationwide</h4>
-                        <p class="text-xs text-gray-400 mb-3">Dec 5, 2024</p>
-                        <p class="text-gray-600 mb-4">AgriTrue's expanding community enables knowledge sharing and collaboration for best farming practices.</p>
-                        <a href="/research" class="text-green-700 font-semibold hover:underline">Read More &rarr;</a>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
+            <div class="reveal mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-green-950 via-green-800 to-green-600 px-6 py-12 text-white shadow-soft sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14 lg:py-16">
+                <div class="max-w-3xl">
+                    <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">Start with the right tool</div>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl">Bring clearer information into your next farm decision.</h2>
+                    <p class="mt-4 text-base leading-7 text-white/65">Create an account, explore AgriTrue tools and verify important recommendations before acting.</p>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:ml-10 lg:flex-col xl:flex-row">
+                    {% if current_user.is_authenticated %}
+                        <a href="/dashboard" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 font-extrabold text-green-900 shadow transition hover:-translate-y-1">Open Dashboard</a>
+                    {% else %}
+                        <a href="/register" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 font-extrabold text-green-900 shadow transition hover:-translate-y-1">Create Account</a>
+                    {% endif %}
+                    <a href="/donate" class="inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-3.5 font-extrabold text-white transition hover:bg-white/10">Support AgriTrue</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#031d0f] text-white">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+            <div class="lg:col-span-1">
+                <div class="flex items-center gap-3">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-12 w-12 rounded-full object-cover">
+                    <div>
+                        <div class="font-display text-xl font-extrabold">AgriTrue</div>
+                        <div class="mt-1 text-[10px] font-bold uppercase tracking-[.2em] text-green-300">Empowering agriculture</div>
                     </div>
                 </div>
+                <p class="mt-5 text-sm leading-6 text-white/55">Digital tools, community knowledge and practical AI-assisted guidance for more informed agricultural decisions.</p>
+                <div class="mt-5 flex gap-3">
+                    <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="tel:+254715142906" aria-label="Call AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-solid fa-phone"></i></a>
+                    <a href="mailto:info@agritrue.org" aria-label="Email AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Farmer tools</h3>
+                <div class="mt-5 space-y-3 text-sm text-white/55">
+                    <a href="/ml-analyzer" class="block transition hover:text-green-300">Smart Analyzer</a>
+                    <a href="/know_your_land" class="block transition hover:text-green-300">Know Your Land</a>
+                    <a href="/community-notes" class="block transition hover:text-green-300">Community Notes</a>
+                    <a href="/ussd" class="block transition hover:text-green-300">USSD & Voice</a>
+                    <a href="/chatbot" class="block transition hover:text-green-300">AI Chatbot</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Resources</h3>
+                <div class="mt-5 space-y-3 text-sm text-white/55">
+                    <a href="/about" class="block transition hover:text-green-300">About AgriTrue</a>
+                    <a href="/research" class="block transition hover:text-green-300">Research Hub</a>
+                    <a href="/podcast" class="block transition hover:text-green-300">Podcast</a>
+                    <a href="/faqs" class="block transition hover:text-green-300">FAQs</a>
+                    <a href="/donate" class="block transition hover:text-green-300">Donate</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Contact</h3>
+                <div class="mt-5 space-y-4 text-sm text-white/55">
+                    <p class="flex gap-3"><i class="fa-solid fa-location-dot mt-1 text-green-300"></i><span>Nairobi, Kenya</span></p>
+                    <p class="flex gap-3"><i class="fa-solid fa-envelope mt-1 text-green-300"></i><a href="mailto:info@agritrue.org" class="hover:text-white">info@agritrue.org</a></p>
+                    <p class="flex gap-3"><i class="fa-solid fa-envelope-open-text mt-1 text-green-300"></i><a href="mailto:enyongesa462@gmail.com" class="hover:text-white">enyongesa462@gmail.com</a></p>
+                    <p class="flex gap-3"><i class="fa-solid fa-phone mt-1 text-green-300"></i><a href="tel:+254715142906" class="hover:text-white">+254 715 142 906</a></p>
+                </div>
+
+                <button id="openNewsletterBtn" type="button" class="mt-5 rounded-full bg-green-600 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-green-500">
+                    Join Newsletter
+                </button>
             </div>
         </div>
-    </div>
-</section>
-    
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Farm Truth</a></li>
-                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
-                </div>
+
+        <div class="border-t border-white/10 px-4 py-6">
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-xs text-white/40 sm:flex-row sm:text-left">
+                <p>© <span id="currentYear"></span> AgriTrue. All rights reserved.</p>
+                <p>AI-assisted information should be verified for critical farm decisions.</p>
             </div>
-            <hr class="border-gray-700 my-8">
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
         </div>
     </footer>
-    
+
+    <!-- Newsletter modal -->
+    <div id="newsletterModal" class="newsletter-modal" role="dialog" aria-modal="true" aria-labelledby="newsletterTitle">
+        <div class="newsletter-card relative w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+            <div class="bg-gradient-to-r from-green-950 to-green-600 p-7 text-white sm:p-8">
+                <button id="closeNewsletterBtn" type="button" class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20" aria-label="Close newsletter">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="grid h-13 w-13 place-items-center rounded-2xl bg-green-400 text-xl text-green-950"><i class="fa-solid fa-envelope-open-text"></i></div>
+                <h2 id="newsletterTitle" class="mt-5 font-display text-2xl font-extrabold sm:text-3xl">Join the AgriTrue newsletter</h2>
+                <p class="mt-3 text-sm leading-6 text-white/68">Receive agricultural insights, platform updates and practical farming content.</p>
+            </div>
+
+            <form id="newsletterForm" action="https://formspree.io/f/xkgplzaj" method="POST" class="space-y-4 p-6 sm:p-8">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="newsletterName" class="mb-2 block text-sm font-bold text-slate-700">Full name</label>
+                        <input id="newsletterName" type="text" name="name" required class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100">
+                    </div>
+                    <div>
+                        <label for="newsletterEmail" class="mb-2 block text-sm font-bold text-slate-700">Email address</label>
+                        <input id="newsletterEmail" type="email" name="email" required class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100">
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="newsletterPhone" class="mb-2 block text-sm font-bold text-slate-700">Phone number</label>
+                        <input id="newsletterPhone" type="tel" name="phone" class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100">
+                    </div>
+                    <div>
+                        <label for="newsletterLocation" class="mb-2 block text-sm font-bold text-slate-700">County / area</label>
+                        <input id="newsletterLocation" type="text" name="location" class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100">
+                    </div>
+                </div>
+
+                <button id="newsletterSubmitBtn" type="submit" class="w-full rounded-xl bg-green-700 px-5 py-3.5 font-extrabold text-white transition hover:bg-green-800">
+                    Subscribe
+                </button>
+
+                <p class="text-center text-xs leading-5 text-slate-500">We respect your privacy. You can unsubscribe at any time.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <section id="chatbotPanel" class="chatbot-panel flex-col" aria-hidden="true">
+        <header class="flex items-center justify-between bg-gradient-to-r from-green-950 to-green-700 px-5 py-4 text-white">
+            <div class="flex items-center gap-3">
+                <div class="grid h-11 w-11 place-items-center rounded-2xl bg-green-400 text-green-950"><i class="fa-solid fa-seedling"></i></div>
+                <div>
+                    <div class="font-extrabold">AgriTrue Assistant</div>
+                    <div class="mt-1 flex items-center gap-2 text-xs text-green-200"><span class="h-2 w-2 rounded-full bg-green-300"></span>Farmer guidance</div>
+                </div>
+            </div>
+            <button id="closeChatbotBtn" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-xl hover:bg-white/20" aria-label="Close chatbot">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+
+        <div id="chatMessages" class="flex flex-1 flex-col gap-3 overflow-y-auto bg-green-50/55 p-4" aria-live="polite">
+            <div class="chat-message bot">
+                Hello farmer. Ask me a practical agricultural question. For crop, livestock or document photos, use the Smart Analyzer.
+            </div>
+        </div>
+
+        <div class="border-t border-green-100 bg-white p-4">
+            <div class="mb-3 flex gap-2">
+                <a href="/ml-analyzer" class="inline-flex items-center rounded-full bg-green-50 px-3 py-2 text-xs font-extrabold text-green-800 hover:bg-green-100">
+                    <i class="fa-solid fa-camera mr-2"></i>Analyze Photo
+                </a>
+                <button id="stopSpeechBtn" type="button" class="inline-flex items-center rounded-full bg-slate-100 px-3 py-2 text-xs font-extrabold text-slate-600 hover:bg-slate-200">
+                    <i class="fa-solid fa-volume-xmark mr-2"></i>Stop Voice
+                </button>
+            </div>
+
+            <form id="chatForm" class="flex items-end gap-2">
+                <button id="voiceInputBtn" type="button" class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-green-200 text-green-700 transition hover:bg-green-50" aria-label="Speak a question">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+
+                <textarea id="chatInput" rows="1" maxlength="700" placeholder="Ask a farming question…" class="max-h-28 min-h-12 flex-1 resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-4 focus:ring-green-100"></textarea>
+
+                <button id="chatSendBtn" type="submit" class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-green-700 text-white shadow transition hover:bg-green-800" aria-label="Send message">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+
+            <div class="mt-3 flex items-center justify-between">
+                <div id="voiceIndicator" class="hidden items-center gap-2 text-xs font-bold text-red-600"><span class="h-2 w-2 animate-pulse rounded-full bg-red-500"></span>Listening…</div>
+                <div class="ml-auto flex gap-2">
+                    <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" class="grid h-9 w-9 place-items-center rounded-full bg-[#25D366] text-white" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="tel:+254715142906" class="grid h-9 w-9 place-items-center rounded-full bg-green-700 text-white" aria-label="Call"><i class="fa-solid fa-phone"></i></a>
+                    <a href="mailto:enyongesa462@gmail.com" class="grid h-9 w-9 place-items-center rounded-full bg-blue-600 text-white" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <button id="chatbotLauncher" type="button" class="fixed bottom-5 right-5 z-[75] flex h-15 w-15 items-center justify-center rounded-full bg-green-700 text-2xl text-white shadow-float transition hover:-translate-y-1 hover:bg-green-800 sm:bottom-6 sm:right-6" aria-label="Open AgriTrue assistant" aria-expanded="false">
+        <i id="chatbotLauncherIcon" class="fa-solid fa-comment-dots"></i>
+    </button>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-5 left-1/2 z-[110] hidden w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl px-5 py-4 text-sm font-bold text-white shadow-2xl" role="alert"></div>
+
     <script>
-   // Loader Script (always 2s max)
-    window.addEventListener("load", () => {
-        const loader = document.getElementById("agritrue-loader");
-        setTimeout(() => {
-            loader.style.opacity = 0;
-            setTimeout(() => loader.style.display = "none", 500); // allow fade-out
-        }, 2000); // show loader for 2 seconds
-    });
+        document.addEventListener("DOMContentLoaded", () => {
+            const byId = (id) => document.getElementById(id);
 
-    // Slideshow Script
-    document.addEventListener('DOMContentLoaded', () => {
-        const slides = document.querySelectorAll('#slideshow .slide');
-        let current = 0;
-        if (slides.length > 0) {
-            slides[current].classList.add('active');
-        }
-        setInterval(() => {
-            slides[current].classList.remove('active');
-            current = (current + 1) % slides.length;
-            slides[current].classList.add('active');
-        }, 5000);
-    });
+            const mobileMenuBtn = byId("mobileMenuBtn");
+            const closeMobileMenu = byId("closeMobileMenu");
+            const mobileMenu = byId("mobileMenu");
+            const mobileMenuOverlay = byId("mobileMenuOverlay");
+            const toast = byId("toast");
 
-        // Mobile Menu Script
-        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-        const closeMobileMenuBtn = document.getElementById("closeMobileMenu");
-        const mobileMenu = document.getElementById("mobileMenu");
-        const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
-
-        mobileMenuBtn.addEventListener("click", () => {
-            mobileMenu.classList.add("show");
-            mobileMenuOverlay.classList.add("show");
-            document.body.style.overflow = "hidden";
-        });
-        
-        closeMobileMenuBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("show");
-            mobileMenuOverlay.classList.remove("show");
-            document.body.style.overflow = "auto";
-        });
-
-        mobileMenuOverlay.addEventListener("click", () => {
-            mobileMenu.classList.remove("show");
-            mobileMenuOverlay.classList.remove("show");
-            document.body.style.overflow = "auto";
-        });
-
-        // Chatbot Script
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeBtn = document.getElementById("close-chatbot");
-        const messagesDiv = document.getElementById("chatbot-messages");
-        const input = document.getElementById("chatbot-input");
-        const sendBtn = document.getElementById("send-message");
-        const micBtn = document.getElementById("mic-button");
-        const messages = [];
-
-        function appendMessage(text, isUser) {
-            const msg = document.createElement("div");
-            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
-            msg.textContent = text;
-            messagesDiv.appendChild(msg);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            appendMessage(text, true);
-            messages.push({ role: "user", content: text });
-            input.value = "";
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages })
-                });
-                const data = await res.json();
-                if (data.reply) {
-                    appendMessage(data.reply, false);
-                    messages.push({ role: "assistant", content: data.reply });
-                } else {
-                    appendMessage("No response from server.", false);
-                }
-            } catch (err) {
-                console.error(err);
-                appendMessage("Error connecting to the server.", false);
+            function showToast(message, type = "error") {
+                toast.textContent = message;
+                toast.className = [
+                    "fixed bottom-5 left-1/2 z-[110] w-[calc(100%-2rem)] max-w-md",
+                    "-translate-x-1/2 rounded-2xl px-5 py-4 text-sm font-bold text-white shadow-2xl",
+                    type === "success" ? "bg-green-800" : "bg-red-700"
+                ].join(" ");
+                toast.classList.remove("hidden");
+                window.clearTimeout(showToast.timer);
+                showToast.timer = window.setTimeout(() => toast.classList.add("hidden"), 5200);
             }
-        }
-        
-        sendBtn.onclick = sendMessage;
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") sendMessage();
-        };
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-        };
-        closeBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "flex";
-        };
-        
-        // 🎤 Speech Recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                input.value = transcript;
-                sendMessage();
-            };
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-                appendMessage("Sorry, I didn't catch that.", false);
-            };
-            micBtn.onclick = () => {
-                recognition.start();
-            };
-        } else {
-            micBtn.disabled = true;
-            micBtn.title = "Speech Recognition not supported in this browser.";
-        }
+
+            function openMobileMenu() {
+                mobileMenu.classList.add("show");
+                mobileMenuOverlay.classList.add("show");
+                mobileMenu.setAttribute("aria-hidden", "false");
+                mobileMenuBtn.setAttribute("aria-expanded", "true");
+                document.body.classList.add("menu-open");
+            }
+
+            function closeMenu() {
+                mobileMenu.classList.remove("show");
+                mobileMenuOverlay.classList.remove("show");
+                mobileMenu.setAttribute("aria-hidden", "true");
+                mobileMenuBtn.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("menu-open");
+            }
+
+            mobileMenuBtn.addEventListener("click", openMobileMenu);
+            closeMobileMenu.addEventListener("click", closeMenu);
+            mobileMenuOverlay.addEventListener("click", closeMenu);
+            mobileMenu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeMenu();
+                    closeNewsletter();
+                    closeChatbot();
+                }
+            });
+
+            // Hero slideshow
+            const slides = Array.from(document.querySelectorAll(".hero-slide"));
+            const dots = Array.from(document.querySelectorAll(".hero-dot"));
+            let activeSlide = 0;
+            let slideTimer = null;
+
+            function showSlide(index) {
+                if (!slides.length) return;
+
+                activeSlide = (index + slides.length) % slides.length;
+                slides.forEach((slide, slideIndex) => {
+                    slide.classList.toggle("active", slideIndex === activeSlide);
+                });
+
+                dots.forEach((dot, dotIndex) => {
+                    const active = dotIndex === activeSlide;
+                    dot.classList.toggle("w-8", active);
+                    dot.classList.toggle("w-2.5", !active);
+                    dot.classList.toggle("bg-white", active);
+                    dot.classList.toggle("bg-white/45", !active);
+                });
+            }
+
+            function startSlideshow() {
+                window.clearInterval(slideTimer);
+                slideTimer = window.setInterval(() => {
+                    showSlide(activeSlide + 1);
+                }, 6000);
+            }
+
+            dots.forEach((dot) => {
+                dot.addEventListener("click", () => {
+                    showSlide(Number(dot.dataset.slide));
+                    startSlideshow();
+                });
+            });
+
+            showSlide(0);
+            startSlideshow();
+
+            // Scroll reveal
+            const revealItems = document.querySelectorAll(".reveal");
+            if ("IntersectionObserver" in window) {
+                const revealObserver = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            revealObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12 });
+
+                revealItems.forEach((item) => revealObserver.observe(item));
+            } else {
+                revealItems.forEach((item) => item.classList.add("visible"));
+            }
+
+            byId("currentYear").textContent = new Date().getFullYear();
+
+            // Newsletter
+            const newsletterModal = byId("newsletterModal");
+            const openNewsletterBtn = byId("openNewsletterBtn");
+            const closeNewsletterBtn = byId("closeNewsletterBtn");
+            const newsletterForm = byId("newsletterForm");
+            const newsletterSubmitBtn = byId("newsletterSubmitBtn");
+
+            function openNewsletter() {
+                newsletterModal.classList.add("show");
+                document.body.classList.add("menu-open");
+            }
+
+            function closeNewsletter() {
+                newsletterModal.classList.remove("show");
+                if (!mobileMenu.classList.contains("show")) {
+                    document.body.classList.remove("menu-open");
+                }
+            }
+
+            openNewsletterBtn.addEventListener("click", openNewsletter);
+            closeNewsletterBtn.addEventListener("click", closeNewsletter);
+            newsletterModal.addEventListener("click", (event) => {
+                if (event.target === newsletterModal) closeNewsletter();
+            });
+
+            const lastPrompt = Number(localStorage.getItem("agritrueNewsletterPrompt") || 0);
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+            if (Date.now() - lastPrompt > sevenDays && !localStorage.getItem("agritrueSubscribed")) {
+                window.setTimeout(() => {
+                    openNewsletter();
+                    localStorage.setItem("agritrueNewsletterPrompt", String(Date.now()));
+                }, 9000);
+            }
+
+            newsletterForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                newsletterSubmitBtn.disabled = true;
+                newsletterSubmitBtn.textContent = "Subscribing…";
+
+                try {
+                    const response = await fetch(newsletterForm.action, {
+                        method: "POST",
+                        body: new FormData(newsletterForm),
+                        headers: { "Accept": "application/json" }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Subscription could not be completed.");
+                    }
+
+                    localStorage.setItem("agritrueSubscribed", "true");
+                    newsletterForm.reset();
+                    closeNewsletter();
+                    showToast("Thank you for joining the AgriTrue newsletter.", "success");
+                } catch (error) {
+                    showToast(error.message || "Subscription failed. Please try again.");
+                } finally {
+                    newsletterSubmitBtn.disabled = false;
+                    newsletterSubmitBtn.textContent = "Subscribe";
+                }
+            });
+
+            // Chatbot
+            const chatbotPanel = byId("chatbotPanel");
+            const chatbotLauncher = byId("chatbotLauncher");
+            const chatbotLauncherIcon = byId("chatbotLauncherIcon");
+            const closeChatbotBtn = byId("closeChatbotBtn");
+            const chatMessages = byId("chatMessages");
+            const chatForm = byId("chatForm");
+            const chatInput = byId("chatInput");
+            const chatSendBtn = byId("chatSendBtn");
+            const voiceInputBtn = byId("voiceInputBtn");
+            const voiceIndicator = byId("voiceIndicator");
+            const stopSpeechBtn = byId("stopSpeechBtn");
+            let chatbotOpen = false;
+            let recognition = null;
+            let recognitionActive = false;
+
+            function openChatbot() {
+                chatbotOpen = true;
+                chatbotPanel.classList.add("show");
+                chatbotPanel.setAttribute("aria-hidden", "false");
+                chatbotLauncher.setAttribute("aria-expanded", "true");
+                chatbotLauncherIcon.className = "fa-solid fa-xmark";
+                window.setTimeout(() => chatInput.focus(), 100);
+            }
+
+            function closeChatbot() {
+                chatbotOpen = false;
+                chatbotPanel.classList.remove("show");
+                chatbotPanel.setAttribute("aria-hidden", "true");
+                chatbotLauncher.setAttribute("aria-expanded", "false");
+                chatbotLauncherIcon.className = "fa-solid fa-comment-dots";
+                window.speechSynthesis?.cancel();
+            }
+
+            chatbotLauncher.addEventListener("click", () => {
+                chatbotOpen ? closeChatbot() : openChatbot();
+            });
+            closeChatbotBtn.addEventListener("click", closeChatbot);
+            stopSpeechBtn.addEventListener("click", () => window.speechSynthesis?.cancel());
+
+            function appendChatMessage(text, sender) {
+                const message = document.createElement("div");
+                message.className = `chat-message ${sender}`;
+                message.textContent = text;
+                chatMessages.appendChild(message);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return message;
+            }
+
+            function appendTypingIndicator() {
+                const wrapper = document.createElement("div");
+                wrapper.className = "chat-message bot flex items-center gap-1.5";
+                wrapper.setAttribute("aria-label", "AgriTrue is preparing a response");
+                wrapper.innerHTML = `
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                `;
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return wrapper;
+            }
+
+            function speakAnswer(text) {
+                if (!("speechSynthesis" in window)) return;
+
+                window.speechSynthesis.cancel();
+                const cleaned = String(text || "")
+                    .replace(/[*#_`>-]/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 2800);
+
+                if (!cleaned) return;
+
+                const utterance = new SpeechSynthesisUtterance(cleaned);
+                utterance.lang = "en-KE";
+                utterance.rate = .96;
+                utterance.pitch = 1;
+                window.speechSynthesis.speak(utterance);
+            }
+
+            function setChatLoading(loading) {
+                chatSendBtn.disabled = loading;
+                voiceInputBtn.disabled = loading;
+                chatInput.disabled = loading;
+                chatSendBtn.innerHTML = loading
+                    ? '<i class="fa-solid fa-spinner fa-spin"></i>'
+                    : '<i class="fa-solid fa-paper-plane"></i>';
+            }
+
+            async function sendChatMessage(forcedMessage = null) {
+                const message = String(forcedMessage ?? chatInput.value).trim();
+                if (!message) return;
+
+                appendChatMessage(message, "user");
+                chatInput.value = "";
+                chatInput.style.height = "auto";
+                setChatLoading(true);
+                const typingIndicator = appendTypingIndicator();
+
+                try {
+                    const response = await fetch("/chat", {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify({ message })
+                    });
+
+                    const contentType = response.headers.get("content-type") || "";
+                    if (!contentType.includes("application/json")) {
+                        throw new Error("The server returned an unexpected response.");
+                    }
+
+                    const data = await response.json();
+                    if (!response.ok || !data.reply) {
+                        throw new Error(data.error || "The assistant could not answer.");
+                    }
+
+                    typingIndicator.remove();
+                    appendChatMessage(data.reply, "bot");
+                    speakAnswer(data.reply);
+                } catch (error) {
+                    typingIndicator.remove();
+                    appendChatMessage(error.message || "The assistant is temporarily unavailable.", "bot");
+                } finally {
+                    setChatLoading(false);
+                    chatInput.focus();
+                }
+            }
+
+            chatForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                sendChatMessage();
+            });
+
+            chatInput.addEventListener("input", () => {
+                chatInput.style.height = "auto";
+                chatInput.style.height = `${Math.min(chatInput.scrollHeight, 112)}px`;
+            });
+
+            chatInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendChatMessage();
+                }
+            });
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = "en-KE";
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = () => {
+                    recognitionActive = true;
+                    voiceIndicator.classList.remove("hidden");
+                    voiceIndicator.classList.add("flex");
+                    voiceInputBtn.classList.add("bg-red-50", "border-red-300", "text-red-600");
+                };
+
+                recognition.onresult = (event) => {
+                    let transcript = "";
+                    for (let index = event.resultIndex; index < event.results.length; index++) {
+                        transcript += event.results[index][0].transcript;
+                    }
+                    chatInput.value = transcript.trim();
+                };
+
+                recognition.onerror = (event) => {
+                    const messages = {
+                        "not-allowed": "Microphone permission was denied.",
+                        "no-speech": "No speech was detected. Please try again.",
+                        "audio-capture": "No working microphone was found.",
+                        "network": "Voice recognition could not connect."
+                    };
+                    showToast(messages[event.error] || "Voice recognition failed.");
+                };
+
+                recognition.onend = () => {
+                    recognitionActive = false;
+                    voiceIndicator.classList.add("hidden");
+                    voiceIndicator.classList.remove("flex");
+                    voiceInputBtn.classList.remove("bg-red-50", "border-red-300", "text-red-600");
+
+                    const transcript = chatInput.value.trim();
+                    if (transcript) sendChatMessage(transcript);
+                };
+
+                voiceInputBtn.addEventListener("click", () => {
+                    if (recognitionActive) {
+                        recognition.stop();
+                        return;
+                    }
+
+                    try {
+                        recognition.start();
+                    } catch (error) {
+                        showToast("Voice recognition is already active.");
+                    }
+                });
+            } else {
+                voiceInputBtn.disabled = true;
+                voiceInputBtn.classList.add("cursor-not-allowed", "opacity-50");
+                voiceInputBtn.title = "Voice input is not supported by this browser.";
+            }
+        });
     </script>
-   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBnnfskPKX1-0jYeIDa1Ua6i0UkqWy6ImI",
-    authDomain: "telehealth-53318.firebaseapp.com",
-    projectId: "telehealth-53318",
-    storageBucket: "telehealth-53318.firebasestorage.app",
-    messagingSenderId: "1050612907822",
-    appId: "1:1050612907822:web:59ed076ccf7cce57ee84bf",
-    measurementId: "G-LL988EWM5X"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </body>
 </html>
