@@ -889,7 +889,39 @@ def repost(note_id: int):
         return jsonify({"status": "error"}), 500
 
 
+@app.route("/ussd", methods=["GET", "POST"])
+def ussd():
+    response = None
+    session_level = ""
 
+    if request.method == "POST":
+        ussd_code = request.form.get("ussd_code", "").strip()
+        session_level = request.form.get("session_level", "").strip()
+
+        if ussd_code == "*456#" and not session_level:
+            response = USSD_MAIN_MENU
+            session_level = "main_menu"
+
+        elif session_level == "main_menu":
+            response = USSD_MENU_RESPONSES.get(
+                ussd_code,
+                "❌ Invalid selection. Enter a number from 0 to 9.",
+            )
+
+            if ussd_code == "0":
+                session_level = ""
+
+        else:
+            response = "Enter <strong>*456#</strong> to begin."
+            session_level = ""
+
+        save_ussd_log(ussd_code, response)
+
+    return render_template(
+        "ussd.html",
+        response=response,
+        session_level=session_level,
+    )
 
 
 @app.get("/chatbot")
