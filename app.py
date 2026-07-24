@@ -20,6 +20,12 @@ from typing import Any
 from agri_analyzer import AnalyzerError, generate_farming_chat_reply
 from agri_analyzer import AnalyzerError, generate_farming_chat_reply
 from analyzer_routes import analyzer_bp
+from flask import request, jsonify, current_app
+
+from agri_analyzer import (
+    AnalyzerError,
+    generate_farming_chat_reply,
+)
 import firebase_admin
 import requests
 import speech_recognition as sr
@@ -922,7 +928,117 @@ def ussd():
         response=response,
         session_level=session_level,
     )
+@app.route("/api/ussd/search", methods=["POST"])
+def ussd_search():
+    payload = request.get_json(silent=True) or {}
 
+    question = " ".join(
+        str(payload.get("question", "")).split()
+    )
+    language = str(
+        payload.get("language", "en-KE")
+    ).strip()
+
+    if not question:
+        return jsonify({
+            "success": False,
+            "error": "Please enter or speak an agricultural question.",
+        }), 400
+
+    if len(question) < 3:
+        return jsonify({
+            "success": False,
+            "error": "Please provide a more complete question.",
+        }), 400
+
+    if len(question) > 700:
+        return jsonify({
+            "success": False,
+            "error": "Keep your question below 700 characters.",
+        }), 400
+
+    is_swahili = language.lower().startswith("sw")
+    response_language = (
+        "Kiswahili"
+        if is_swahili
+        else "clear Kenyan English"
+    )
+
+    prompt = f"""
+You are AgriTrue, an agricultural information assistant serving
+farmers in Kenya and East Africa.
+
+Answer the farmer's question in {response_language}.
+
+Requirements:
+- Give a direct and practical answer.
+- Use short paragraphs or brief numbered steps.
+- Do not invent live weather, market prices, laboratory findings
+  or official records.
+- State when local inspection, testing, a veterinarian, agronomist
+  or extension officer is needed.
+- Do not prescribe unsafe pesticide, fertiliser or veterinary doses.
+- Keep the response below 280 words.
+
+Farmer's question:
+{question}
+""".strip()
+
+    try:
+        answer = generate_farming_chat_reply(prompt)
+        answer = str(answer or "").strip()
+
+        if not answer:
+            raise AnalyzerError(
+                "The agricultural assistant returned an empty response."
+            )
+
+        try:
+            db.session.add(
+                USSDLog(
+                    code_entered=question[:500],
+                    response_given=answer[:10000],
+                )
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception(
+                "Could not save USSD search log"
+            )
+
+        return jsonify({
+            "success": True,
+            "question": question,
+            "answer": answer,
+            "language": (
+                "sw-KE"
+                if is_swahili
+                else "en-KE"
+            ),
+        })
+
+    except AnalyzerError as exc:
+        current_app.logger.warning(
+            "USSD agricultural search failed: %s",
+            exc,
+        )
+        return jsonify({
+            "success": False,
+            "error": str(exc),
+        }), 503
+
+    except Exception:
+        current_app.logger.exception(
+            "Unexpected USSD agricultural search error"
+        )
+        return jsonify({
+            "success": False,
+            "error": (
+                "AgriTrue could not answer right now. "
+                "Please try again."
+            ),
+        }), 500
 
 @app.get("/chatbot")
 def chatbot_page():

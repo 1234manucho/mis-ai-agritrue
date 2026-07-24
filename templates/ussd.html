@@ -796,7 +796,7 @@
                 setSearching(true);
 
                 try {
-                    const response = await fetch("{{ url_for('ussd_search') }}", {
+                    const response = await fetch("/api/ussd/search", {
                         method: "POST",
                         credentials: "same-origin",
                         headers: {
@@ -941,3 +941,4 @@
         });
     </script>
 </body>
+</html>
