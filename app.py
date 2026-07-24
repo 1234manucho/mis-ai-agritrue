@@ -1,4 +1,3 @@
-# ------------------- STANDARD LIBRARY -------------------
 import os
 import re
 import json
@@ -7,10 +6,12 @@ from datetime import datetime, timedelta
 
 # ------------------- THIRD-PARTY -------------------
 from dotenv import load_dotenv          # ✅ correct import
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+load_dotenv()
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from flask_cors import CORS
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import desc
 
@@ -27,14 +28,10 @@ from models import CommunityNote, Comment, User, DiagnosticResult
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 
-# ------------------- GOOGLE GENERATIVE AI -------------------
-import google.generativeai as genai
-genai.configure(api_key="AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU")
-model = genai.GenerativeModel("gemini-2.0-flash")
-
-# ------------------- OPENAI -------------------
-import openai
-openai.api_key = "AIzaSyCy7NQ0LzkmJWERKGhZtyyfcyXswyWmdZU"   # ← this is a Google key, not OpenAI – fix later
+# ------------------- AI / ANALYZER -------------------
+# All AI credentials remain server-side and are loaded from .env.
+from agri_analyzer import AnalyzerError, generate_farming_chat_reply
+from analyzer_routes import analyzer_bp
 
 # ------------------- APP FACTORY -------------------
 def create_app():
@@ -91,6 +88,8 @@ def create_app():
 
 # ------------------- CREATE APP INSTANCE -------------------
 app = create_app()
+app.config.setdefault("MAX_CONTENT_LENGTH", 20 * 1024 * 1024)
+app.register_blueprint(analyzer_bp)
 
 # ------------------- FILE UTILS -------------------
 ALLOWED_EXTENSIONS = {'csv', 'pdf', 'docx', 'png', 'jpg', 'jpeg'}
@@ -193,16 +192,13 @@ def chat():
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        prompt = f"You are AgriTrue, an expert agricultural AI. Respond to the user's query concisely and only about farming. User's query: {user_message}"
-        response = model.generate_content(prompt)
-        response_text = "".join([part.text for part in response.candidates[0].content.parts if hasattr(part, 'text')])
-
-        if not response_text:
-            response_text = "I'm sorry, I couldn't generate a response this time. Please try a different query."
-
+        response_text = generate_farming_chat_reply(user_message)
         return jsonify({"reply": response_text})
-    except Exception as e:
-        print(f"Error during AI call: {e}")
+    except AnalyzerError as exc:
+        current_app.logger.warning("Chat AI error: %s", exc)
+        return jsonify({"error": str(exc)}), 503
+    except Exception:
+        current_app.logger.exception("Unexpected chat AI error")
         return jsonify({"error": "Server error. Could not get response."}), 500
 # --- Registration Route ---
 @app.route('/register', methods=['GET', 'POST'])
@@ -555,139 +551,7 @@ def podcast():
 def dashboard():
     """Render the dashboard page."""
     return render_template('dashboard.html')
-# ml analyzer
-@app.route('/ml-analyzer', methods=['GET', 'POST'])
-
-def ml_analyzer():
-    analysis_result = None
-    chart_data = {}
-    error = None
-
-    if request.method == 'POST':
-        file = request.files.get('file')
-        if not file:
-            error = "No file uploaded."
-        else:
-            try:
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                ext = os.path.splitext(filename)[1].lower()
-
-                if ext == '.csv':
-                    analysis_result, chart_data = analyzer_logic.analyze_csv(filepath)
-                elif ext == '.docx':
-                    analysis_result, chart_data = analyzer_logic.analyze_docx(filepath)
-                elif ext == '.pdf':
-                    analysis_result, chart_data = analyzer_logic.analyze_pdf(filepath)
-                elif ext in ['.jpg', '.jpeg', '.png']:
-                    analysis_result, chart_data = analyzer_logic.analyze_image_model_output(filepath, image_model)
-                elif ext in ['.mp4', '.mov', '.avi']:
-                    analysis_result, chart_data = analyzer_logic.analyze_video(filepath)
-                else:
-                    error = "Unsupported file type."
-
-            except Exception as e:
-                error = f"Error: {str(e)}"
-    
-    return render_template("ml_analyzer.html", 
-                           analysis_result=analysis_result, 
-                           chart_data=chart_data, 
-                           error=error)
-@app.route('/api/analyze_document', methods=['POST'])
-@login_required
-def analyze_document():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file_ext = filename.rsplit('.', 1)[1].lower()
-    
-    if analyzer_logic.allowed_file(filename):
-        file.save(filepath)
-        data_summary, text_content = analyzer_logic.analyze_document_data(filepath, file_ext)
-        os.remove(filepath)
-        if not data_summary:
-            return jsonify({"error": "Could not process file"}), 500
-        
-        misinformation_result = analyzer_logic.analyze_document_misinformation(text_content)
-        
-        response = {
-            "success": True,
-            "document_analysis": {
-                "misinformation_flag": "Misinformation detected" if misinformation_result["is_misinformation"] else "Data appears to be true",
-                "misinformation_explanation": misinformation_result["explanation"],
-                "data_summary": data_summary
-            }
-        }
-        return jsonify(response)
-    
-    return jsonify({"error": "File type not allowed"}), 400
-
-@app.route('/api/analyze_image', methods=['POST'])
-@login_required
-def analyze_image():
-    if 'file' not in request.files:
-        return jsonify({"error": "No image file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected image file"}), 400
-    
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    
-    if analyzer_logic.allowed_file(filename):
-        file.save(filepath)
-        
-        # Pass the image model to the analysis function
-        analysis_results = analyzer_logic.analyze_image_model_output(filepath, image_model)
-        
-        # Save the diagnostic result to the database
-        first_detection = analysis_results['detections'][0]
-        diagnosis_name = first_detection['label']
-        diagnosis_type = "plant" if "maize" in diagnosis_name.lower() or "armyworm" in diagnosis_name.lower() else "animal"
-        cause = first_detection['details'].split('\n')[1].replace('Cause: ', '').strip()
-        treatment = first_detection['details'].split('\n')[2].replace('Treatment: ', '').strip()
-        
-        # In a production app, save to cloud storage and use the public URL
-        # For this example, we use the local path.
-        image_url = f"/uploads/{filename}"
-
-        models.add_diagnostic_result(
-            user_id=current_user.id,
-            image_url=image_url,
-            diagnosis_name=diagnosis_name,
-            diagnosis_type=diagnosis_type,
-            cause=cause,
-            treatment=treatment,
-            confidence_score=first_detection.get('confidence', None)
-        )
-        
-        return jsonify(analysis_results)
-
-    return jsonify({"error": "Image file type not allowed"}), 400
-
-# --- New Routes for Community Notes and Diagnostics ---
-@app.route('/api/diagnostics', methods=['GET'])
-@login_required
-def get_diagnostics():
-    user_diagnostics = models.DiagnosticResult.query.filter_by(user_id=current_user.id).order_by(models.DiagnosticResult.created_at.desc()).all()
-    
-    results = []
-    for diag in user_diagnostics:
-        results.append({
-            'id': diag.id,
-            'diagnosis_name': diag.diagnosis_name,
-            'image_url': diag.image_url,
-            'confidence': diag.confidence_score,
-            'created_at': diag.created_at.isoformat()
-        })
-        
-    return jsonify({"success": True, "diagnostics": results})
+# ML analyzer routes are provided by analyzer_routes.py and registered above.
 
 # --- USSD Simulation ---
 from flask import Flask, render_template, request
@@ -762,7 +626,6 @@ def ussd():
     return render_template('ussd.html', response=None, session_level='')
 #chatbot
 from flask import Flask, request, jsonify, render_template
-import openai
 import os
 import speech_recognition as sr
 from werkzeug.utils import secure_filename
@@ -772,7 +635,6 @@ from flask_sqlalchemy import SQLAlchemy
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-openai.api_key = 'YOUR_OPENAI_API_KEYsk-proj-Y4GnL1d-hQ1--Fz4_2C9Pj45UHob9nfXC3sHelv8e4XzQgv59JdCYN7WqL1XCLXVRyx6DX6ij3T3BlbkFJ0hwnR8PmHUPkaT_Ote-FEIANgmQucoUqfpJ54qRBUET2ezOzF935kcrs_xOX5T5nxbyKL-qQcA'
 
 # Render chatbot HTML page
 @app.route('/chatbot', methods=['GET'])
@@ -784,12 +646,10 @@ def chatbot_page():
 def chatbot_reply():
     user_input = request.json.get('user_input')
     if user_input:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=user_input,
-            max_tokens=150
-        )
-        return jsonify({'response': response.choices[0].text.strip()})
+        try:
+            return jsonify({'response': generate_farming_chat_reply(user_input)})
+        except AnalyzerError as exc:
+            return jsonify({'response': str(exc)}), 503
     return jsonify({'response': 'No input received'})
 
 # Handle voice file upload and transcription
@@ -805,12 +665,7 @@ def voice_chatbot():
         audio_data = recognizer.record(source)
         try:
             user_input = recognizer.recognize_google(audio_data)
-            response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=user_input,
-                max_tokens=150
-            )
-            return jsonify({'response': response.choices[0].text.strip()})
+            return jsonify({'response': generate_farming_chat_reply(user_input)})
         except Exception as e:
             return jsonify({'response': f"Error: {str(e)}"})
 
@@ -825,12 +680,10 @@ def whatsapp_reply():
     return str(resp)
 
 def generate_bot_response(user_input):
-    res = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=user_input,
-        max_tokens=150
-    )
-    return res.choices[0].text.strip()
+    try:
+        return generate_farming_chat_reply(user_input)
+    except AnalyzerError as exc:
+        return str(exc)
 
 
 
