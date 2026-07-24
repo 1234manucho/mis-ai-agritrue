@@ -18,6 +18,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 from agri_analyzer import AnalyzerError, generate_farming_chat_reply
+from agri_analyzer import AnalyzerError, generate_farming_chat_reply
 from analyzer_routes import analyzer_bp
 import firebase_admin
 import requests
@@ -888,63 +889,7 @@ def repost(note_id: int):
         return jsonify({"status": "error"}), 500
 
 
-@app.route("/ussd", methods=["GET", "POST"])
-def ussd():
-    menu = """
-    Welcome to <strong>AgriTrue</strong> USSD Services<br>
-    1. Weather Info<br>
-    2. Altitude Data<br>
-    3. Soil Type<br>
-    4. Pest Alerts<br>
-    5. Crop Pricing<br>
-    6. Market Locations<br>
-    7. Expert Advice<br>
-    8. Innovations<br>
-    9. Misinformation Alerts<br>
-    10. Exit
-    """
 
-    if request.method == "GET":
-        return render_template("ussd.html", response=None, session_level="")
-
-    ussd_code = request.form.get("ussd_code", "").strip()
-    session_level = request.form.get("session_level", "")
-
-    if ussd_code == "*456#" and session_level == "":
-        response = menu
-        session_level = "main_menu"
-    elif session_level == "main_menu":
-        responses = {
-            "1": "☀ Weather Today: Sunny, 28°C",
-            "2": "🗻 Altitude at your location: 1,450 metres",
-            "3": "🌱 Soil Type: Loamy",
-            "4": "🐛 Pest Alert: Fall armyworm in maize.",
-            "5": "💰 Maize: KES 45/kg, Beans: KES 80/kg",
-            "6": "🛒 Nearest Market: Machakos Open Market",
-            "7": "🧠 Tip: Rotate crops to improve soil fertility.",
-            "8": "💡 Innovation: AI-powered irrigation.",
-            "9": "🚫 Claim review: boiling seeds does not increase yield.",
-            "10": "👋 Thank you for using AgriTrue.",
-        }
-        response = responses.get(ussd_code, "❌ Invalid option. Try again.")
-        session_level = ""
-    else:
-        response = "Enter *456# to begin."
-
-    try:
-        db.session.add(
-            USSDLog(code_entered=ussd_code, response_given=response)
-        )
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        current_app.logger.exception("Could not save USSD log")
-
-    return render_template(
-        "ussd.html",
-        response=response,
-        session_level=session_level,
-    )
 
 
 @app.get("/chatbot")
