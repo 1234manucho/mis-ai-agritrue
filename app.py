@@ -273,8 +273,8 @@ def create_admin_command() -> None:
     ADMIN_EMAIL, ADMIN_PASSWORD
     Optional: ADMIN_NAME
     """
-    email = os.getenv("ADMIN_EMAIL", "").strip().lower()
-    password = os.getenv("ADMIN_PASSWORD", "")
+    email = os.getenv("ADMIN_EMAIL", "admin@gmail.com").strip().lower()
+    password = os.getenv("ADMIN_PASSWORD", "Nongwe@30")
     fullname = os.getenv("ADMIN_NAME", "System Administrator").strip()
 
     if not email or not password:
