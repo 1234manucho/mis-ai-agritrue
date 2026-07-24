@@ -1,86 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0b3d2e">
-  <title>AgriTrue Smart Analyzer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Manrope', 'sans-serif'] },
-          colors: {
-            forest: { 950: '#2bf543', 900: '#43f43a', 800: '#1ef330', 700: '#0df840' },
-            limebrand: '#b8e34a',
-            cream: '#f7f7ef'
-          },
-          boxShadow: { soft: '0 24px 70px rgba(6, 40, 31, .12)' }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b6623">
+
+    <title>AgriTrue Smart Analyzer</title>
+    <meta name="title" content="AgriTrue Smart Analyzer">
+    <meta name="description" content="Analyze crop, livestock and agricultural document images with AgriTrue's AI-assisted screening tools.">
+    <meta name="keywords" content="AgriTrue, crop disease analyzer, livestock health, document analyzer, agriculture AI">
+    <meta name="author" content="AgriTrue">
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="AgriTrue Smart Analyzer">
+    <meta property="og:description" content="Screen crops, livestock and farm documents from one secure upload.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/logo.jpg', _external=True) }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        forest: {
+                            950: '#064e3b',
+                            900: '#0b6623',
+                            800: '#0f762b',
+                            700: '#16883a'
+                        },
+                        limebrand: '#90ee90',
+                        cream: '#f0fdf4'
+                    },
+                    boxShadow: {
+                        soft: '0 24px 70px rgba(6, 78, 59, .13)'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
         }
-      }
-    };
-  </script>
-  <style>
-    html { scroll-behavior: smooth; }
-    body { background: radial-gradient(circle at top right, rgba(184,227,74,.18), transparent 26rem), #f7f7ef; }
-    .glass { background: rgba(255,255,255,.88); backdrop-filter: blur(18px); }
-    .drop-active { border-color: #05e71f !important; background: #eff9df !important; transform: translateY(-2px); }
-    .result-enter { animation: resultEnter .35s ease-out both; }
-    @keyframes resultEnter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-    .spinner { width: 42px; height: 42px; border: 4px solid rgba(255,255,255,.35); border-top-color: white; border-radius: 999px; animation: spin .8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(144, 238, 144, .18), transparent 28rem),
+                #f0fdf4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .custom-navbar {
+            background: linear-gradient(90deg, #0b6623, #90ee90);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .drop-active {
+            border-color: #16a34a !important;
+            background: #ecfdf5 !important;
+            transform: translateY(-2px);
+        }
+
+        .result-enter {
+            animation: resultEnter .35s ease-out both;
+        }
+
+        @keyframes resultEnter {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border: 4px solid rgba(255, 255, 255, .35);
+            border-top-color: white;
+            border-radius: 999px;
+            animation: spinnerRotate .8s linear infinite;
+        }
+
+        @keyframes spinnerRotate {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: min(320px, 88vw);
+            height: 100vh;
+            background: #f0fdf4;
+            box-shadow: -4px 0 18px rgba(0, 0, 0, .16);
+            transition: right .3s ease-in-out;
+            z-index: 1050;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.show {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .52);
+            z-index: 1040;
+            display: none;
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+
+        .hero-farm-background {
+            background-image: url("{{ url_for('static', filename='images/pic1.jpeg') }}");
+            background-position: center;
+            background-size: cover;
+        }
+
+        .hero-farm-overlay {
+            background:
+                linear-gradient(90deg, rgba(0, 0, 0, .82) 0%, rgba(0, 0, 0, .66) 48%, rgba(0, 0, 0, .54) 100%);
+        }
+
+        @media (max-width: 640px) {
+            .hero-farm-overlay {
+                background: linear-gradient(rgba(0, 0, 0, .76), rgba(0, 0, 0, .74));
+            }
+        }
+    </style>
 </head>
-<body class="font-sans text-slate-800 antialiased">
-  <nav class="sticky top-0 z-40 border-b border-white/10 bg-forest-950 text-white shadow-lg">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/static/images/logo.jpg" alt="AgriTrue" class="h-10 w-10 rounded-xl border border-white/20 object-cover" onerror="this.style.display='none'">
-        <div>
-          <div class="text-lg font-extrabold leading-none">AgriTrue</div>
-          <div class="mt-1 text-[10px] font-bold uppercase tracking-[.24em] text-limebrand">Smart Agriculture</div>
-        </div>
-      </a>
-      <div class="hidden items-center gap-6 text-sm font-semibold md:flex">
-        <a href="/dashboard" class="text-white/75 transition hover:text-white">Farm Truth</a>
-        <a href="/know_your_land" class="text-white/75 transition hover:text-white">Know Your Land</a>
-        <a href="/community-notes" class="text-white/75 transition hover:text-white">Community</a>
-        <a href="/profile" class="rounded-full bg-white/10 px-4 py-2 transition hover:bg-white/20">My Profile</a>
-      </div>
-      <a href="/dashboard" class="rounded-full bg-limebrand px-4 py-2 text-sm font-extrabold text-forest-950 md:hidden">Dashboard</a>
-    </div>
-  </nav>
 
-  <main>
-    <section class="relative overflow-hidden bg-forest-950 text-white">
-      <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 10%, #b8e34a 0, transparent 22%), radial-gradient(circle at 90% 90%, #176b50 0, transparent 30%);"></div>
-      <div class="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[1.15fr_.85fr] lg:px-8">
-        <div class="max-w-3xl">
-          <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-limebrand/30 bg-limebrand/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.18em] text-limebrand">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI-assisted screening
-          </div>
-          <h1 class="text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">Understand crops, livestock and farm documents from one upload.</h1>
-          <p class="mt-6 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">Take a clear phone photo, choose an existing image, or scan a farm document. AgriTrue returns visible signs, likely causes, practical prevention steps and document-integrity warnings.</p>
-        </div>
-        <div class="glass self-end rounded-3xl border border-white/15 p-6 text-forest-950 shadow-soft">
-          <div class="flex items-start gap-4">
-            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-limebrand text-xl"><i class="fa-solid fa-shield-heart"></i></div>
-            <div>
-              <h2 class="font-extrabold">Important safety note</h2>
-              <p class="mt-2 text-sm leading-6 text-slate-600">This tool provides visual screening, not a laboratory diagnosis, veterinary prescription or legal document authentication. Urgent cases should be confirmed by a qualified professional.</p>
+<body class="bg-[#f0fdf4] font-inter text-slate-800 antialiased">
+    <!-- Navigation Bar -->
+    <nav class="custom-navbar fixed top-0 z-50 w-full shadow-md">
+        <div class="container mx-auto flex items-center justify-between px-4 py-3">
+            <a class="flex items-center space-x-2" href="{{ url_for('home') }}">
+                <img
+                    src="{{ url_for('static', filename='images/logo.jpg') }}"
+                    alt="AgriTrue Logo"
+                    class="h-9 w-9 rounded-full object-cover"
+                    onerror="this.style.display='none'"
+                >
+                <span class="text-2xl font-bold text-white">AgriTrue</span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden items-center space-x-5 lg:flex">
+                <div class="group relative">
+                    <button type="button" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">
+                        Utilities
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="absolute left-0 z-20 mt-2 hidden w-52 rounded-xl bg-white shadow-xl ring-1 ring-black/5 group-hover:block">
+                        <div class="py-2">
+                            <a href="/community-notes" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
+                            <a href="/chatbot" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
+                            <a href="/ml-analyzer" class="block bg-green-50 px-4 py-2.5 text-sm font-bold text-green-700">ML Analyzer</a>
+                            <hr class="my-1 border-gray-200">
+                            <a href="/ussd" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/dashboard" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">Farm Truth</a>
+                <a href="/know_your_land" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">Know Your Land</a>
+                <a href="/about" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">About Us</a>
+                <a href="/podcast" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">Podcast</a>
+
+                <div class="group relative">
+                    <button type="button" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">
+                        Resources
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 z-20 mt-2 hidden w-52 rounded-xl bg-white shadow-xl ring-1 ring-black/5 group-hover:block">
+                        <div class="py-2">
+                            <a href="/research" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
+                            <a href="/faqs" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">FAQs</a>
+                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/donate" class="rounded-full bg-green-700 px-5 py-2.5 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-green-800">
+                    Donate
+                </a>
+
+                {% if current_user.is_authenticated %}
+                <div class="group relative">
+                    <button type="button" class="rounded-lg p-2 font-medium text-white transition hover:bg-white/10">
+                        Profile
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="absolute right-0 z-20 mt-2 hidden w-52 rounded-xl bg-white shadow-xl ring-1 ring-black/5 group-hover:block">
+                        <div class="py-2">
+                            <a href="/profile" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
+                            <a href="/edit_profile" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
+                            <a href="/streak" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
+                            {% if current_user.is_admin %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/admin" class="block px-4 py-2.5 text-sm font-bold text-amber-600 hover:bg-amber-50">Admin Panel</a>
+                            {% endif %}
+                            <hr class="my-1 border-gray-200">
+                            <a href="/logout" class="block px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="rounded-full bg-white px-4 py-2 font-bold text-green-700 shadow-lg transition hover:bg-green-50">Login</a>
+                <a href="/register" class="rounded-full bg-green-700 px-4 py-2 font-bold text-white shadow-lg transition hover:bg-green-800">Register</a>
+                {% endif %}
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <div class="rounded-[2rem] border border-slate-200/80 bg-white p-3 shadow-soft">
+            <button id="mobileMenuBtn" type="button" class="text-white lg:hidden" aria-label="Open menu">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <aside id="mobileMenu" class="mobile-menu lg:hidden" aria-label="Mobile navigation">
+        <div class="mb-5 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-10 w-10 rounded-full object-cover">
+                <span class="text-xl font-bold text-green-700">AgriTrue</span>
+            </a>
+            <button id="closeMobileMenu" type="button" class="text-3xl leading-none text-green-700" aria-label="Close menu">&times;</button>
+        </div>
+
+        <nav class="space-y-2">
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/">
+                <i class="fas fa-home mr-3 w-5"></i>Home
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/dashboard">
+                <i class="fas fa-chart-line mr-3 w-5"></i>Farm Truth
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/know_your_land">
+                <i class="fas fa-map-marked-alt mr-3 w-5"></i>Know Your Land
+            </a>
+            <a class="flex items-center rounded-lg bg-green-100 p-4 text-lg font-bold text-green-800" href="/ml-analyzer">
+                <i class="fas fa-microscope mr-3 w-5"></i>ML Analyzer
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/community-notes">
+                <i class="fas fa-users mr-3 w-5"></i>Community Notes
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/chatbot">
+                <i class="fas fa-robot mr-3 w-5"></i>AI Chatbot
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/about">
+                <i class="fas fa-info-circle mr-3 w-5"></i>About Us
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/podcast">
+                <i class="fas fa-podcast mr-3 w-5"></i>Podcast
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/research">
+                <i class="fas fa-book-open mr-3 w-5"></i>Research Hub
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-medium text-green-700 hover:bg-green-100" href="/faqs">
+                <i class="fas fa-circle-question mr-3 w-5"></i>FAQs
+            </a>
+            <a class="flex items-center rounded-lg p-4 text-lg font-bold text-white bg-green-700 hover:bg-green-800" href="/donate">
+                <i class="fas fa-heart mr-3 w-5"></i>Donate
+            </a>
+        </nav>
+
+        <div class="mt-8 flex flex-col space-y-3 border-t border-green-200 pt-5">
+            {% if current_user.is_authenticated %}
+            <a class="rounded-lg bg-green-600 p-3 text-center font-bold text-white hover:bg-green-700" href="/profile">My Profile</a>
+            {% if current_user.is_admin %}
+            <a class="rounded-lg bg-amber-500 p-3 text-center font-bold text-white hover:bg-amber-600" href="/admin">Admin Panel</a>
+            {% endif %}
+            <a class="rounded-lg border border-red-600 p-3 text-center font-bold text-red-600 hover:bg-red-50" href="/logout">Logout</a>
+            {% else %}
+            <a class="rounded-lg bg-green-600 p-3 text-center font-bold text-white hover:bg-green-700" href="/login">Login</a>
+            <a class="rounded-lg border border-green-600 p-3 text-center font-bold text-green-600 hover:bg-green-50" href="/register">Register</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main class="pt-[64px] lg:pt-[72px]">
+        <!-- Homepage-style farm hero -->
+        <section class="hero-farm-background relative min-h-[500px] overflow-hidden text-white">
+            <div class="hero-farm-overlay absolute inset-0"></div>
+            <div class="relative z-10 mx-auto grid min-h-[500px] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_.85fr] lg:px-8">
+                <div class="max-w-3xl">
+                    <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-green-300/40 bg-green-500/20 px-4 py-2 text-xs font-extrabold uppercase tracking-[.18em] text-green-200 backdrop-blur">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        AI-assisted agricultural screening
+                    </div>
+
+                    <h1 class="text-4xl font-extrabold leading-tight drop-shadow-lg sm:text-5xl lg:text-6xl">
+                        Understand crops, livestock and farm documents from one upload.
+                    </h1>
+
+                    <p class="mt-6 max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
+                        Take a clear phone photo, choose an existing image, or scan a farm document.
+                        AgriTrue returns visible signs, likely causes, practical prevention measures
+                        and document-integrity warnings.
+                    </p>
+
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="#smart-analyzer" class="rounded-full bg-green-500 px-7 py-3.5 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-green-600">
+                            Start Analysis
+                        </a>
+                        <a href="/" class="rounded-full border-2 border-green-400 px-7 py-3.5 font-bold text-green-300 transition hover:bg-green-500 hover:text-white">
+                            Return Home
+                        </a>
+                    </div>
+                </div>
+
+                <div class="glass rounded-3xl border border-white/25 p-6 text-slate-800 shadow-2xl">
+                    <div class="flex items-start gap-4">
+                        <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-green-600 text-xl text-white">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-extrabold text-green-800">Important safety note</h2>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">
+                                This tool provides visual screening, not a laboratory diagnosis,
+                                veterinary prescription or legal document authentication. Urgent
+                                cases should be confirmed by a qualified professional.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-3 gap-3">
+                        <div class="rounded-2xl bg-green-50 p-3 text-center">
+                            <i class="fas fa-leaf text-green-600"></i>
+                            <p class="mt-1 text-xs font-bold text-green-800">Crops</p>
+                        </div>
+                        <div class="rounded-2xl bg-green-50 p-3 text-center">
+                            <i class="fas fa-cow text-green-600"></i>
+                            <p class="mt-1 text-xs font-bold text-green-800">Livestock</p>
+                        </div>
+                        <div class="rounded-2xl bg-green-50 p-3 text-center">
+                            <i class="fas fa-file-shield text-green-600"></i>
+                            <p class="mt-1 text-xs font-bold text-green-800">Documents</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="smart-analyzer"></div>
+<section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div class="rounded-[2rem] border border-green-100 bg-white p-3 shadow-soft">
         <div class="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5" role="tablist" aria-label="Analyzer type">
           <button id="imageTab" type="button" class="tab-btn rounded-xl bg-forest-900 px-3 py-3.5 text-sm font-extrabold text-white shadow sm:text-base" data-tab="image">
             <i class="fa-solid fa-leaf mr-2"></i> Crop & Animal
@@ -195,9 +490,45 @@
         </div>
       </div>
     </section>
-  </main>
+  
+    </main>
 
-  <div id="loadingOverlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-forest-950/75 p-4 backdrop-blur-sm">
+    <!-- Homepage-style footer -->
+    <footer class="bg-gray-800 py-12 text-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div>
+                    <h5 class="mb-4 text-xl font-bold text-green-400">About AgriTrue</h5>
+                    <p class="leading-relaxed text-gray-400">
+                        AgriTrue empowers farmers, researchers and communities with innovative tools,
+                        data insights and collaborative solutions for a sustainable agricultural future.
+                    </p>
+                </div>
+
+                <div>
+                    <h5 class="mb-4 text-xl font-bold text-green-400">Quick Links</h5>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="/dashboard" class="transition-colors hover:text-green-400">Farm Truth</a></li>
+                        <li><a href="/know_your_land" class="transition-colors hover:text-green-400">Know Your Land</a></li>
+                        <li><a href="/community-notes" class="transition-colors hover:text-green-400">Community Notes</a></li>
+                        <li><a href="/chatbot" class="transition-colors hover:text-green-400">AI Chatbot</a></li>
+                        <li><a href="/ml-analyzer" class="font-semibold text-green-400">Smart Analyzer</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="mb-4 text-xl font-bold text-green-400">Contact Us</h5>
+                    <p class="mb-2 text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
+                    <p class="mb-2 text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-700">
+            <p class="text-center text-sm text-gray-500">&copy; 2026 AgriTrue. All rights reserved.</p>
+        </div>
+    </footer>
+<div id="loadingOverlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-forest-950/75 p-4 backdrop-blur-sm">
     <div class="w-full max-w-sm rounded-3xl bg-forest-900 p-8 text-center text-white shadow-2xl">
       <div class="spinner mx-auto"></div>
       <h3 id="loadingTitle" class="mt-5 text-xl font-extrabold">Analyzing</h3>
@@ -207,7 +538,39 @@
 
   <div id="toast" class="fixed bottom-5 left-1/2 z-[60] hidden w-[calc(100%-2rem)] max-w-md -translate-x-1/2 rounded-2xl bg-slate-950 px-5 py-4 text-sm font-semibold text-white shadow-2xl" role="alert"></div>
 
-  <script>
+  
+    <script>        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+            function openMobileMenu() {
+                mobileMenu?.classList.add('show');
+                mobileMenuOverlay?.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMobileMenu() {
+                mobileMenu?.classList.remove('show');
+                mobileMenuOverlay?.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+
+            mobileMenuBtn?.addEventListener('click', openMobileMenu);
+            closeMobileMenuBtn?.addEventListener('click', closeMobileMenu);
+            mobileMenuOverlay?.addEventListener('click', closeMobileMenu);
+
+            mobileMenu?.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            document.addEventListener('keydown', event => {
+                if (event.key === 'Escape') closeMobileMenu();
+            });
+        });
+    </script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
       const state = { imageFile: null, documentFile: null, imageUrl: null, documentUrl: null };
       const $ = (id) => document.getElementById(id);
