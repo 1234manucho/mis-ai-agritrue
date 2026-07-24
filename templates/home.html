@@ -145,26 +145,112 @@
             padding-top: var(--nav-height);
         }
 
+        #heroSlideshow {
+            z-index: 0;
+            overflow: hidden;
+        }
+
         .hero-slide {
             position: absolute;
             inset: 0;
             height: 100%;
             width: 100%;
             object-fit: cover;
+            object-position: center;
             opacity: 0;
-            transform: scale(1.04);
-            transition: opacity 1.1s ease, transform 7s ease;
+            filter: saturate(.95) contrast(1.02) brightness(.9);
+            transform: scale(1.075);
+            transition:
+                opacity 1.15s ease,
+                transform 7s cubic-bezier(.2, .7, .25, 1),
+                filter 1.15s ease;
+            will-change: opacity, transform, filter;
         }
 
         .hero-slide.active {
             opacity: 1;
+            filter: saturate(1.08) contrast(1.04) brightness(1);
             transform: scale(1);
         }
 
         .hero-overlay {
+            z-index: 1;
             background:
-                linear-gradient(90deg, rgba(2, 24, 13, .92) 0%, rgba(4, 52, 27, .74) 46%, rgba(3, 29, 17, .38) 72%, rgba(3, 29, 17, .58) 100%),
-                linear-gradient(0deg, rgba(2, 25, 12, .84), transparent 55%);
+                linear-gradient(90deg, rgba(2, 24, 13, .93) 0%, rgba(4, 52, 27, .76) 43%, rgba(3, 29, 17, .36) 72%, rgba(3, 29, 17, .57) 100%),
+                linear-gradient(0deg, rgba(2, 25, 12, .84), transparent 58%);
+        }
+
+        .hero-shine {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            overflow: hidden;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .hero-shine::before {
+            content: "";
+            position: absolute;
+            top: -18%;
+            bottom: -18%;
+            left: -58%;
+            width: 42%;
+            background:
+                linear-gradient(
+                    105deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, .03) 22%,
+                    rgba(214, 255, 221, .23) 45%,
+                    rgba(255, 255, 255, .48) 50%,
+                    rgba(214, 255, 221, .18) 57%,
+                    transparent 78%
+                );
+            filter: blur(5px);
+            opacity: .78;
+            transform: skewX(-12deg);
+            animation: heroShineSweep 6.5s ease-in-out infinite;
+            will-change: left, opacity;
+        }
+
+        .hero-shine::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 72% 34%, rgba(194, 255, 205, .12), transparent 25%),
+                linear-gradient(115deg, rgba(255, 255, 255, .035), transparent 40%);
+            animation: heroGlowPulse 5.5s ease-in-out infinite;
+        }
+
+        @keyframes heroShineSweep {
+            0% {
+                left: -58%;
+                opacity: 0;
+            }
+            12% {
+                opacity: .82;
+            }
+            48% {
+                opacity: .78;
+            }
+            72% {
+                left: 122%;
+                opacity: 0;
+            }
+            100% {
+                left: 122%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes heroGlowPulse {
+            0%, 100% {
+                opacity: .45;
+            }
+            50% {
+                opacity: .9;
+            }
         }
 
         .glass-panel {
@@ -247,16 +333,175 @@
         .chatbot-panel {
             position: fixed;
             right: 1.25rem;
-            bottom: 6.4rem;
+            bottom: 8.15rem;
             z-index: 80;
             display: none;
-            width: min(390px, calc(100vw - 2rem));
-            height: min(620px, calc(100dvh - 8rem));
+            width: min(400px, calc(100vw - 2rem));
+            height: min(630px, calc(100dvh - 9.6rem));
             overflow: hidden;
-            border: 1px solid rgba(34, 197, 94, .18);
+            border: 1px solid rgba(37, 211, 102, .22);
             border-radius: 1.75rem;
             background: white;
-            box-shadow: 0 28px 90px rgba(5, 46, 22, .25);
+            box-shadow: 0 30px 95px rgba(5, 46, 22, .28);
+        }
+
+        .chatbot-launcher {
+            position: fixed;
+            right: 1.35rem;
+            bottom: 1.35rem;
+            z-index: 75;
+            display: flex;
+            align-items: center;
+            gap: .72rem;
+            min-width: 78px;
+            height: 78px;
+            padding: 0 .82rem;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, .94);
+            border-radius: 999px;
+            background: linear-gradient(145deg, #2ee171 0%, #25d366 45%, #128c4a 100%);
+            color: white;
+            box-shadow:
+                0 18px 42px rgba(18, 140, 74, .42),
+                0 0 0 8px rgba(37, 211, 102, .13);
+            cursor: pointer;
+            transition:
+                min-width .28s ease,
+                padding .28s ease,
+                transform .25s ease,
+                box-shadow .25s ease,
+                background .25s ease;
+            isolation: isolate;
+        }
+
+        .chatbot-launcher::before {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            z-index: -1;
+            border-radius: inherit;
+            border: 2px solid rgba(37, 211, 102, .35);
+            animation: whatsappRing 2.25s ease-out infinite;
+        }
+
+        .chatbot-launcher::after {
+            content: "";
+            position: absolute;
+            top: -25%;
+            bottom: -25%;
+            left: -52%;
+            width: 34%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .48), transparent);
+            transform: skewX(-15deg);
+            animation: launcherShine 4.8s ease-in-out infinite;
+        }
+
+        .chatbot-launcher:hover {
+            min-width: 218px;
+            padding: 0 1.15rem;
+            transform: translateY(-5px) scale(1.02);
+            background: linear-gradient(145deg, #34e97a 0%, #25d366 45%, #0c7a3d 100%);
+            box-shadow:
+                0 24px 56px rgba(18, 140, 74, .5),
+                0 0 0 10px rgba(37, 211, 102, .15);
+        }
+
+        .chatbot-launcher:focus-visible {
+            outline: 4px solid rgba(134, 239, 172, .75);
+            outline-offset: 4px;
+        }
+
+        .chatbot-launcher-icon {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            flex: 0 0 auto;
+            height: 54px;
+            width: 54px;
+            place-items: center;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .12);
+            font-size: 2rem;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, .18);
+        }
+
+        .chatbot-launcher-copy {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            max-width: 0;
+            overflow: hidden;
+            flex-direction: column;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(10px);
+            transition:
+                max-width .28s ease,
+                opacity .2s ease,
+                transform .28s ease;
+        }
+
+        .chatbot-launcher:hover .chatbot-launcher-copy,
+        .chatbot-launcher[aria-expanded="true"] .chatbot-launcher-copy {
+            max-width: 132px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .chatbot-launcher-title {
+            font-size: .88rem;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+
+        .chatbot-launcher-subtitle {
+            margin-top: .2rem;
+            font-size: .67rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .76);
+        }
+
+        .chatbot-launcher[aria-expanded="true"] {
+            min-width: 78px;
+            padding: 0 .82rem;
+            background: linear-gradient(145deg, #166534, #052e16);
+        }
+
+        .chatbot-launcher[aria-expanded="true"]:hover {
+            min-width: 188px;
+        }
+
+        @keyframes whatsappRing {
+            0% {
+                opacity: .8;
+                transform: scale(.92);
+            }
+            70% {
+                opacity: 0;
+                transform: scale(1.28);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.28);
+            }
+        }
+
+        @keyframes launcherShine {
+            0%, 35% {
+                left: -52%;
+                opacity: 0;
+            }
+            45% {
+                opacity: .8;
+            }
+            72% {
+                left: 132%;
+                opacity: 0;
+            }
+            100% {
+                left: 132%;
+                opacity: 0;
+            }
         }
 
         .chatbot-panel.show {
@@ -400,12 +645,51 @@
                 min-height: 740px;
             }
 
+            .hero-slide {
+                object-position: 58% center;
+            }
+
+            .hero-shine::before {
+                width: 62%;
+                animation-duration: 7.2s;
+            }
+
             .chatbot-panel {
-                right: .75rem;
-                bottom: 5.6rem;
-                width: calc(100vw - 1.5rem);
-                height: min(640px, calc(100dvh - 7rem));
+                right: .65rem;
+                bottom: 6.8rem;
+                width: calc(100vw - 1.3rem);
+                height: min(650px, calc(100dvh - 8rem));
                 border-radius: 1.35rem;
+            }
+
+            .chatbot-launcher {
+                right: .8rem;
+                bottom: .85rem;
+                min-width: 70px;
+                height: 70px;
+                padding: 0 .58rem;
+                border-width: 2px;
+                box-shadow:
+                    0 14px 34px rgba(18, 140, 74, .42),
+                    0 0 0 6px rgba(37, 211, 102, .12);
+            }
+
+            .chatbot-launcher-icon {
+                height: 52px;
+                width: 52px;
+                font-size: 1.85rem;
+            }
+
+            .chatbot-launcher:hover,
+            .chatbot-launcher[aria-expanded="true"],
+            .chatbot-launcher[aria-expanded="true"]:hover {
+                min-width: 70px;
+                padding: 0 .58rem;
+                transform: translateY(-3px);
+            }
+
+            .chatbot-launcher-copy {
+                display: none;
             }
         }
     </style>
@@ -543,8 +827,9 @@
                 <img src="{{ url_for('static', filename='images/pigs.jpg') }}" alt="Livestock farming" class="hero-slide">
             </div>
             <div class="hero-overlay absolute inset-0"></div>
+            <div class="hero-shine" aria-hidden="true"></div>
 
-            <div class="relative mx-auto grid min-h-[688px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
+            <div class="relative z-[3] mx-auto grid min-h-[688px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
                 <div class="max-w-3xl">
                     <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
                         <i class="fa-solid fa-leaf"></i>
@@ -1053,7 +1338,7 @@
 
         <div class="border-t border-white/10 px-4 py-6">
             <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-xs text-white/40 sm:flex-row sm:text-left">
-                <p>© <span id="currentYear"></span> AgriTrue. All rights reserved.</p>
+                <p>© <span >2025</span> AgriTrue. All rights reserved.</p>
                 <p>AI-assisted information should be verified for critical farm decisions.</p>
             </div>
         </div>
@@ -1157,8 +1442,21 @@
         </div>
     </section>
 
-    <button id="chatbotLauncher" type="button" class="fixed bottom-5 right-5 z-[75] flex h-15 w-15 items-center justify-center rounded-full bg-green-700 text-2xl text-white shadow-float transition hover:-translate-y-1 hover:bg-green-800 sm:bottom-6 sm:right-6" aria-label="Open AgriTrue assistant" aria-expanded="false">
-        <i id="chatbotLauncherIcon" class="fa-solid fa-comment-dots"></i>
+    <button
+        id="chatbotLauncher"
+        type="button"
+        class="chatbot-launcher"
+        aria-label="Open AgriTrue WhatsApp-style assistant"
+        aria-expanded="false"
+        aria-controls="chatbotPanel"
+    >
+        <span class="chatbot-launcher-icon" aria-hidden="true">
+            <i id="chatbotLauncherIcon" class="fa-brands fa-whatsapp"></i>
+        </span>
+        <span class="chatbot-launcher-copy">
+            <span class="chatbot-launcher-title">Chat with AgriTrue</span>
+            <span class="chatbot-launcher-subtitle">Ask a farming question</span>
+        </span>
     </button>
 
     <!-- Toast -->
@@ -1367,7 +1665,7 @@
                 chatbotPanel.classList.remove("show");
                 chatbotPanel.setAttribute("aria-hidden", "true");
                 chatbotLauncher.setAttribute("aria-expanded", "false");
-                chatbotLauncherIcon.className = "fa-solid fa-comment-dots";
+                chatbotLauncherIcon.className = "fa-brands fa-whatsapp";
                 window.speechSynthesis?.cancel();
             }
 

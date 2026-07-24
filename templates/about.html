@@ -2,826 +2,1019 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About AgriTrue</title>
-    <!-- Use Inter font for a modern feel -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b6623">
+
+    <title>About AgriTrue | Empowering Informed Agriculture</title>
+    <meta name="description" content="Learn about AgriTrue's mission, vision, values, technology and leadership team working to improve access to trusted agricultural information.">
+    <meta name="keywords" content="AgriTrue, agricultural technology, farming Kenya, agricultural misinformation, AI farming, AgriTrue team">
+    <meta name="author" content="AgriTrue">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://agritrue.org/about">
+    <meta property="og:title" content="About AgriTrue">
+    <meta property="og:description" content="Trusted agricultural knowledge, accessible technology and community-driven verification.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/logo.jpg', _external=True) }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Load Tailwind CSS from CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Manrope", "sans-serif"]
+                    },
+                    colors: {
+                        agritrue: {
+                            50: "#f0fdf4",
+                            100: "#dcfce7",
+                            200: "#bbf7d0",
+                            300: "#86efac",
+                            400: "#4ade80",
+                            500: "#22c55e",
+                            600: "#16a34a",
+                            700: "#15803d",
+                            800: "#166534",
+                            900: "#14532d",
+                            950: "#052e16"
+                        },
+                        earth: {
+                            50: "#fbf8f1",
+                            100: "#f4ead4",
+                            700: "#765b2d",
+                            900: "#3d2f18"
+                        }
+                    },
+                    boxShadow: {
+                        soft: "0 24px 75px rgba(5, 46, 22, .11)",
+                        card: "0 16px 44px rgba(15, 23, 42, .08)",
+                        float: "0 26px 75px rgba(5, 46, 22, .22)"
+                    }
+                }
+            }
+        };
+    </script>
+
     <style>
+        :root {
+            --nav-height: 72px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7fafc;
-        }
-
-        /* Keyframes for a subtle card entrance animation */
-        @keyframes fadeInMoveUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Class for animated card appearance */
-        .animated-card {
-            animation: fadeInMoveUp 0.6s ease-out forwards;
-        }
-
-        /* Transition for all interactive cards */
-        .card-hover-effect {
-            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-            cursor: pointer;
-        }
-
-        .card-hover-effect:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Animation for the button pulse effect */
-        @keyframes pulse-green {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-            }
-        }
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0fdf4;
             margin: 0;
-            padding: 0;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 5% 12%, rgba(134, 239, 172, .18), transparent 26rem),
+                radial-gradient(circle at 96% 78%, rgba(187, 247, 208, .22), transparent 28rem),
+                #f8fbf8;
         }
 
-        /* Navbar Styles */
-        .custom-navbar {
-            background: linear-gradient(90deg, #0b6623, #90ee90);
-        }
-
-        .hero-content {
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* Loader Styles */
-        #agritrue-loader {
-            position: fixed;
-            z-index: 9999;
-            background: #050806;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease;
-        }
-
-        .leaf {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #03f103, #81C784);
-            border-radius: 0 50% 50% 50%;
-            animation: spin 1.2s linear infinite;
-            transform: rotate(-45deg);
-            margin: auto;
-        }
-
-        .loading-text {
-            margin-top: 20px;
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Slideshow Styles */
-        #slideshow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #000;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-
-        .dark-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
-            z-index: 2;
-        }
-
-        /* Chatbot Styles */
-        #chatbot-icon {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #34d399;
-            color: #fff;
-            font-size: 2rem;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 999;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        #chatbot-container {
-            position: fixed;
-            bottom: 100px;
-            right: 24px;
-            width: 360px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
+        body.menu-open {
             overflow: hidden;
-            z-index: 1000;
-            animation: slide-up 0.4s ease-out;
-        }
-        
-        @keyframes slide-up {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        #chatbot-header {
-            background: linear-gradient(90deg, #34d399, #10b981);
-            color: white;
-            padding: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #chatbot-body {
-            padding: 16px;
-            background: #f0fdf4;
-            overflow-y: auto;
-            max-height: 320px;
-        }
-        
-        #chatbot-input-container {
-            display: flex;
-            padding: 12px;
-            background: #ecfdf5;
-            border-top: 1px solid #d1fae5;
-        }
-        
-        #chatbot-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d1fae5;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        #send-message, #mic-button {
-            background: #34d399;
-            color: white;
-            border: none;
-            padding: 0 12px;
-            margin-left: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .chatbot-message {
-            padding: 10px 14px;
-            border-radius: 14px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background: #34d399;
-            color: white;
-            margin-left: auto;
-        }
-        
-        .bot-message {
-            background: #d1fae5;
-            color: black;
-            margin-right: auto;
         }
 
-        /* Hide default Bootstrap toggler on larger screens */
-        @media (min-width: 992px) {
-            .navbar-toggler {
-                display: none;
-            }
+        .custom-navbar {
+            background: linear-gradient(100deg, #064e3b 0%, #0b6623 48%, #4fae62 100%);
         }
 
-        /* Mobile Menu Styles */
+        .nav-dropdown {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+        }
+
+        .nav-group:hover .nav-dropdown,
+        .nav-group:focus-within .nav-dropdown {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: none;
+            background: rgba(2, 25, 12, .64);
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-menu-overlay.show {
+            display: block;
+        }
+
         .mobile-menu {
             position: fixed;
             top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background-color: #f0fdf4;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-            transition: right 0.3s ease-in-out;
-            z-index: 1050;
-            padding: 20px;
+            right: min(-92vw, -390px);
+            z-index: 70;
+            width: min(90vw, 360px);
+            height: 100dvh;
             overflow-y: auto;
+            background: #f0fdf4;
+            box-shadow: -24px 0 70px rgba(5, 46, 22, .26);
+            transition: right .3s ease;
         }
 
         .mobile-menu.show {
             right: 0;
         }
 
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            display: none;
+        .about-hero {
+            min-height: 670px;
+            padding-top: var(--nav-height);
         }
 
-        .mobile-menu-overlay.show {
-            display: block;
+        .about-hero-image {
+            position: absolute;
+            inset: 0;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: saturate(1.02) contrast(1.02) brightness(.86);
+            transform: scale(1.035);
+        }
+
+        .about-hero-overlay {
+            background:
+                linear-gradient(90deg, rgba(2, 24, 13, .94) 0%, rgba(5, 62, 32, .78) 46%, rgba(4, 52, 27, .37) 74%, rgba(2, 25, 12, .62) 100%),
+                linear-gradient(0deg, rgba(2, 25, 12, .84), transparent 58%);
+        }
+
+        .hero-shine {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            overflow: hidden;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .hero-shine::before {
+            content: "";
+            position: absolute;
+            top: -20%;
+            bottom: -20%;
+            left: -58%;
+            width: 42%;
+            background:
+                linear-gradient(
+                    105deg,
+                    transparent 0%,
+                    rgba(255,255,255,.03) 24%,
+                    rgba(214,255,221,.24) 45%,
+                    rgba(255,255,255,.50) 50%,
+                    rgba(214,255,221,.18) 58%,
+                    transparent 78%
+                );
+            filter: blur(5px);
+            opacity: .76;
+            transform: skewX(-12deg);
+            animation: heroSweep 6.8s ease-in-out infinite;
+        }
+
+        @keyframes heroSweep {
+            0% {
+                left: -58%;
+                opacity: 0;
+            }
+            13% {
+                opacity: .82;
+            }
+            52% {
+                opacity: .72;
+            }
+            74% {
+                left: 122%;
+                opacity: 0;
+            }
+            100% {
+                left: 122%;
+                opacity: 0;
+            }
+        }
+
+        .glass-panel {
+            background: rgba(255,255,255,.11);
+            border: 1px solid rgba(255,255,255,.18);
+            backdrop-filter: blur(18px);
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            color: #15803d;
+            font-size: .75rem;
+            font-weight: 800;
+            letter-spacing: .17em;
+            text-transform: uppercase;
+        }
+
+        .section-kicker::before {
+            content: "";
+            width: 2.25rem;
+            height: 2px;
+            border-radius: 999px;
+            background: #22c55e;
+        }
+
+        .info-card,
+        .value-card,
+        .team-card,
+        .story-card {
+            transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+        }
+
+        .info-card:hover,
+        .value-card:hover,
+        .team-card:hover,
+        .story-card:hover {
+            transform: translateY(-7px);
+            border-color: rgba(34, 197, 94, .38);
+            box-shadow: 0 22px 60px rgba(5, 46, 22, .13);
+        }
+
+        .image-shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-shine::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            bottom: -20%;
+            left: -70%;
+            width: 38%;
+            background: linear-gradient(105deg, transparent, rgba(255,255,255,.42), transparent);
+            transform: skewX(-14deg);
+            transition: left .8s ease;
+        }
+
+        .image-shine:hover::after {
+            left: 125%;
+        }
+
+        .team-photo {
+            aspect-ratio: 4 / 5;
+            object-fit: cover;
+            object-position: center;
+            transition: transform .45s ease;
+        }
+
+        .team-card:hover .team-photo {
+            transform: scale(1.035);
+        }
+
+        .bio-panel {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: max-height .45s ease, opacity .28s ease, transform .28s ease, margin-top .28s ease;
+        }
+
+        .bio-panel.open {
+            max-height: 460px;
+            opacity: 1;
+            transform: none;
+            margin-top: 1rem;
+        }
+
+        .bio-toggle-icon {
+            transition: transform .25s ease;
+        }
+
+        .bio-toggle[aria-expanded="true"] .bio-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .whatsapp-float {
+            position: fixed;
+            right: 1.2rem;
+            bottom: 1.2rem;
+            z-index: 55;
+            display: flex;
+            height: 66px;
+            min-width: 66px;
+            align-items: center;
+            justify-content: center;
+            gap: .7rem;
+            overflow: hidden;
+            border: 3px solid white;
+            border-radius: 999px;
+            background: linear-gradient(145deg, #2ee171, #25d366 48%, #128c4a);
+            color: white;
+            box-shadow: 0 18px 42px rgba(18, 140, 74, .42), 0 0 0 7px rgba(37, 211, 102, .12);
+            transition: min-width .28s ease, padding .28s ease, transform .25s ease;
+        }
+
+        .whatsapp-float:hover {
+            min-width: 196px;
+            padding: 0 1rem;
+            transform: translateY(-4px);
+        }
+
+        .whatsapp-copy {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            transition: max-width .28s ease, opacity .2s ease;
+        }
+
+        .whatsapp-float:hover .whatsapp-copy {
+            max-width: 120px;
+            opacity: 1;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .65s ease, transform .65s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            :root {
+                --nav-height: 68px;
+            }
+
+            .about-hero {
+                min-height: 620px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .about-hero {
+                min-height: 660px;
+            }
+
+            .about-hero-image {
+                object-position: 58% center;
+            }
+
+            .hero-shine::before {
+                width: 62%;
+                animation-duration: 7.4s;
+            }
+
+            .whatsapp-float {
+                right: .8rem;
+                bottom: .8rem;
+                height: 60px;
+                min-width: 60px;
+                border-width: 2px;
+            }
+
+            .whatsapp-float:hover {
+                min-width: 60px;
+                padding: 0;
+            }
+
+            .whatsapp-copy {
+                display: none;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
- <!-- Navigation Bar -->
-      <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar bg-green-700">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
+
+<body class="font-sans text-slate-800 antialiased">
+    <!-- Navigation -->
+    <nav class="custom-navbar fixed inset-x-0 top-0 z-50 shadow-lg">
+        <div class="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+            <a href="/" class="flex items-center gap-3" aria-label="AgriTrue home">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-10 w-10 rounded-full border-2 border-white/70 object-cover shadow">
+                <div>
+                    <div class="font-display text-xl font-extrabold leading-none text-white sm:text-2xl">AgriTrue</div>
+                    <div class="mt-1 hidden text-[9px] font-bold uppercase tracking-[.24em] text-green-100 sm:block">Empowering informed agriculture</div>
+                </div>
             </a>
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
+
+            <div class="hidden items-center gap-1 lg:flex">
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+                        Utilities <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 top-full mt-2 w-60 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/community-notes" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800"><i class="fa-solid fa-people-group mr-2 text-green-600"></i>Community Notes</a>
+                        <a href="/chatbot" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800"><i class="fa-solid fa-comments mr-2 text-green-600"></i>AI Chatbot</a>
+                        <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800"><i class="fa-solid fa-microscope mr-2 text-green-600"></i>Smart Analyzer</a>
+                        <a href="/ussd" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800"><i class="fa-solid fa-mobile-screen-button mr-2 text-green-600"></i>USSD & Voice</a>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">About Us</a>
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-     <a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
 
+                <a href="/dashboard" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Farm Truth</a>
+                <a href="/know_your_land" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Know Your Land</a>
+                <a href="/about" class="rounded-xl bg-white/15 px-3 py-2.5 text-sm font-bold text-white">About</a>
+                <a href="/podcast" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Podcast</a>
 
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">
+                        Resources <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i>
+                    </button>
+                    <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/research" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Research Hub</a>
+                        <a href="/faqs" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Frequently Asked Questions</a>
                     </div>
-                </div>  
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-800">Register</a>
+                </div>
+
+                <a href="/donate" class="ml-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-green-800 shadow-lg transition hover:-translate-y-0.5 hover:bg-green-50">Donate</a>
+
+                {% if current_user.is_authenticated %}
+                    <div class="nav-group relative ml-1">
+                        <button type="button" class="rounded-full bg-white/15 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25">
+                            <i class="fa-regular fa-user mr-2"></i>Profile
+                        </button>
+                        <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                            <a href="/profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Profile</a>
+                            <a href="/edit_profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Edit Profile</a>
+                            <a href="/streak" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Streak</a>
+                            {% if current_user.is_admin %}
+                                <a href="/admin" class="block rounded-xl px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50">Admin Panel</a>
+                            {% endif %}
+                            <a href="/logout" class="block rounded-xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="/login" class="ml-1 rounded-full border border-white/40 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-white/10">Login</a>
+                    <a href="/register" class="rounded-full bg-green-900 px-5 py-2.5 text-sm font-extrabold text-white shadow transition hover:bg-green-950">Register</a>
+                {% endif %}
             </div>
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
+
+            <button id="mobileMenuBtn" type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-xl text-white lg:hidden" aria-label="Open navigation menu" aria-controls="mobileMenu" aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
             </button>
         </div>
     </nav>
-    <!-- Mobile Menu -->
+
+    <!-- Mobile navigation -->
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
-        </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about"><i class="fas fa-info-circle mr-3"></i>About Us</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+    <aside id="mobileMenu" class="mobile-menu p-5 lg:hidden" aria-hidden="true">
+        <div class="flex items-center justify-between border-b border-green-200 pb-5">
+            <a href="/" class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full object-cover">
+                <div>
+                    <div class="font-display text-lg font-extrabold text-green-950">AgriTrue</div>
+                    <div class="text-xs font-semibold text-green-600">Farmer services</div>
                 </div>
-            </li>
-            <li>
-                <a href="#" class="nav-link text-green-600 font-medium p-2 rounded-lg transition hover:bg-green-700 hover:text-white">
-                Resource & Downloads <i class="fas fa-chevron-down text-xs ml-1"></i>
-                </a>
-                <div class="pl-8 pt-2 space-y-2">
-                    <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                    <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                </div>
-            </li>
-        </ul>
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-        </div>
-    </div>
-    <script>
-        // Loader Script
-        window.addEventListener("load", () => {
-            const loader = document.getElementById("agritrue-loader");
-            setTimeout(() => {
-                loader.style.opacity = 0;
-                setTimeout(() => loader.style.display = "none", 50);
-            }, 1);
-        });
-
-        // Slideshow Script
-        document.addEventListener('DOMContentLoaded', () => {
-            const slides = document.querySelectorAll('#slideshow .slide');
-            let current = 0;
-            if (slides.length > 0) {
-                slides[current].classList.add('active');
-            }
-            setInterval(() => {
-                slides[current].classList.remove('active');
-                current = (current + 1) % slides.length;
-                slides[current].classList.add('active');
-            }, 5000); // Change slide every 5 seconds
-        });
-
-        // Mobile Menu Script
-        
-   
-        // Mobile menu logic
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.add('show');
-            mobileMenuOverlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        });
-        closeMobileMenu.addEventListener('click', () => {
-            mobileMenu.classList.remove('show');
-            mobileMenuOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
-        mobileMenuOverlay.addEventListener('click', () => {
-            mobileMenu.classList.remove('show');
-            mobileMenuOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
-
-        // Play featured audio when image is clicked
-        document.querySelector('img[alt="Featured Speaker"]').addEventListener('click', function() {
-            const audio = document.getElementById('featured-audio');
-            audio.play();
-            audio.classList.add('audio-flash');
-            setTimeout(() => audio.classList.remove('audio-flash'), 300);
-        });
-
-        // Smooth scroll for navigation links
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = link.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    e.preventDefault();
-                    document.querySelector(href).scrollIntoView({behavior: 'smooth'});
-                }
-            });
-        });
-    
-
-        // Chatbot Script
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeBtn = document.getElementById("close-chatbot");
-        const messagesDiv = document.getElementById("chatbot-messages");
-        const input = document.getElementById("chatbot-input");
-        const sendBtn = document.getElementById("send-message");
-        const micBtn = document.getElementById("mic-button");
-        const messages = [];
-
-        function appendMessage(text, isUser) {
-            const msg = document.createElement("div");
-            msg.className = "chatbot-message " + (isUser ? "user-message" : "bot-message");
-            msg.textContent = text;
-            messagesDiv.appendChild(msg);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            appendMessage(text, true);
-            messages.push({ role: "user", content: text });
-            input.value = "";
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages })
-                });
-                const data = await res.json();
-                if (data.reply) {
-                    appendMessage(data.reply, false);
-                    messages.push({ role: "assistant", content: data.reply });
-                } else {
-                    appendMessage("No response from server.", false);
-                }
-            } catch (err) {
-                console.error(err);
-                appendMessage("Error connecting to the server.", false);
-            }
-        }
-        
-        sendBtn.onclick = sendMessage;
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") sendMessage();
-        };
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-        };
-        closeBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "flex";
-        };
-        
-        // 🎤 Speech Recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                input.value = transcript;
-                sendMessage();
-            };
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-                appendMessage("Sorry, I didn't catch that.", false);
-            };
-            micBtn.onclick = () => {
-                recognition.start();
-            };
-        } else {
-            micBtn.disabled = true;
-            micBtn.title = "Speech Recognition not supported in this browser.";
-        }
-    </script>
-    <main class="container mx-auto p-4 md:p-8" id="about-us-content">
-    <!-- About Us Hero Section -->
-    <section id="hero" class="mb-16 py-20 bg-gradient-to-br from-green-50 via-white to-green-100 rounded-3xl shadow-xl animated-card relative overflow-hidden flex items-center min-h-[400px] md:min-h-[500px]">
-        <!-- Background Image -->
-        <div class="absolute inset-0 w-full h-full">
-            <img src="/static/images/isa.jpg" alt="AgriTrue Community" class="w-full h-full object-cover brightness-110 opacity-70" style="object-position: center;">
-            <div class="absolute inset-0 bg-gradient-to-r from-green-900/40 via-white/10 to-green-600/30"></div>
-        </div>
-        <!-- Content -->
-        <div class="relative z-10 max-w-xl px-6 py-12 md:py-20 md:pl-16 text-left">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">Empowering Farmers Through Truth</h2>
-            <div class="w-24 h-1 bg-green-400 rounded-full my-4 animate-pulse" style="animation: pulse-green 2s infinite;"></div>
-            <p class="text-lg text-white mb-6 max-w-md drop-shadow-md">
-                AgriTrue helps farmers access verified knowledge for better yields and a sustainable future.
-            </p>
-            <div class="flex space-x-4">
-                <a href="/register" class="inline-block">
-  <button class="px-6 py-2 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 transition-all duration-300">
-    Join Us
-  </button>
-</a>
-
-                <button class="px-6 py-2 bg-white text-green-600 font-bold rounded-full shadow-lg border-2 border-green-600 hover:bg-green-100 transition-all duration-300">Learn More</button>
-            </div>
-        </div>
-    </section>
-
-        <!-- Mission, Vision & Values Section with Animated Cards -->
-        <section class="mb-16 grid md:grid-cols-3 gap-8">
-            <!-- Mission Card -->
-            <div class="bg-white rounded-3xl shadow-lg p-8 animated-card card-hover-effect" style="animation-delay: 0.1s;">
-                <h3 class="text-3xl font-bold text-green-700 mb-4">Our Mission</h3>
-                <div class="w-16 h-1 bg-green-500 rounded-full mb-4"></div>
-                <p class="text-gray-600 leading-relaxed">
-                    To combat the spread of agricultural misinformation by providing a reliable, community-driven, and AI-powered platform for farmers to verify information, share best practices, and make informed decisions that lead to greater yields and prosperity.
-                </p>
-                <!-- <button class="mt-6 px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-all duration-300">Read Mission</button> -->
-            </div>
-            <!-- Vision Card -->
-            <div class="bg-white rounded-3xl shadow-lg p-8 animated-card card-hover-effect" style="animation-delay: 0.2s;">
-                <h3 class="text-3xl font-bold text-green-700 mb-4">Our Vision</h3>
-                <div class="w-16 h-1 bg-green-500 rounded-full mb-4"></div>
-                <p class="text-gray-600 leading-relaxed">
-                    To create a global community of empowered farmers who are equipped with the knowledge and tools to thrive in a data-rich world, leading to more resilient farms, healthier ecosystems, and a more secure food supply for all.
-                </p>
-                <!-- <button class="mt-6 px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-all duration-300">Explore Vision</button> -->
-            </div>
-            <!-- Values Card -->
-            <div class="bg-white rounded-3xl shadow-lg p-8 animated-card card-hover-effect" style="animation-delay: 0.3s;">
-                <h3 class="text-3xl font-bold text-green-700 mb-4">Our Values</h3>
-                <div class="w-16 h-1 bg-green-500 rounded-full mb-4"></div>
-                <ul class="text-gray-600 space-y-2 list-disc list-inside">
-                    <li><strong class="text-green-600">Integrity:</strong> Upholding the truth in every action.</li>
-                    <li><strong class="text-green-600">Community:</strong> Fostering a supportive network.</li>
-                    <li><strong class="text-green-600">Innovation:</strong> Pushing the boundaries of ag-tech.</li>
-                    <li><strong class="text-green-600">Sustainability:</strong> Protecting the planet for future generations.</li>
-                </ul>
-                <!-- <button class="mt-6 px-6 py-2 bg-green-500 text-white font-semibold rounded-full hover:bg-green-600 transition-all duration-300">Our Principles</button> -->
-            </div>
-        </section>
-
-        <!-- Dynamic Content with Images and Text Blocks -->
-        <section class="mb-16">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <!-- Image Block 1 -->
-                <div class="animated-card" style="animation-delay: 0.4s;">
-                    <img src="/static/images/b4.jpg" alt="Image of a thriving community farm" class="rounded-3xl shadow-xl w-full h-auto card-hover-effect">
-                </div>
-                <!-- Text Block 1 -->
-                <div class="animated-card" style="animation-delay: 0.5s;">
-                    <h3 class="text-3xl font-bold text-green-700 mb-4">A Community Built on Trust</h3>
-                    <p class="text-gray-600 leading-relaxed mb-4">
-                        We believe in the power of shared knowledge. Our platform connects farmers from across the globe, allowing them to share insights, solve problems, and build a network of trust. Every piece of advice is vetted by our AI and peer-reviewed by the community to ensure its accuracy.
-                    </p>
-                    <a href="/community-notes">
-                    <button class="px-8 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 active:scale-95">Discover Features</button>
-                    </a>
-                </div>
-            </div>
-        </section>
-        
-        <section class="mb-16">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <!-- Text Block 2 -->
-                <div class="animated-card" style="animation-delay: 0.6s;">
-                    <h3 class="text-3xl font-bold text-green-700 mb-4">AI-Powered Verification Engine</h3>
-                    <p class="text-gray-600 leading-relaxed mb-4">
-                        Our state-of-the-art AI engine, developed by our expert team, analyzes agricultural data, scientific research, and real-time field reports to provide instant verification of information. This technology is designed to protect farmers from harmful misinformation and unproven methods.
-                    </p>
-                    <a href="/ml-analyzer">
-                    <button class="px-8 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 active:scale-95">Learn About Our Tech</button>
-                    </a>
-                </div>
-                <!-- Image Block 2 -->
-                <div class="animated-card" style="animation-delay: 0.7s;">
-                    <img src="/static/images/b5.jpg" alt="Image of a futuristic farm with AI elements" class="rounded-3xl shadow-xl w-full h-auto card-hover-effect">
-                </div>
-            </div>
-        </section>
-
-        <!-- Horizontal Line with Icon -->
-        <div class="flex items-center my-16">
-            <div class="flex-grow border-t-2 border-green-200"></div>
-            <span class="flex-shrink mx-4 text-green-500 text-4xl transform rotate-45">🌿</span>
-            <div class="flex-grow border-t-2 border-green-200"></div>
-        </div>
-
-        <!-- Team Section with Animated Cards and Tables -->
-        <section class="py-12 bg-gray-50 mb-16 rounded-3xl shadow-xl">
-            <div class="max-w-7xl mx-auto px-4 text-center">
-                <h2 class="text-4xl font-extrabold text-green-800 mb-4">Meet the Team</h2>
-                <p class="text-lg text-gray-700 max-w-2xl mx-auto mb-10">
-                    Our diverse team of experts combines agricultural experience with cutting-edge technology to build a platform that truly makes a difference.
-                </p>
-             <div class="w-24 h-1 bg-green-500 rounded-full mx-auto mb-12"></div>
-<!-- Professional Team Cards Grid Layout with Bio Dropdown -->
-<section class="container mx-auto px-4 py-16">
-    <h2 class="text-3xl md:text-4xl font-bold text-green-700 mb-12 text-center">Meet the AgriTrue Team</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Team Member 1 -->
-        <div class="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center card-hover-effect">
-            <div class="w-48 h-64 mb-4 overflow-hidden rounded-xl shadow-xl border-4 border-green-400 flex items-center justify-center bg-gray-100">
-                <img src="/static/images/chillsf.jpg" alt="Nyongesa Emmanuel" class="object-cover w-full h-full">
-            </div>
-            <h4 class="text-2xl font-bold text-green-700 mb-1">Nyongesa Emmanuel</h4>
-            <p class="text-gray-500 mb-2 font-medium">CEO & Founder</p>
-            <button class="mt-2 px-6 py-2 bg-green-100 text-green-800 font-semibold rounded-full hover:bg-green-200 transition-all duration-300" onclick="toggleBio('bio1')">
-                Read Bio
-            </button>
-            <div id="bio1" class="mt-3 w-full text-gray-600 text-sm bg-green-50 rounded-xl shadow border border-green-100 p-4 hidden transition-all duration-300">
-                <p>
-                    Founder & CEO of AgriTrue, Senior Software Engineer with a BSc in Software Engineering and a growing background in agricultural biotechnology. Passionate about leveraging AI and digital innovation to combat misinformation, drive sustainable agriculture, and empower farming communities across Africa.
-                </p>
-                <div class="mt-3 flex justify-center">
-                    <a href="mailto:simiyunyongesa@agritrue.org">
-                        <button class="px-4 py-1 bg-green-500 text-white font-semibold rounded hover:bg-green-600 transition">Connect</button>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <!-- Team Member 2 -->
-        <div class="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center card-hover-effect">
-            <div class="w-48 h-64 mb-4 overflow-hidden rounded-xl shadow-xl border-4 border-green-400 flex items-center justify-center bg-gray-100">
-                <img src="/static/images/alma.jpg" alt="Alma Lynn" class="object-cover w-full h-full">
-            </div>
-            <h4 class="text-2xl font-bold text-green-700 mb-1">Alma Lynn</h4>
-            <p class="text-gray-500 mb-2 font-medium">Community Relations & Co-Founder</p>
-            <button class="mt-2 px-6 py-2 bg-green-100 text-green-800 font-semibold rounded-full hover:bg-green-200 transition-all duration-300" onclick="toggleBio('bio2')">
-                Read Bio
-            </button>
-            <div id="bio2" class="mt-3 w-full text-gray-600 text-sm bg-green-50 rounded-xl shadow border border-green-100 p-4 hidden transition-all duration-300">
-                <p>
-                    Alma Lynn is a visionary Co-Founder and Community Relations Officer at AgriTrue, with a Bachelor of Law and a strong passion for advocacy, ethics, and rural empowerment. She plays a pivotal role in bridging the gap between agricultural communities, policymakers, and technology innovators — ensuring that AgriTrue’s solutions are inclusive, accessible, and grounded in trust.
-                </p>
-                <div class="mt-3 flex justify-center">
-                    <a href="mailto:Shaddyvahalma@gmail.com">
-                        <button class="px-4 py-1 bg-green-500 text-white font-semibold rounded hover:bg-green-600 transition">Connect</button>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <!-- Team Member 3 -->
-        <div class="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center card-hover-effect">
-            <div class="w-48 h-64 mb-4 overflow-hidden rounded-xl shadow-xl border-4 border-green-400 flex items-center justify-center bg-gray-100">
-                <img src="/static/images/denno.jpg" alt="Dennis Mwendwa" class="object-cover w-full h-full">
-            </div>
-            <h4 class="text-2xl font-bold text-green-700 mb-1">Dennis Mwendwa</h4>
-            <p class="text-gray-500 mb-2 font-medium">Finance Administration & Co-Founder</p>
-            <button class="mt-2 px-6 py-2 bg-green-100 text-green-800 font-semibold rounded-full hover:bg-green-200 transition-all duration-300" onclick="toggleBio('bio3')">
-                Read Bio
-            </button>
-            <div id="bio3" class="mt-3 w-full text-gray-600 text-sm bg-green-50 rounded-xl shadow border border-green-100 p-4 hidden transition-all duration-300">
-                <p>
-                    Dennis is a data scientist with a background in BSc Actuarial Science and data analytics. He combines research, statistical modeling, and machine learning to create smart solutions that advance AgriTrue’s mission. Passionate about tech for social impact, he’s dedicated to empowering farmers and promoting data-driven agriculture across Africa.
-                </p>
-                <div class="mt-3 flex justify-center">
-                    <a href="mailto:dennismwendwa@agritrue.org">
-                        <button class="px-4 py-1 bg-green-500 text-white font-semibold rounded hover:bg-green-600 transition">Connect</button>
-                    </a>
-                </div>
-            </div>
-        </div>
- 
-        <!-- Team Member 5 -->
-<div class="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center card-hover-effect">
-    <div class="w-48 h-64 mb-4 overflow-hidden rounded-xl shadow-xl border-4 border-green-400 flex items-center justify-center bg-gray-100">
-        <img src="/static/images/mercy.jpg" alt="Wambui Mercy" class="object-cover w-full h-full">
-    </div>
-    <h4 class="text-2xl font-bold text-green-700 mb-1">Wambui Mercy</h4>
-    <p class="text-gray-500 mb-2 font-medium">Country Coordinator</p>
-
-    <!-- Button -->
-    <button class="mt-2 px-6 py-2 bg-green-100 text-green-800 font-semibold rounded-full hover:bg-green-200 transition-all duration-300"
-            onclick="toggleBio('bio5')">
-        Read Bio
-    </button>
-
-    <!-- Hidden Bio Section -->
-    <div id="bio5" class="mt-3 w-full text-gray-600 text-sm bg-green-50 rounded-xl shadow border border-green-100 p-4 hidden transition-all duration-300">
-        <p>
-            Mercy Wambui is a skilled professional with a BSc in Law and certification as a Professional Secretary. 
-            She brings strong legal awareness, administrative excellence, and coordination expertise to her role as 
-            Country Coordinator at AgriTrue. Mercy supports national operations, strengthens partnerships, ensures 
-            compliance, and helps drive AgriTrue’s mission of providing credible and accessible agricultural information. 
-            Her professionalism and organizational skills make her a valuable asset to the team.
-        </p>
-
-        <div class="mt-3 flex justify-center">
-            <a href="mailto:mercykinuthiac19@gmail.com">
-                <button class="px-4 py-1 bg-green-500 text-white font-semibold rounded hover:bg-green-600 transition">
-                    Connect
-                </button>
             </a>
+            <button id="closeMobileMenu" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl text-green-800 shadow" aria-label="Close navigation menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-    </div>
-</div>
 
+        <nav class="mt-5 space-y-2">
+            <a href="/" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Home</a>
+            <a href="/dashboard" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Farm Truth</a>
+            <a href="/know_your_land" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Know Your Land</a>
+            <a href="/community-notes" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Community Notes</a>
+            <a href="/chatbot" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Smart Analyzer</a>
+            <a href="/ussd" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">USSD & Voice</a>
+            <a href="/research" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Research Hub</a>
+            <a href="/podcast" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Podcast</a>
+            <a href="/about" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">About Us</a>
+            <a href="/faqs" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">FAQs</a>
+            <a href="/donate" class="block rounded-xl bg-green-950 px-4 py-3 text-center font-bold text-white">Donate to AgriTrue</a>
+        </nav>
 
+        <div class="mt-6 border-t border-green-200 pt-5">
+            {% if current_user.is_authenticated %}
+                <a href="/profile" class="block rounded-xl bg-white px-4 py-3 text-center font-bold text-green-800 shadow">My Profile</a>
+                {% if current_user.is_admin %}
+                    <a href="/admin" class="mt-3 block rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-amber-800">Admin Panel</a>
+                {% endif %}
+                <a href="/logout" class="mt-3 block rounded-xl border border-red-300 px-4 py-3 text-center font-bold text-red-600">Logout</a>
+            {% else %}
+                <a href="/login" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">Login</a>
+                <a href="/register" class="mt-3 block rounded-xl border border-green-700 px-4 py-3 text-center font-bold text-green-800">Create Account</a>
+            {% endif %}
+        </div>
+    </aside>
 
-</section>
-<script>
-function toggleBio(bioId) {
-    const bio = document.getElementById(bioId);
-    bio.classList.toggle('hidden');
-}
-</script>
-       
+    <main>
+        <!-- Hero -->
+        <header class="about-hero relative overflow-hidden text-white">
+            <img src="{{ url_for('static', filename='images/isa.jpg') }}" alt="AgriTrue community and agricultural technology" class="about-hero-image">
+            <div class="about-hero-overlay absolute inset-0 z-[1]"></div>
+            <div class="hero-shine" aria-hidden="true"></div>
 
-    </main>
- <!-- Call to Action Section -->
-        <section class="bg-green-50 py-12 rounded-3xl shadow-xl">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-3xl md:text-4xl font-bold text-green-700 mb-4">Join the AgriTrue Movement</h2>
-                <p class="text-lg text-gray-600 mb-6">Be part of a community that values truth, innovation, and sustainability in agriculture. Together, we can transform farming for the better.</p>
-                <a href="/register" class="inline-block px-8 py-3 bg-green-600 text-white font-bold rounded-full shadow-lg hover:bg-green-700 transition-all duration-300">Get Started</a>
+            <div class="relative z-[3] mx-auto grid min-h-[598px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+                <div class="max-w-3xl">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur">
+                        <i class="fa-solid fa-seedling"></i>
+                        About AgriTrue
+                    </div>
+
+                    <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.08] sm:text-5xl md:text-6xl lg:text-7xl">
+                        Empowering farmers through truth, technology and community.
+                    </h1>
+
+                    <p class="mt-6 max-w-2xl text-base leading-7 text-white/76 sm:text-lg md:text-xl">
+                        AgriTrue helps farmers, researchers and communities access clearer agricultural information, question misleading claims and make more informed decisions.
+                    </p>
+
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                        <a href="/register" class="inline-flex items-center justify-center rounded-full bg-green-500 px-7 py-3.5 font-extrabold text-white shadow-xl transition hover:-translate-y-1 hover:bg-green-400">
+                            Join AgriTrue
+                        </a>
+                        <a href="#our-story" class="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/10 px-7 py-3.5 font-extrabold text-white backdrop-blur transition hover:bg-white/20">
+                            Discover Our Story
+                        </a>
+                    </div>
+                </div>
+
+                <div class="glass-panel hidden rounded-[2rem] p-6 shadow-float lg:block">
+                    <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-200">What drives us</div>
+                    <div class="mt-5 space-y-4">
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-shield-heart"></i></div>
+                            <div>
+                                <div class="font-extrabold">Truth and verification</div>
+                                <p class="mt-1 text-xs leading-5 text-white/62">Encouraging farmers to verify important claims before acting.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-mobile-screen"></i></div>
+                            <div>
+                                <div class="font-extrabold">Inclusive access</div>
+                                <p class="mt-1 text-xs leading-5 text-white/62">Mobile, voice, USSD-inspired and web-based agricultural tools.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-people-group"></i></div>
+                            <div>
+                                <div class="font-extrabold">Community participation</div>
+                                <p class="mt-1 text-xs leading-5 text-white/62">Combining local knowledge, responsible technology and shared learning.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mission, vision and values -->
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center">
+                    <span class="section-kicker justify-center">Our foundation</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">A clear purpose guides every AgriTrue tool.</h2>
+                    <p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">Our mission, vision and values define how we build, communicate and serve agricultural communities.</p>
+                </div>
+
+                <div class="mt-12 grid gap-5 lg:grid-cols-3">
+                    <article class="info-card reveal rounded-3xl border border-green-100 bg-white p-7 shadow-card">
+                        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-100 text-2xl text-green-700"><i class="fa-solid fa-bullseye"></i></div>
+                        <h3 class="mt-6 text-2xl font-extrabold text-green-950">Our Mission</h3>
+                        <p class="mt-4 text-sm leading-7 text-slate-600">
+                            To combat agricultural misinformation by providing a reliable, community-driven and AI-assisted platform where farmers can verify information, share practical knowledge and make better-informed decisions.
+                        </p>
+                    </article>
+
+                    <article class="info-card reveal rounded-3xl border border-green-100 bg-green-950 p-7 text-white shadow-card">
+                        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-400 text-2xl text-green-950"><i class="fa-solid fa-eye"></i></div>
+                        <h3 class="mt-6 text-2xl font-extrabold">Our Vision</h3>
+                        <p class="mt-4 text-sm leading-7 text-white/65">
+                            To build a global community of informed and resilient farmers equipped with accessible knowledge and practical technology that strengthens farms, ecosystems and food systems.
+                        </p>
+                    </article>
+
+                    <article class="info-card reveal rounded-3xl border border-green-100 bg-white p-7 shadow-card">
+                        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-100 text-2xl text-green-700"><i class="fa-solid fa-gem"></i></div>
+                        <h3 class="mt-6 text-2xl font-extrabold text-green-950">Our Values</h3>
+                        <div class="mt-4 space-y-3 text-sm text-slate-600">
+                            <p><strong class="text-green-800">Integrity:</strong> Upholding truth and responsibility.</p>
+                            <p><strong class="text-green-800">Community:</strong> Building supportive knowledge networks.</p>
+                            <p><strong class="text-green-800">Innovation:</strong> Applying technology to real farming needs.</p>
+                            <p><strong class="text-green-800">Sustainability:</strong> Supporting long-term agricultural resilience.</p>
+                        </div>
+                    </article>
+                </div>
             </div>
         </section>
-    <!-- Footer -->
-      <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+
+        <!-- Our story -->
+        <section id="our-story" class="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                <div class="image-shine reveal overflow-hidden rounded-[2rem] shadow-soft">
+                    <img src="{{ url_for('static', filename='images/b4.jpg') }}" alt="Thriving agricultural community" class="h-[430px] w-full object-cover sm:h-[540px]">
                 </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
-                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+
+                <div class="reveal">
+                    <span class="section-kicker">A community built on trust</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Shared knowledge becomes stronger when it can be questioned and verified.</h2>
+                    <p class="mt-6 text-base leading-7 text-slate-600">
+                        AgriTrue was created around a simple idea: farmers deserve agricultural information that is understandable, accessible and open to verification.
+                    </p>
+                    <p class="mt-4 text-base leading-7 text-slate-600">
+                        The platform connects practical farmer experience with digital tools, community participation and responsible AI-assisted guidance. Community Notes allow users to share observations and discuss claims, while AgriTrue tools help users decide when professional inspection or testing is necessary.
+                    </p>
+
+                    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+                        <div class="story-card rounded-2xl border border-green-100 bg-green-50 p-5">
+                            <div class="text-sm font-extrabold text-green-900">Local experience</div>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Farmers contribute observations grounded in real agricultural conditions.</p>
+                        </div>
+                        <div class="story-card rounded-2xl border border-green-100 bg-green-50 p-5">
+                            <div class="text-sm font-extrabold text-green-900">Responsible verification</div>
+                            <p class="mt-2 text-sm leading-6 text-slate-600">Important decisions are linked back to experts, tests and trusted institutions.</p>
+                        </div>
+                    </div>
+
+                    <a href="/community-notes" class="mt-8 inline-flex items-center rounded-full bg-green-700 px-6 py-3.5 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-800">
+                        Explore Community Notes <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
             </div>
-            <hr class="border-gray-700 my-8">
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </section>
+
+        <!-- Technology -->
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+                <div class="reveal order-2 lg:order-1">
+                    <span class="section-kicker">Responsible agricultural technology</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">AI-assisted tools designed to support—not replace—professional judgement.</h2>
+                    <p class="mt-6 text-base leading-7 text-slate-600">
+                        AgriTrue combines image screening, document review, agricultural question answering and community knowledge to help users understand a situation more clearly.
+                    </p>
+                    <p class="mt-4 text-base leading-7 text-slate-600">
+                        Digital results are presented as guidance rather than certainty. The platform encourages users to consult agronomists, veterinarians, extension officers, laboratories and issuing institutions whenever a decision is urgent, high-risk or uncertain.
+                    </p>
+
+                    <div class="mt-8 space-y-4">
+                        <div class="flex gap-4 rounded-2xl border border-green-100 bg-white p-5 shadow-card">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-100 text-green-700"><i class="fa-solid fa-camera"></i></div>
+                            <div>
+                                <div class="font-extrabold text-green-950">Visual screening</div>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">Review visible crop or livestock symptoms using clear uploaded images.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 rounded-2xl border border-green-100 bg-white p-5 shadow-card">
+                            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-100 text-green-700"><i class="fa-solid fa-file-shield"></i></div>
+                            <div>
+                                <div class="font-extrabold text-green-950">Document screening</div>
+                                <p class="mt-1 text-sm leading-6 text-slate-600">Identify visible concerns in farm documents while preserving the need for official verification.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="/ml-analyzer" class="mt-8 inline-flex items-center rounded-full bg-green-950 px-6 py-3.5 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-900">
+                        Open Smart Analyzer <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+
+                <div class="image-shine reveal order-1 overflow-hidden rounded-[2rem] shadow-soft lg:order-2">
+                    <img src="{{ url_for('static', filename='images/b5.jpg') }}" alt="Agricultural technology and AI" class="h-[430px] w-full object-cover sm:h-[540px]">
+                </div>
+            </div>
+        </section>
+
+        <!-- Principles -->
+        <section class="bg-green-950 px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center">
+                    <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">How we work</div>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl lg:text-5xl">Four principles guide our approach.</h2>
+                </div>
+
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <article class="value-card reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">01</div>
+                        <h3 class="mt-6 text-xl font-extrabold">Be useful</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Build tools around real farmer questions and workflows.</p>
+                    </article>
+
+                    <article class="value-card reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">02</div>
+                        <h3 class="mt-6 text-xl font-extrabold">Be transparent</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Explain limitations and avoid presenting screening as certainty.</p>
+                    </article>
+
+                    <article class="value-card reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">03</div>
+                        <h3 class="mt-6 text-xl font-extrabold">Be accessible</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Design for mobile users, voice access and varying connectivity.</p>
+                    </article>
+
+                    <article class="value-card reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-xl font-extrabold text-green-950">04</div>
+                        <h3 class="mt-6 text-xl font-extrabold">Be accountable</h3>
+                        <p class="mt-3 text-sm leading-6 text-white/62">Encourage verification through experts, testing and institutions.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team -->
+        <section class="bg-earth-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center">
+                    <span class="section-kicker justify-center">Leadership team</span>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Meet the people building AgriTrue.</h2>
+                    <p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">A multidisciplinary team combining software, data, law, community relations, administration and agricultural innovation.</p>
+                </div>
+
+                <div class="mt-12 grid gap-6 md:grid-cols-2">
+                    <!-- Emmanuel -->
+                    <article class="team-card reveal overflow-hidden rounded-[2rem] border border-green-100 bg-white shadow-card">
+                        <div class="grid sm:grid-cols-[220px_1fr]">
+                            <div class="overflow-hidden bg-green-50">
+                                <img src="{{ url_for('static', filename='images/chillsf.jpg') }}" alt="Nyongesa Emmanuel" class="team-photo h-full w-full">
+                            </div>
+                            <div class="p-6 sm:p-7">
+                                <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Leadership</div>
+                                <h3 class="mt-3 text-2xl font-extrabold text-green-950">Nyongesa Emmanuel</h3>
+                                <p class="mt-1 text-sm font-semibold text-green-700">CEO & Founder</p>
+                                <p class="mt-4 text-sm leading-6 text-slate-600">Software engineer and agricultural technology advocate focused on using responsible digital innovation to improve access to trusted information.</p>
+
+                                <button type="button" class="bio-toggle mt-5 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-extrabold text-green-800 hover:bg-green-200" data-target="bio-emmanuel" aria-expanded="false">
+                                    Read full bio <i class="bio-toggle-icon fa-solid fa-chevron-down ml-2 text-xs"></i>
+                                </button>
+
+                                <div id="bio-emmanuel" class="bio-panel">
+                                    <div class="rounded-2xl border border-green-100 bg-green-50 p-4 text-sm leading-6 text-slate-600">
+                                        Founder and CEO of AgriTrue, Senior Software Engineer with a BSc in Software Engineering and a growing background in agricultural biotechnology. Passionate about leveraging AI and digital innovation to combat misinformation, drive sustainable agriculture and empower farming communities across Africa.
+                                        <div class="mt-4">
+                                            <a href="mailto:simiyunyongesa@agritrue.org" class="inline-flex items-center rounded-full bg-green-700 px-4 py-2 font-bold text-white hover:bg-green-800"><i class="fa-solid fa-envelope mr-2"></i>Connect</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Alma -->
+                    <article class="team-card reveal overflow-hidden rounded-[2rem] border border-green-100 bg-white shadow-card">
+                        <div class="grid sm:grid-cols-[220px_1fr]">
+                            <div class="overflow-hidden bg-green-50">
+                                <img src="{{ url_for('static', filename='images/alma.jpg') }}" alt="Alma Lynn" class="team-photo h-full w-full">
+                            </div>
+                            <div class="p-6 sm:p-7">
+                                <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Community</div>
+                                <h3 class="mt-3 text-2xl font-extrabold text-green-950">Alma Lynn</h3>
+                                <p class="mt-1 text-sm font-semibold text-green-700">Community Relations & Co-Founder</p>
+                                <p class="mt-4 text-sm leading-6 text-slate-600">Law and community-relations professional helping connect agricultural communities, policymakers and technology innovators.</p>
+
+                                <button type="button" class="bio-toggle mt-5 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-extrabold text-green-800 hover:bg-green-200" data-target="bio-alma" aria-expanded="false">
+                                    Read full bio <i class="bio-toggle-icon fa-solid fa-chevron-down ml-2 text-xs"></i>
+                                </button>
+
+                                <div id="bio-alma" class="bio-panel">
+                                    <div class="rounded-2xl border border-green-100 bg-green-50 p-4 text-sm leading-6 text-slate-600">
+                                        Alma Lynn is a visionary Co-Founder and Community Relations Officer at AgriTrue, with a Bachelor of Law and a strong passion for advocacy, ethics and rural empowerment. She plays a pivotal role in bridging agricultural communities, policymakers and technology innovators while ensuring AgriTrue's solutions remain inclusive, accessible and grounded in trust.
+                                        <div class="mt-4">
+                                            <a href="mailto:Shaddyvahalma@gmail.com" class="inline-flex items-center rounded-full bg-green-700 px-4 py-2 font-bold text-white hover:bg-green-800"><i class="fa-solid fa-envelope mr-2"></i>Connect</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Dennis -->
+                    <article class="team-card reveal overflow-hidden rounded-[2rem] border border-green-100 bg-white shadow-card">
+                        <div class="grid sm:grid-cols-[220px_1fr]">
+                            <div class="overflow-hidden bg-green-50">
+                                <img src="{{ url_for('static', filename='images/denno.jpg') }}" alt="Dennis Mwendwa" class="team-photo h-full w-full">
+                            </div>
+                            <div class="p-6 sm:p-7">
+                                <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Data & Finance</div>
+                                <h3 class="mt-3 text-2xl font-extrabold text-green-950">Dennis Mwendwa</h3>
+                                <p class="mt-1 text-sm font-semibold text-green-700">Finance Administration & Co-Founder</p>
+                                <p class="mt-4 text-sm leading-6 text-slate-600">Data scientist and actuarial-science professional supporting AgriTrue through analytics, modelling and finance administration.</p>
+
+                                <button type="button" class="bio-toggle mt-5 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-extrabold text-green-800 hover:bg-green-200" data-target="bio-dennis" aria-expanded="false">
+                                    Read full bio <i class="bio-toggle-icon fa-solid fa-chevron-down ml-2 text-xs"></i>
+                                </button>
+
+                                <div id="bio-dennis" class="bio-panel">
+                                    <div class="rounded-2xl border border-green-100 bg-green-50 p-4 text-sm leading-6 text-slate-600">
+                                        Dennis is a data scientist with a background in BSc Actuarial Science and data analytics. He combines research, statistical modelling and machine learning to support smart solutions that advance AgriTrue's mission. He is passionate about technology for social impact and data-driven agriculture across Africa.
+                                        <div class="mt-4">
+                                            <a href="mailto:dennismwendwa@agritrue.org" class="inline-flex items-center rounded-full bg-green-700 px-4 py-2 font-bold text-white hover:bg-green-800"><i class="fa-solid fa-envelope mr-2"></i>Connect</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Mercy -->
+                    <article class="team-card reveal overflow-hidden rounded-[2rem] border border-green-100 bg-white shadow-card">
+                        <div class="grid sm:grid-cols-[220px_1fr]">
+                            <div class="overflow-hidden bg-green-50">
+                                <img src="{{ url_for('static', filename='images/mercy.jpg') }}" alt="Wambui Mercy" class="team-photo h-full w-full">
+                            </div>
+                            <div class="p-6 sm:p-7">
+                                <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Operations</div>
+                                <h3 class="mt-3 text-2xl font-extrabold text-green-950">Wambui Mercy</h3>
+                                <p class="mt-1 text-sm font-semibold text-green-700">Country Coordinator</p>
+                                <p class="mt-4 text-sm leading-6 text-slate-600">Legal and administrative professional supporting national coordination, partnerships, compliance and operational delivery.</p>
+
+                                <button type="button" class="bio-toggle mt-5 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-extrabold text-green-800 hover:bg-green-200" data-target="bio-mercy" aria-expanded="false">
+                                    Read full bio <i class="bio-toggle-icon fa-solid fa-chevron-down ml-2 text-xs"></i>
+                                </button>
+
+                                <div id="bio-mercy" class="bio-panel">
+                                    <div class="rounded-2xl border border-green-100 bg-green-50 p-4 text-sm leading-6 text-slate-600">
+                                        Mercy Wambui is a skilled professional with a BSc in Law and certification as a Professional Secretary. She brings strong legal awareness, administrative excellence and coordination expertise to her role as Country Coordinator at AgriTrue. Mercy supports national operations, strengthens partnerships, promotes compliance and helps advance credible and accessible agricultural information.
+                                        <div class="mt-4">
+                                            <a href="mailto:mercykinuthiac19@gmail.com" class="inline-flex items-center rounded-full bg-green-700 px-4 py-2 font-bold text-white hover:bg-green-800"><i class="fa-solid fa-envelope mr-2"></i>Connect</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="reveal mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-green-950 via-green-800 to-green-600 px-6 py-12 text-white shadow-soft sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14 lg:py-16">
+                <div class="max-w-3xl">
+                    <div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">Join the AgriTrue movement</div>
+                    <h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl">Help build a more trusted agricultural knowledge ecosystem.</h2>
+                    <p class="mt-4 text-base leading-7 text-white/65">Create an account, contribute community knowledge, explore AgriTrue tools or support the platform's mission.</p>
+                </div>
+
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:ml-10 lg:flex-col xl:flex-row">
+                    <a href="/register" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 font-extrabold text-green-900 shadow transition hover:-translate-y-1">Get Started</a>
+                    <a href="/donate" class="inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-3.5 font-extrabold text-white transition hover:bg-white/10">Support AgriTrue</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#031d0f] text-white">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+            <div>
+                <div class="flex items-center gap-3">
+                    <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-12 w-12 rounded-full object-cover">
+                    <div>
+                        <div class="font-display text-xl font-extrabold">AgriTrue</div>
+                        <div class="mt-1 text-[10px] font-bold uppercase tracking-[.2em] text-green-300">Empowering agriculture</div>
+                    </div>
+                </div>
+                <p class="mt-5 text-sm leading-6 text-white/55">Digital tools, community knowledge and practical AI-assisted guidance for more informed agricultural decisions.</p>
+                <div class="mt-5 flex gap-3">
+                    <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="tel:+254715142906" aria-label="Call AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-solid fa-phone"></i></a>
+                    <a href="mailto:info@agritrue.org" aria-label="Email AgriTrue" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 transition hover:bg-green-600 hover:text-white"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Farmer tools</h3>
+                <div class="mt-5 space-y-3 text-sm text-white/55">
+                    <a href="/ml-analyzer" class="block transition hover:text-green-300">Smart Analyzer</a>
+                    <a href="/know_your_land" class="block transition hover:text-green-300">Know Your Land</a>
+                    <a href="/community-notes" class="block transition hover:text-green-300">Community Notes</a>
+                    <a href="/ussd" class="block transition hover:text-green-300">USSD & Voice</a>
+                    <a href="/chatbot" class="block transition hover:text-green-300">AI Chatbot</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Resources</h3>
+                <div class="mt-5 space-y-3 text-sm text-white/55">
+                    <a href="/about" class="block transition hover:text-green-300">About AgriTrue</a>
+                    <a href="/research" class="block transition hover:text-green-300">Research Hub</a>
+                    <a href="/podcast" class="block transition hover:text-green-300">Podcast</a>
+                    <a href="/faqs" class="block transition hover:text-green-300">FAQs</a>
+                    <a href="/donate" class="block transition hover:text-green-300">Donate</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-extrabold">Contact</h3>
+                <div class="mt-5 space-y-4 text-sm text-white/55">
+                    <p class="flex gap-3"><i class="fa-solid fa-location-dot mt-1 text-green-300"></i><span>Nairobi, Kenya</span></p>
+                    <p class="flex gap-3"><i class="fa-solid fa-envelope mt-1 text-green-300"></i><a href="mailto:info@agritrue.org" class="hover:text-white">info@agritrue.org</a></p>
+                    <p class="flex gap-3"><i class="fa-solid fa-phone mt-1 text-green-300"></i><a href="tel:+254715142906" class="hover:text-white">+254 715 142 906</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/10 px-4 py-6">
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-xs text-white/40 sm:flex-row sm:text-left">
+                <p>© <span id="currentYear"></span> AgriTrue. All rights reserved.</p>
+                <p>AI-assisted information should be verified for critical agricultural decisions.</p>
+            </div>
         </div>
     </footer>
 
+    <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat with AgriTrue on WhatsApp">
+        <i class="fa-brands fa-whatsapp text-3xl"></i>
+        <span class="whatsapp-copy text-sm font-extrabold">Chat with us</span>
+    </a>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+            const closeMobileMenu = document.getElementById("closeMobileMenu");
+            const mobileMenu = document.getElementById("mobileMenu");
+            const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+            function openMobileMenu() {
+                mobileMenu.classList.add("show");
+                mobileMenuOverlay.classList.add("show");
+                mobileMenu.setAttribute("aria-hidden", "false");
+                mobileMenuBtn.setAttribute("aria-expanded", "true");
+                document.body.classList.add("menu-open");
+            }
+
+            function closeMenu() {
+                mobileMenu.classList.remove("show");
+                mobileMenuOverlay.classList.remove("show");
+                mobileMenu.setAttribute("aria-hidden", "true");
+                mobileMenuBtn.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("menu-open");
+            }
+
+            mobileMenuBtn.addEventListener("click", openMobileMenu);
+            closeMobileMenu.addEventListener("click", closeMenu);
+            mobileMenuOverlay.addEventListener("click", closeMenu);
+            mobileMenu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeMenu();
+                }
+            });
+
+            document.querySelectorAll(".bio-toggle").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const targetId = button.dataset.target;
+                    const panel = document.getElementById(targetId);
+                    const isOpen = panel.classList.toggle("open");
+
+                    button.setAttribute("aria-expanded", String(isOpen));
+                    button.firstChild.textContent = isOpen ? "Close bio " : "Read full bio ";
+                });
+            });
+
+            const revealItems = document.querySelectorAll(".reveal");
+
+            if ("IntersectionObserver" in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12 });
+
+                revealItems.forEach((item) => observer.observe(item));
+            } else {
+                revealItems.forEach((item) => item.classList.add("visible"));
+            }
+
+            document.getElementById("currentYear").textContent = new Date().getFullYear();
+        });
+    </script>
 </body>
 </html>
