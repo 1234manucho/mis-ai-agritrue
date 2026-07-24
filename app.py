@@ -17,15 +17,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 from pathlib import Path
 from typing import Any
-from agri_analyzer import AnalyzerError, generate_farming_chat_reply
-from agri_analyzer import AnalyzerError, generate_farming_chat_reply
-from analyzer_routes import analyzer_bp
-from flask import request, jsonify, current_app
 
-from agri_analyzer import (
-    AnalyzerError,
-    generate_farming_chat_reply,
-)
 import firebase_admin
 import requests
 import speech_recognition as sr
@@ -281,8 +273,8 @@ def create_admin_command() -> None:
     ADMIN_EMAIL, ADMIN_PASSWORD
     Optional: ADMIN_NAME
     """
-    email = os.getenv("ADMIN_EMAIL", "admin@gmail.com").strip().lower()
-    password = os.getenv("ADMIN_PASSWORD", "Nongwe@30admin")
+    email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+    password = os.getenv("ADMIN_PASSWORD", "")
     fullname = os.getenv("ADMIN_NAME", "System Administrator").strip()
 
     if not email or not password:
@@ -897,148 +889,62 @@ def repost(note_id: int):
 
 @app.route("/ussd", methods=["GET", "POST"])
 def ussd():
-    response = None
-    session_level = ""
+    menu = """
+    Welcome to <strong>AgriTrue</strong> USSD Services<br>
+    1. Weather Info<br>
+    2. Altitude Data<br>
+    3. Soil Type<br>
+    4. Pest Alerts<br>
+    5. Crop Pricing<br>
+    6. Market Locations<br>
+    7. Expert Advice<br>
+    8. Innovations<br>
+    9. Misinformation Alerts<br>
+    10. Exit
+    """
 
-    if request.method == "POST":
-        ussd_code = request.form.get("ussd_code", "").strip()
-        session_level = request.form.get("session_level", "").strip()
+    if request.method == "GET":
+        return render_template("ussd.html", response=None, session_level="")
 
-        if ussd_code == "*456#" and not session_level:
-            response = USSD_MAIN_MENU
-            session_level = "main_menu"
+    ussd_code = request.form.get("ussd_code", "").strip()
+    session_level = request.form.get("session_level", "")
 
-        elif session_level == "main_menu":
-            response = USSD_MENU_RESPONSES.get(
-                ussd_code,
-                "❌ Invalid selection. Enter a number from 0 to 9.",
-            )
+    if ussd_code == "*456#" and session_level == "":
+        response = menu
+        session_level = "main_menu"
+    elif session_level == "main_menu":
+        responses = {
+            "1": "☀ Weather Today: Sunny, 28°C",
+            "2": "🗻 Altitude at your location: 1,450 metres",
+            "3": "🌱 Soil Type: Loamy",
+            "4": "🐛 Pest Alert: Fall armyworm in maize.",
+            "5": "💰 Maize: KES 45/kg, Beans: KES 80/kg",
+            "6": "🛒 Nearest Market: Machakos Open Market",
+            "7": "🧠 Tip: Rotate crops to improve soil fertility.",
+            "8": "💡 Innovation: AI-powered irrigation.",
+            "9": "🚫 Claim review: boiling seeds does not increase yield.",
+            "10": "👋 Thank you for using AgriTrue.",
+        }
+        response = responses.get(ussd_code, "❌ Invalid option. Try again.")
+        session_level = ""
+    else:
+        response = "Enter *456# to begin."
 
-            if ussd_code == "0":
-                session_level = ""
-
-        else:
-            response = "Enter <strong>*456#</strong> to begin."
-            session_level = ""
-
-        save_ussd_log(ussd_code, response)
+    try:
+        db.session.add(
+            USSDLog(code_entered=ussd_code, response_given=response)
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Could not save USSD log")
 
     return render_template(
         "ussd.html",
         response=response,
         session_level=session_level,
     )
-@app.route("/api/ussd/search", methods=["POST"])
-def ussd_search():
-    payload = request.get_json(silent=True) or {}
 
-    question = " ".join(
-        str(payload.get("question", "")).split()
-    )
-    language = str(
-        payload.get("language", "en-KE")
-    ).strip()
-
-    if not question:
-        return jsonify({
-            "success": False,
-            "error": "Please enter or speak an agricultural question.",
-        }), 400
-
-    if len(question) < 3:
-        return jsonify({
-            "success": False,
-            "error": "Please provide a more complete question.",
-        }), 400
-
-    if len(question) > 700:
-        return jsonify({
-            "success": False,
-            "error": "Keep your question below 700 characters.",
-        }), 400
-
-    is_swahili = language.lower().startswith("sw")
-    response_language = (
-        "Kiswahili"
-        if is_swahili
-        else "clear Kenyan English"
-    )
-
-    prompt = f"""
-You are AgriTrue, an agricultural information assistant serving
-farmers in Kenya and East Africa.
-
-Answer the farmer's question in {response_language}.
-
-Requirements:
-- Give a direct and practical answer.
-- Use short paragraphs or brief numbered steps.
-- Do not invent live weather, market prices, laboratory findings
-  or official records.
-- State when local inspection, testing, a veterinarian, agronomist
-  or extension officer is needed.
-- Do not prescribe unsafe pesticide, fertiliser or veterinary doses.
-- Keep the response below 280 words.
-
-Farmer's question:
-{question}
-""".strip()
-
-    try:
-        answer = generate_farming_chat_reply(prompt)
-        answer = str(answer or "").strip()
-
-        if not answer:
-            raise AnalyzerError(
-                "The agricultural assistant returned an empty response."
-            )
-
-        try:
-            db.session.add(
-                USSDLog(
-                    code_entered=question[:500],
-                    response_given=answer[:10000],
-                )
-            )
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            current_app.logger.exception(
-                "Could not save USSD search log"
-            )
-
-        return jsonify({
-            "success": True,
-            "question": question,
-            "answer": answer,
-            "language": (
-                "sw-KE"
-                if is_swahili
-                else "en-KE"
-            ),
-        })
-
-    except AnalyzerError as exc:
-        current_app.logger.warning(
-            "USSD agricultural search failed: %s",
-            exc,
-        )
-        return jsonify({
-            "success": False,
-            "error": str(exc),
-        }), 503
-
-    except Exception:
-        current_app.logger.exception(
-            "Unexpected USSD agricultural search error"
-        )
-        return jsonify({
-            "success": False,
-            "error": (
-                "AgriTrue could not answer right now. "
-                "Please try again."
-            ),
-        }), 500
 
 @app.get("/chatbot")
 def chatbot_page():
