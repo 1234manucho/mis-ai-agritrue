@@ -2,437 +2,405 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriTrue Podcast — Voices of the Land</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b6623">
+    <title>AgriTrue Podcast | Voices of the Land</title>
+    <meta name="description" content="Listen to AgriTrue's Voices of the Land podcast—farmer stories, agricultural research, agritech innovation and practical insights for African agriculture.">
+    <meta name="keywords" content="AgriTrue podcast, African agriculture podcast, farming stories, agritech, soil health, climate-smart agriculture">
+    <meta name="author" content="AgriTrue">
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://agritrue.org/podcast">
+    <meta property="og:title" content="AgriTrue Podcast | Voices of the Land">
+    <meta property="og:description" content="Farmer voices, expert insights and practical agricultural innovation from across Africa.">
+    <meta property="og:image" content="{{ url_for('static', filename='images/F1.jpg', _external=True) }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ["Inter", "sans-serif"], display: ["Manrope", "sans-serif"] },
+                    colors: {
+                        agritrue: {
+                            50: "#f0fdf4", 100: "#dcfce7", 200: "#bbf7d0", 300: "#86efac",
+                            400: "#4ade80", 500: "#22c55e", 600: "#16a34a", 700: "#15803d",
+                            800: "#166534", 900: "#14532d", 950: "#052e16"
+                        }
+                    },
+                    boxShadow: {
+                        soft: "0 24px 75px rgba(5,46,22,.11)",
+                        card: "0 16px 44px rgba(15,23,42,.08)",
+                        float: "0 26px 75px rgba(5,46,22,.22)"
+                    }
+                }
+            }
+        };
+    </script>
+
     <style>
-        .podcast-card:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 10px 28px rgba(34,197,94,0.18), 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.18s cubic-bezier(.4,0,.2,1);
+        :root { --nav-height: 72px; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 5% 12%, rgba(134,239,172,.18), transparent 26rem), radial-gradient(circle at 96% 78%, rgba(187,247,208,.22), transparent 28rem), #f8fbf8;
         }
-        .audio-flash:active { animation: flash 0.3s; }
-        @keyframes flash {
-            0% { filter: brightness(1.1); }
-            50% { filter: brightness(1.5); }
-            100% { filter: brightness(1.1); }
-        }
-        /* Mobile nav overlay */
-        .mobile-menu-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.25);
-            z-index: 49;
-        }
-        .mobile-menu {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #f0fdf4;
-            z-index: 50;
-            padding: 2rem 1rem 1rem 1rem;
-            overflow-y: auto;
-        }
-        .mobile-menu.show, .mobile-menu-overlay.show { display: block; }
+        body.menu-open { overflow: hidden; }
+        .custom-navbar { background: linear-gradient(100deg, #064e3b 0%, #0b6623 48%, #4fae62 100%); }
+        .nav-dropdown { visibility: hidden; opacity: 0; transform: translateY(10px); transition: .2s ease; }
+        .nav-group:hover .nav-dropdown, .nav-group:focus-within .nav-dropdown { visibility: visible; opacity: 1; transform: translateY(0); }
+        .mobile-menu-overlay { position: fixed; inset: 0; z-index: 60; display: none; background: rgba(2,25,12,.64); backdrop-filter: blur(5px); }
+        .mobile-menu-overlay.show { display: block; }
+        .mobile-menu { position: fixed; top: 0; right: min(-92vw, -390px); z-index: 70; width: min(90vw, 360px); height: 100dvh; overflow-y: auto; background: #f0fdf4; box-shadow: -24px 0 70px rgba(5,46,22,.26); transition: right .3s ease; }
+        .mobile-menu.show { right: 0; }
+        .podcast-hero { min-height: 700px; padding-top: var(--nav-height); }
+        .podcast-hero-image { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; object-position: center; filter: saturate(1.03) contrast(1.04) brightness(.82); transform: scale(1.035); }
+        .podcast-hero-overlay { background: linear-gradient(90deg, rgba(2,24,13,.95) 0%, rgba(5,62,32,.82) 45%, rgba(3,36,20,.44) 75%, rgba(2,25,12,.68) 100%), linear-gradient(0deg, rgba(2,25,12,.88), transparent 62%); }
+        .hero-shine { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; mix-blend-mode: screen; }
+        .hero-shine::before { content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 42%; background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.03) 24%, rgba(214,255,221,.23) 45%, rgba(255,255,255,.48) 50%, rgba(214,255,221,.16) 58%, transparent 78%); filter: blur(5px); opacity: .76; transform: skewX(-12deg); animation: heroSweep 6.8s ease-in-out infinite; }
+        @keyframes heroSweep { 0% { left: -60%; opacity: 0; } 13% { opacity: .82; } 52% { opacity: .72; } 74%,100% { left: 122%; opacity: 0; } }
+        .glass-panel { background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(18px); }
+        .section-kicker { display: inline-flex; align-items: center; gap: .55rem; color: #15803d; font-size: .75rem; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
+        .section-kicker::before { content: ""; width: 2.25rem; height: 2px; border-radius: 999px; background: #22c55e; }
+        .podcast-card, .video-card, .upcoming-card { transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
+        .podcast-card:hover, .video-card:hover, .upcoming-card:hover { transform: translateY(-7px); border-color: rgba(34,197,94,.38); box-shadow: 0 22px 60px rgba(5,46,22,.13); }
+        .podcast-card.is-hidden { display: none; }
+        .podcast-image { transition: transform .5s ease; }
+        .podcast-card:hover .podcast-image { transform: scale(1.04); }
+        .filter-button { transition: .2s ease; }
+        .filter-button.active { border-color: #15803d; background: #15803d; color: white; box-shadow: 0 8px 24px rgba(21,128,61,.18); }
+        .featured-wave { display: flex; align-items: center; gap: .25rem; height: 2.5rem; }
+        .featured-wave span { width: .22rem; border-radius: 999px; background: #4ade80; animation: waveBar 1.1s ease-in-out infinite; }
+        .featured-wave span:nth-child(1){height:35%}.featured-wave span:nth-child(2){height:70%;animation-delay:.1s}.featured-wave span:nth-child(3){height:100%;animation-delay:.2s}.featured-wave span:nth-child(4){height:55%;animation-delay:.3s}.featured-wave span:nth-child(5){height:82%;animation-delay:.4s}.featured-wave span:nth-child(6){height:42%;animation-delay:.5s}
+        @keyframes waveBar { 0%,100%{transform:scaleY(.65);opacity:.55}50%{transform:scaleY(1);opacity:1} }
+        .whatsapp-float { position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 55; display: flex; height: 68px; min-width: 68px; align-items: center; justify-content: center; gap: .7rem; overflow: hidden; border: 3px solid white; border-radius: 999px; background: linear-gradient(145deg,#2ee171,#25d366 48%,#128c4a); color: white; box-shadow: 0 18px 42px rgba(18,140,74,.42), 0 0 0 7px rgba(37,211,102,.12); transition: min-width .28s ease,padding .28s ease,transform .25s ease; }
+        .whatsapp-float:hover { min-width: 205px; padding: 0 1rem; transform: translateY(-4px); }
+        .whatsapp-copy { max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0; transition: max-width .28s ease,opacity .2s ease; }
+        .whatsapp-float:hover .whatsapp-copy { max-width: 125px; opacity: 1; }
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important } .reveal{opacity:1;transform:none} }
+        @media (max-width:1023px){ :root{--nav-height:68px}.podcast-hero{min-height:650px} }
+        @media (max-width:640px){ .podcast-hero{min-height:710px}.podcast-hero-image{object-position:58% center}.hero-shine::before{width:62%;animation-duration:7.4s}.whatsapp-float{right:.8rem;bottom:.8rem;height:60px;min-width:60px;border-width:2px}.whatsapp-float:hover{min-width:60px;padding:0}.whatsapp-copy{display:none} }
     </style>
 </head>
-<body class="bg-green-50 text-gray-800 font-sans">
 
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar bg-green-700">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
+<body class="font-sans text-slate-800 antialiased">
+    <nav class="custom-navbar fixed inset-x-0 top-0 z-50 shadow-lg">
+        <div class="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+            <a href="/" class="flex items-center gap-3" aria-label="AgriTrue home">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-10 w-10 rounded-full border-2 border-white/70 object-cover shadow">
+                <div><div class="font-display text-xl font-extrabold leading-none text-white sm:text-2xl">AgriTrue</div><div class="mt-1 hidden text-[9px] font-bold uppercase tracking-[.24em] text-green-100 sm:block">Empowering informed agriculture</div></div>
             </a>
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
+            <div class="hidden items-center gap-1 lg:flex">
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15">Utilities <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i></button>
+                    <div class="nav-dropdown absolute left-0 top-full mt-2 w-60 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/community-notes" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50"><i class="fa-solid fa-people-group mr-2 text-green-600"></i>Community Notes</a>
+                        <a href="/chatbot" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50"><i class="fa-solid fa-comments mr-2 text-green-600"></i>AI Chatbot</a>
+                        <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50"><i class="fa-solid fa-microscope mr-2 text-green-600"></i>Smart Analyzer</a>
+                        <a href="/ussd" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50"><i class="fa-solid fa-mobile-screen-button mr-2 text-green-600"></i>USSD & Voice</a>
                     </div>
                 </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">About Us</a>
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
+                <a href="/dashboard" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15">Farm Truth</a>
+                <a href="/know_your_land" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15">Know Your Land</a>
+                <a href="/about" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15">About</a>
+                <a href="/podcast" class="rounded-xl bg-white/15 px-3 py-2.5 text-sm font-bold text-white">Podcast</a>
+                <div class="nav-group relative">
+                    <button type="button" class="rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/15">Resources <i class="fa-solid fa-chevron-down ml-1 text-[10px]"></i></button>
+                    <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/research" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Research Hub</a>
+                        <a href="/faqs" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Frequently Asked Questions</a>
                     </div>
-                </div>  
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition hover:bg-green-800">Register</a>
+                </div>
+                <a href="/donate" class="ml-2 rounded-full bg-white px-5 py-2.5 text-sm font-extrabold text-green-800 shadow-lg hover:bg-green-50">Donate</a>
+                {% if current_user.is_authenticated %}
+                <div class="nav-group relative ml-1">
+                    <button type="button" class="rounded-full bg-white/15 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/25"><i class="fa-regular fa-user mr-2"></i>Profile</button>
+                    <div class="nav-dropdown absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+                        <a href="/profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Profile</a>
+                        <a href="/edit_profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Edit Profile</a>
+                        <a href="/streak" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Streak</a>
+                        {% if current_user.is_admin %}<a href="/admin" class="block rounded-xl px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50">Admin Panel</a>{% endif %}
+                        <a href="/logout" class="block rounded-xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50">Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="/login" class="ml-1 rounded-full border border-white/40 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/10">Login</a>
+                <a href="/register" class="rounded-full bg-green-900 px-5 py-2.5 text-sm font-extrabold text-white shadow hover:bg-green-950">Register</a>
+                {% endif %}
             </div>
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
-            </button>
+            <button id="mobileMenuBtn" type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-xl text-white lg:hidden" aria-label="Open navigation menu" aria-controls="mobileMenu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
         </div>
     </nav>
-    <!-- Mobile Menu -->
+
     <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+    <aside id="mobileMenu" class="mobile-menu p-5 lg:hidden" aria-hidden="true">
+        <div class="flex items-center justify-between border-b border-green-200 pb-5">
+            <a href="/" class="flex items-center gap-3"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full object-cover"><div><div class="font-display text-lg font-extrabold text-green-950">AgriTrue</div><div class="text-xs font-semibold text-green-600">Farmer services</div></div></a>
+            <button id="closeMobileMenu" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl text-green-800 shadow" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about"><i class="fas fa-info-circle mr-3"></i>About Us</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
+        <nav class="mt-5 space-y-2">
+            <a href="/" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Home</a>
+            <a href="/dashboard" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Farm Truth</a>
+            <a href="/know_your_land" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Know Your Land</a>
+            <a href="/community-notes" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Community Notes</a>
+            <a href="/chatbot" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Smart Analyzer</a>
+            <a href="/ussd" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">USSD & Voice</a>
+            <a href="/research" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Research Hub</a>
+            <a href="/podcast" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">Podcast</a>
+            <a href="/about" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">About Us</a>
+            <a href="/faqs" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">FAQs</a>
+            <a href="/donate" class="block rounded-xl bg-green-950 px-4 py-3 text-center font-bold text-white">Donate to AgriTrue</a>
+        </nav>
+        <div class="mt-6 border-t border-green-200 pt-5">
+            {% if current_user.is_authenticated %}
+            <a href="/profile" class="block rounded-xl bg-white px-4 py-3 text-center font-bold text-green-800 shadow">My Profile</a>
+            {% if current_user.is_admin %}<a href="/admin" class="mt-3 block rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-amber-800">Admin Panel</a>{% endif %}
+            <a href="/logout" class="mt-3 block rounded-xl border border-red-300 px-4 py-3 text-center font-bold text-red-600">Logout</a>
+            {% else %}
+            <a href="/login" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">Login</a>
+            <a href="/register" class="mt-3 block rounded-xl border border-green-700 px-4 py-3 text-center font-bold text-green-800">Create Account</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main>
+        <header class="podcast-hero relative overflow-hidden text-white">
+            <img src="{{ url_for('static', filename='images/F1.jpg') }}" alt="AgriTrue Voices of the Land podcast" class="podcast-hero-image">
+            <div class="podcast-hero-overlay absolute inset-0 z-[1]"></div>
+            <div class="hero-shine" aria-hidden="true"></div>
+            <div class="relative z-[3] mx-auto grid min-h-[628px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+                <div class="max-w-3xl">
+                    <div class="flex flex-wrap gap-2">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-green-200/30 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur"><i class="fa-solid fa-podcast"></i>Voices of the Land</div>
+                        <div class="inline-flex items-center gap-2 rounded-full border border-green-300/30 bg-green-400/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[.16em] text-green-100 backdrop-blur"><i class="fa-solid fa-calendar-check"></i>AgriTrue — Founded in 2025</div>
+                    </div>
+                    <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.08] sm:text-5xl md:text-6xl lg:text-7xl">Real voices shaping the future of African agriculture.</h1>
+                    <p class="mt-6 max-w-2xl text-base leading-7 text-white/76 sm:text-lg md:text-xl">Listen to farmers, researchers, agritech innovators and community leaders discuss practical solutions, resilient farming and trusted agricultural information.</p>
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                        <a href="#featured-episode" class="inline-flex items-center justify-center rounded-full bg-green-500 px-7 py-3.5 font-extrabold text-white shadow-xl hover:-translate-y-1 hover:bg-green-400"><i class="fa-solid fa-play mr-2"></i>Play Featured Episode</a>
+                        <a href="#podcast-directory" class="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/10 px-7 py-3.5 font-extrabold text-white backdrop-blur hover:bg-white/20">Browse Episodes</a>
+                    </div>
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"><i class="fa-brands fa-spotify mr-2 text-green-300"></i>Spotify</a>
+                        <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"><i class="fa-brands fa-youtube mr-2 text-red-300"></i>YouTube</a>
+                        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white hover:bg-white/20"><i class="fa-brands fa-instagram mr-2 text-pink-300"></i>Instagram</a>
+                    </div>
                 </div>
-            </li>
-            <li>
-                <a href="/donate" class="btn btn-success px-4 py-2 rounded shadow">
-    Donate to AgriTrue
-</a>
-
-                <a href="#" class="nav-link text-green-600 font-medium p-2 rounded-lg transition hover:bg-green-700 hover:text-white">
-                Resource & Downloads <i class="fas fa-chevron-down text-xs ml-1"></i>
-                </a>
-                <div class="pl-8 pt-2 space-y-2">
-                    <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                    <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                </div>
-            </li>
-        </ul>
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="text-center py-16 bg-gradient-to-r from-green-600 to-green-400 text-white mt-14">
-        <h2 class="text-4xl font-bold mb-4">🎧 Voices of the Land</h2>
-        <p class="text-lg max-w-3xl mx-auto">Real stories. Expert insights. Smart farming for a sustainable future.  
-            Tune in as farmers, researchers, and innovators share how technology and data are transforming African agriculture.</p>
-        <div class="flex justify-center gap-4 mt-6">
-            <a href="https://www.instagram.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-instagram fa-xl"></i></a>
-            <a href="https://open.spotify.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-spotify fa-xl"></i></a>
-            <a href="https://www.youtube.com/" target="_blank" class="bg-white rounded-full p-3 text-green-700 shadow-lg hover:bg-green-700 hover:text-white transition"><i class="fab fa-youtube fa-xl"></i></a>
-        </div>
-        <div class="mt-6">
-            <span class="inline-block bg-yellow-300 text-green-900 px-4 py-2 rounded-full text-lg font-semibold">Follow us for new content every week!</span>
-        </div>
-    </section>
-
-    <!-- Featured Episode -->
-<!-- Featured Episode & Searchable Agricultural Podcasts Section -->
-<section class="container mx-auto px-6 py-12">
-  <h3 class="text-3xl font-bold text-green-700 mb-6 flex items-center">
-    <span class="mr-2">🎙️</span> Featured Episode
-  </h3>
-  <div class="bg-white rounded-3xl shadow-xl p-6 flex flex-col md:flex-row items-center podcast-card transition-transform duration-200">
-    <img src="static/images/denno.jpg" alt="Featured Speaker" class="w-full md:w-1/3 rounded-2xl shadow-md mb-4 md:mb-0 md:mr-6" style="max-width:260px;">
-    <div class="flex-1">
-      <h4 class="text-2xl font-semibold mb-2 text-[#197278]">Building Climate-Resilient Farms</h4>
-      <p class="mb-4 text-gray-600">Join Dr. Dennis as they discuss how smallholder farmers can adapt to climate change through data-driven soil health and innovation.</p>
-      <audio controls class="w-full mt-2 audio-flash" id="featured-audio" style="background:#f4f6f7;border-radius:8px;">
-        <source src="static/images/podcast.unknown" type="audio/mpeg">
-        Your browser does not support the audio element.
-      </audio>
-      <div class="mt-4 flex gap-4">
-        <a href="https://open.spotify.com/search/agriculture" target="_blank" class="bg-green-700 text-white px-4 py-2 rounded-lg shadow hover:bg-green-800 transition flex items-center gap-2"><i class="fab fa-spotify"></i> Spotify</a>
-        <a href="https://www.instagram.com/talkdirtpodcast/" target="_blank" class="bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition flex items-center gap-2"><i class="fab fa-instagram"></i> Instagram</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Searchable Podcasts Directory -->
-  <div class="mt-10">
-    <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
-      <h4 class="text-2xl font-bold text-green-700">🎧 Discover More Agricultural Podcasts</h4>
-      <div class="relative w-full sm:w-80">
-        <input id="podcastSearch" type="text" placeholder="Search podcast by title or host..." 
-          class="w-full px-4 py-2 border border-green-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-600 transition" />
-        <span class="absolute right-4 top-2 text-green-700"><i class="fas fa-search"></i></span>
-      </div>
-    </div>
-    <div id="podcastList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Podcasts are rendered here by JS -->
-    </div>
-  </div>
-</section>
-
-<script>
-// Example podcast data
-const podcasts = [
-  {
-    title: "Agri-Innovators Africa",
-    host: "Emmanuel Nyongesa",
-    desc: "Explore the latest digital, soil, and data innovations transforming African agriculture.",
-    link: "https://open.spotify.com/show/7AgrInnovators",
-    platform: "Spotify",
-    img: "/static/images/F1.jpg"
-  },
-  {
-    title: "Talk Dirt To Me",
-    host: "Alma Lynn",
-    desc: "Stories from the field: Kenyan farmers, policy makers, and agritech visionaries.",
-    link: "https://www.instagram.com/talkdirtpodcast/",
-    platform: "Instagram",
-    img: "static/images/F2.jpg"
-  },
-  {
-    title: "Farming Today Kenya",
-    host: "Vitalis Orute",
-    desc: "Trends, yields, and local insights from Kenya’s top agricultural counties.",
-    link: "https://open.spotify.com/show/3FarmingTodayKenya",
-    platform: "Spotify",
-    img: "/static/images/F3.jpg"
-  },
-  {
-    title: "Youth in Agribusiness",
-    host: "Lewis Muriuki",
-    desc: "Young African agripreneurs share their challenges and successes.",
-    link: "https://open.spotify.com/show/5YouthAgribiz",
-    platform: "Spotify",
-    img: "/static/images/F4.jpg"
-  },
-  {
-    title: "The Soil Health Report",
-    host: "Dennis Mwendwa",
-    desc: "Expert soil science, climate, and data-driven practices for sustainability.",
-    link: "https://open.spotify.com/show/4SoilHealthReport",
-    platform: "Spotify",
-    img: "static/images/F5.jpg"
-  },
-  {
-    title: "Women Who Farm",
-    host: "Limpaso Mepetu",
-    desc: "Empowering women in agriculture through stories, resources, and strategies.",
-    link: "https://open.spotify.com/show/6WomenWhoFarm",
-    platform: "Spotify",
-    img: "/static/images/F6.jpg"
-  }
-];
-
-// Podcast rendering and search
-function renderPodcastList(query = "") {
-  const container = document.getElementById('podcastList');
-  const q = query.trim().toLowerCase();
-  const filtered = podcasts.filter(p =>
-    p.title.toLowerCase().includes(q) ||
-    p.host.toLowerCase().includes(q)
-  );
-  container.innerHTML = filtered.length ? filtered.map(p => `
-    <div class="bg-white rounded-xl shadow-lg flex flex-col items-center p-4 hover:shadow-xl transition-all duration-300 border border-green-100" style="min-height:310px;">
-      <img src="${p.img}" alt="${p.title}" class="rounded-lg w-full h-36 object-cover mb-3 shadow" style="max-width:240px;">
-      <div class="w-full flex flex-col items-center text-center">
-        <h5 class="text-lg font-bold text-green-700 mb-1">${p.title}</h5>
-        <p class="text-xs font-semibold text-[#197278] mb-2">Host: ${p.host}</p>
-        <p class="text-gray-600 text-sm mb-3" style="min-height:48px;">${p.desc}</p>
-        <a href="${p.link}" target="_blank"
-          class="inline-block bg-green-600 text-white px-3 py-1 rounded-full shadow hover:bg-green-700 transition flex items-center gap-2"
-        >
-          <i class="fab fa-spotify"></i> Listen
-        </a>
-      </div>
-    </div>
-  `).join("") :
-  `<div class="col-span-3 text-center text-gray-500 py-6">No podcasts found for your search.</div>`;
-}
-
-// Initial render
-renderPodcastList();
-
-// Search logic
-document.getElementById('podcastSearch').addEventListener('input', e => {
-  renderPodcastList(e.target.value);
-});
-</script>
-    <!-- Youtube Agricultural Videos -->
-   <section class="container mx-auto px-6 py-10">
-    <h3 class="text-3xl font-bold text-green-700 mb-6">🌱 Agricultural Videos</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        
-        <!-- Video 1 -->
-        <div class="rounded-2xl overflow-hidden shadow-xl bg-white hover:shadow-2xl transition duration-300">
-            <div class="aspect-w-16 aspect-h-9">
-                <iframe width="100%" height="220" 
-                    src="https://www.youtube.com/embed/heTxEsrPVdQ" 
-                    title="Climate Smart Agriculture" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="p-4">
-                <h4 class="font-bold text-lg text-green-700 mb-2">Climate Smart Agriculture</h4>
-                <p class="text-gray-600">Learn about climate-smart farming practices that boost productivity and sustainability.</p>
-            </div>
-        </div>
-
-        <!-- Video 2 -->
-        <div class="rounded-2xl overflow-hidden shadow-xl bg-white hover:shadow-2xl transition duration-300">
-            <div class="aspect-w-16 aspect-h-9">
-                <iframe width="100%" height="220" 
-                    src="https://www.youtube.com/embed/_29teOdlvik" 
-                    title="Modern Irrigation Techniques" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="p-4">
-                <h4 class="font-bold text-lg text-green-700 mb-2">Modern Irrigation Techniques</h4>
-                <p class="text-gray-600">Discover how tech is revolutionizing water management for African farms.</p>
-            </div>
-        </div>
-
-        <!-- Video 3 -->
-        <div class="rounded-2xl overflow-hidden shadow-xl bg-white hover:shadow-2xl transition duration-300">
-            <div class="aspect-w-16 aspect-h-9">
-                <iframe width="100%" height="220" 
-                    src="https://www.youtube.com/embed/plwUPZG2F3s" 
-                    title="Youth in Agribusiness" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="p-4">
-                <h4 class="font-bold text-lg text-green-700 mb-2">Youth in Agribusiness</h4>
-                <p class="text-gray-600">Hear inspiring stories from young African agri-innovators.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-    <!-- Upcoming Episodes -->
-    <section class="bg-green-100 py-12">
-        <div class="container mx-auto px-6">
-            <h3 class="text-3xl font-bold text-green-700 mb-6">🌾 Upcoming Episodes</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-2xl shadow-lg p-6 podcast-card transition-transform duration-200">
-                    <h4 class="font-semibold text-xl mb-2">Smart Irrigation & AI</h4>
-                    <p class="text-gray-600 mb-4">Discover how precision irrigation and artificial intelligence are reducing water waste in dry regions.</p>
-                    <span class="text-green-600 font-medium">Coming Nov 5</span>
-                </div>
-                <div class="bg-white rounded-2xl shadow-lg p-6 podcast-card transition-transform duration-200">
-                    <h4 class="font-semibold text-xl mb-2">Youth in Agribusiness</h4>
-                    <p class="text-gray-600 mb-4">Young innovators share their journey into agriculture, from agritech startups to green solutions.</p>
-                    <span class="text-green-600 font-medium">Coming Nov 12</span>
-                </div>
-                <div class="bg-white rounded-2xl shadow-lg p-6 podcast-card transition-transform duration-200">
-                    <h4 class="font-semibold text-xl mb-2">AgriTrue Community Voices</h4>
-                    <p class="text-gray-600 mb-4">Farmers across Kenya share local challenges, indigenous solutions, and lessons learned on the ground.</p>
-                    <span class="text-green-600 font-medium">Coming Nov 19</span>
+                <div class="glass-panel hidden rounded-[2rem] p-6 shadow-float lg:block">
+                    <div class="flex items-center justify-between"><div><div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-200">On the programme</div><h2 class="mt-2 font-display text-2xl font-extrabold">Conversations grounded in the field</h2></div><div class="featured-wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+                    <div class="mt-6 space-y-3">
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-wheat-awn"></i></div><div><div class="font-extrabold">Farmer experiences</div><p class="mt-1 text-xs leading-5 text-white/62">Lessons from real crops, livestock and local markets.</p></div></div>
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-flask"></i></div><div><div class="font-extrabold">Research and evidence</div><p class="mt-1 text-xs leading-5 text-white/62">Soil, climate, technology and production insights.</p></div></div>
+                        <div class="flex gap-4 rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-400 text-green-950"><i class="fa-solid fa-lightbulb"></i></div><div><div class="font-extrabold">Agricultural innovation</div><p class="mt-1 text-xs leading-5 text-white/62">Practical ideas for a more resilient food system.</p></div></div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </header>
 
-    <!-- Footer -->
-    <footer class="bg-green-700 text-white py-8 mt-10">
-        
-          <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+        <section id="featured-episode" class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center"><span class="section-kicker justify-center">Featured episode</span><h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Building climate-resilient farms.</h2><p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">A conversation on soil health, climate adaptation and data-driven decisions for smallholder farmers.</p></div>
+                <article class="reveal mt-12 overflow-hidden rounded-[2rem] bg-green-950 text-white shadow-soft">
+                    <div class="grid lg:grid-cols-[.82fr_1.18fr]">
+                        <button id="featuredImageButton" type="button" class="group relative min-h-[380px] overflow-hidden text-left" aria-label="Play featured episode">
+                            <img src="{{ url_for('static', filename='images/denno.jpg') }}" alt="Dennis Mwendwa, featured podcast speaker" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-green-950 via-green-950/15 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6 right-6 flex items-end justify-between"><div><div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-300">Featured speaker</div><div class="mt-2 text-xl font-extrabold">Dennis Mwendwa</div></div><div class="grid h-16 w-16 place-items-center rounded-full border-4 border-white/80 bg-green-500 text-xl text-white shadow-xl"><i id="featuredPlayIcon" class="fa-solid fa-play"></i></div></div>
+                        </button>
+                        <div class="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+                            <div class="flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-[.14em]"><span class="rounded-full bg-green-400 px-3 py-1.5 text-green-950">Featured</span><span class="rounded-full border border-white/15 px-3 py-1.5 text-green-200">Climate & Soil</span></div>
+                            <h3 class="mt-6 font-display text-3xl font-extrabold sm:text-4xl">Building Climate-Resilient Farms</h3>
+                            <p class="mt-4 text-base leading-7 text-white/65">Join Dennis as he discusses how smallholder farmers can adapt to climate pressure through stronger soil management, local observation and responsible use of agricultural data.</p>
+                            <div class="mt-7 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                <audio id="featuredAudio" controls preload="metadata" class="w-full"><source src="{{ url_for('static', filename='images/podcast.unknown') }}">Your browser does not support audio playback.</audio>
+                                <p class="mt-3 text-xs leading-5 text-white/45">Replace <code class="rounded bg-white/10 px-1.5 py-1">static/images/podcast.unknown</code> with your final MP3 file when the episode audio is ready.</p>
+                            </div>
+                            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                                <a href="https://open.spotify.com/search/agriculture" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full bg-[#1DB954] px-5 py-3 text-sm font-extrabold text-white hover:bg-[#159443]"><i class="fa-brands fa-spotify mr-2"></i>Explore on Spotify</a>
+                                <a href="https://www.instagram.com/talkdirtpodcast/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-3 text-sm font-extrabold text-white hover:opacity-90"><i class="fa-brands fa-instagram mr-2"></i>Follow on Instagram</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="podcast-directory" class="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+                    <div class="max-w-3xl"><span class="section-kicker">Podcast directory</span><h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Discover more agricultural voices.</h2><p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">Search by title, host, topic or platform.</p></div>
+                    <div class="w-full lg:max-w-md"><label for="podcastSearch" class="sr-only">Search podcasts</label><div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input id="podcastSearch" type="search" placeholder="Search podcasts or hosts..." class="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3.5 pl-11 pr-12 text-sm outline-none transition focus:border-green-600 focus:bg-white focus:ring-4 focus:ring-green-100"><button id="clearPodcastSearch" type="button" class="absolute right-3 top-1/2 hidden h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300" aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button></div></div>
                 </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Farm Truth</a></li>
-                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
+                <div class="reveal mt-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <div class="flex flex-wrap gap-2"><button type="button" class="filter-button active rounded-full border border-green-200 px-4 py-2 text-xs font-extrabold text-green-800" data-platform="all">All podcasts</button><button type="button" class="filter-button rounded-full border border-green-200 bg-white px-4 py-2 text-xs font-extrabold text-green-800" data-platform="spotify"><i class="fa-brands fa-spotify mr-1.5"></i>Spotify</button><button type="button" class="filter-button rounded-full border border-green-200 bg-white px-4 py-2 text-xs font-extrabold text-green-800" data-platform="instagram"><i class="fa-brands fa-instagram mr-1.5"></i>Instagram</button></div>
+                    <p id="podcastResultCount" class="text-sm font-semibold text-slate-500">6 podcasts shown</p>
                 </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+
+                <div id="podcastList" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="agri-innovators africa" data-host="emmanuel nyongesa" data-description="digital soil data innovations african agriculture" data-platform="spotify"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F1.jpg') }}" alt="Agri-Innovators Africa podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-green-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-green-800">Innovation</span><i class="fa-brands fa-spotify text-xl text-[#1DB954]"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">Agri-Innovators Africa</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Emmanuel Nyongesa</p><p class="mt-4 text-sm leading-6 text-slate-600">Explore digital, soil and data innovations transforming African agriculture.</p><a href="https://open.spotify.com/show/7AgrInnovators" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-green-700 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-green-800"><i class="fa-brands fa-spotify mr-2"></i>Listen</a></div></article>
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="talk dirt to me" data-host="alma lynn" data-description="kenyan farmers policy makers agritech stories field" data-platform="instagram"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F2.jpg') }}" alt="Talk Dirt To Me podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-pink-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-pink-800">Field stories</span><i class="fa-brands fa-instagram text-xl text-pink-600"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">Talk Dirt To Me</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Alma Lynn</p><p class="mt-4 text-sm leading-6 text-slate-600">Stories from Kenyan farmers, policymakers and agritech visionaries.</p><a href="https://www.instagram.com/talkdirtpodcast/" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-gradient-to-r from-purple-600 to-pink-500 px-5 py-2.5 text-sm font-extrabold text-white hover:opacity-90"><i class="fa-brands fa-instagram mr-2"></i>Listen</a></div></article>
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="farming today kenya" data-host="vitalis orute" data-description="trends yields counties kenya agricultural insights" data-platform="spotify"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F3.jpg') }}" alt="Farming Today Kenya podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-blue-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-blue-800">County insights</span><i class="fa-brands fa-spotify text-xl text-[#1DB954]"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">Farming Today Kenya</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Vitalis Orute</p><p class="mt-4 text-sm leading-6 text-slate-600">Trends, yields and local insights from Kenya’s agricultural counties.</p><a href="https://open.spotify.com/show/3FarmingTodayKenya" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-green-700 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-green-800"><i class="fa-brands fa-spotify mr-2"></i>Listen</a></div></article>
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="youth in agribusiness" data-host="lewis muriuki" data-description="young african agripreneurs startups green solutions" data-platform="spotify"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F4.jpg') }}" alt="Youth in Agribusiness podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-800">Agripreneurs</span><i class="fa-brands fa-spotify text-xl text-[#1DB954]"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">Youth in Agribusiness</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Lewis Muriuki</p><p class="mt-4 text-sm leading-6 text-slate-600">Young African agripreneurs share their challenges, ideas and successes.</p><a href="https://open.spotify.com/show/5YouthAgribiz" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-green-700 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-green-800"><i class="fa-brands fa-spotify mr-2"></i>Listen</a></div></article>
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="the soil health report" data-host="dennis mwendwa" data-description="soil science climate data sustainability" data-platform="spotify"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F5.jpg') }}" alt="The Soil Health Report podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-900">Soil health</span><i class="fa-brands fa-spotify text-xl text-[#1DB954]"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">The Soil Health Report</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Dennis Mwendwa</p><p class="mt-4 text-sm leading-6 text-slate-600">Soil science, climate and data-driven practices for sustainable farming.</p><a href="https://open.spotify.com/show/4SoilHealthReport" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-green-700 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-green-800"><i class="fa-brands fa-spotify mr-2"></i>Listen</a></div></article>
+                    <article class="podcast-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-card" data-podcast-card data-title="women who farm" data-host="limpaso mepetu" data-description="women agriculture stories resources strategies empowerment" data-platform="spotify"><div class="overflow-hidden"><img src="{{ url_for('static', filename='images/F6.jpg') }}" alt="Women Who Farm podcast" class="podcast-image h-52 w-full object-cover"></div><div class="p-6"><div class="flex items-center justify-between gap-3"><span class="rounded-full bg-purple-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-purple-800">Women in agriculture</span><i class="fa-brands fa-spotify text-xl text-[#1DB954]"></i></div><h3 class="mt-5 text-xl font-extrabold text-green-950">Women Who Farm</h3><p class="mt-2 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">Host: Limpaso Mepetu</p><p class="mt-4 text-sm leading-6 text-slate-600">Stories, resources and strategies empowering women in agriculture.</p><a href="https://open.spotify.com/show/6WomenWhoFarm" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex items-center rounded-full bg-green-700 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-green-800"><i class="fa-brands fa-spotify mr-2"></i>Listen</a></div></article>
+                </div>
+                <div id="podcastEmptyState" class="mt-10 hidden rounded-[2rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center"><div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-slate-100 text-2xl text-slate-500"><i class="fa-solid fa-headphones"></i></div><h3 class="mt-5 text-xl font-extrabold text-slate-800">No podcasts found</h3><p class="mt-3 text-sm text-slate-500">Try another search term or reset the platform filter.</p><button id="resetPodcastFilters" type="button" class="mt-6 rounded-full bg-green-700 px-6 py-3 text-sm font-extrabold text-white hover:bg-green-800">Reset filters</button></div>
+            </div>
+        </section>
+
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal mx-auto max-w-3xl text-center"><span class="section-kicker justify-center">Watch and learn</span><h2 class="mt-4 font-display text-3xl font-extrabold text-green-950 sm:text-4xl lg:text-5xl">Agricultural videos and field learning.</h2><p class="mt-5 text-base leading-7 text-slate-600 sm:text-lg">Explore climate-smart farming, irrigation and youth-led agribusiness.</p></div>
+                <div class="mt-12 grid gap-6 lg:grid-cols-3">
+                    <article class="video-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card"><div class="aspect-video bg-slate-100"><iframe class="h-full w-full" src="https://www.youtube.com/embed/heTxEsrPVdQ" title="Climate Smart Agriculture" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="p-6"><div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Climate</div><h3 class="mt-3 text-xl font-extrabold text-green-950">Climate Smart Agriculture</h3><p class="mt-3 text-sm leading-6 text-slate-600">Learn farming practices that support productivity, adaptation and sustainability.</p></div></article>
+                    <article class="video-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card"><div class="aspect-video bg-slate-100"><iframe class="h-full w-full" src="https://www.youtube.com/embed/_29teOdlvik" title="Modern Irrigation Techniques" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="p-6"><div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Water management</div><h3 class="mt-3 text-xl font-extrabold text-green-950">Modern Irrigation Techniques</h3><p class="mt-3 text-sm leading-6 text-slate-600">See how better irrigation planning can improve water efficiency on African farms.</p></div></article>
+                    <article class="video-card reveal overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card"><div class="aspect-video bg-slate-100"><iframe class="h-full w-full" src="https://www.youtube.com/embed/plwUPZG2F3s" title="Youth in Agribusiness" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="p-6"><div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Innovation</div><h3 class="mt-3 text-xl font-extrabold text-green-950">Youth in Agribusiness</h3><p class="mt-3 text-sm leading-6 text-slate-600">Hear ideas and experiences from young African agricultural innovators.</p></div></article>
                 </div>
             </div>
-            <hr class="border-gray-700 my-8">
-             <div class="flex gap-4 mt-4 md:mt-0">
-                <a href="https://www.instagram.com/" target="_blank" class="text-white hover:text-pink-400 transition"><i class="fab fa-instagram fa-xl"></i></a>
-                <a href="https://open.spotify.com/" target="_blank" class="text-white hover:text-green-400 transition"><i class="fab fa-spotify fa-xl"></i></a>
-                <a href="https://www.youtube.com/" target="_blank" class="text-white hover:text-red-400 transition"><i class="fab fa-youtube fa-xl"></i></a>
+        </section>
+
+        <section class="bg-green-950 px-4 py-16 text-white sm:px-6 lg:px-8 lg:py-24">
+            <div class="mx-auto max-w-7xl">
+                <div class="reveal flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div class="max-w-3xl"><div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">Coming soon</div><h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl lg:text-5xl">Upcoming conversations.</h2><p class="mt-5 text-base leading-7 text-white/62 sm:text-lg">New episodes will continue exploring technology, community knowledge and resilient farming.</p></div><a href="mailto:info@agritrue.org?subject=AgriTrue%20Podcast%20Guest" class="inline-flex self-start items-center rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-extrabold text-white hover:bg-white/20">Suggest a guest <i class="fa-solid fa-arrow-right ml-2"></i></a></div>
+                <div class="mt-12 grid gap-5 md:grid-cols-3">
+                    <article class="upcoming-card reveal rounded-3xl border border-white/10 bg-white/5 p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-green-950"><i class="fa-solid fa-droplet"></i></div><div class="mt-5 text-[10px] font-extrabold uppercase tracking-[.16em] text-green-300">Planned episode</div><h3 class="mt-3 text-xl font-extrabold">Smart Irrigation & AI</h3><p class="mt-3 text-sm leading-6 text-white/62">How precision irrigation and responsible automation can reduce water waste.</p></article>
+                    <article class="upcoming-card reveal rounded-3xl border border-white/10 bg-white/5 p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-green-950"><i class="fa-solid fa-seedling"></i></div><div class="mt-5 text-[10px] font-extrabold uppercase tracking-[.16em] text-green-300">Planned episode</div><h3 class="mt-3 text-xl font-extrabold">Youth in Agribusiness</h3><p class="mt-3 text-sm leading-6 text-white/62">Young innovators discuss agritech startups, markets and practical green solutions.</p></article>
+                    <article class="upcoming-card reveal rounded-3xl border border-white/10 bg-white/5 p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-400 text-green-950"><i class="fa-solid fa-people-group"></i></div><div class="mt-5 text-[10px] font-extrabold uppercase tracking-[.16em] text-green-300">Planned episode</div><h3 class="mt-3 text-xl font-extrabold">AgriTrue Community Voices</h3><p class="mt-3 text-sm leading-6 text-white/62">Farmers share local challenges, indigenous practices and lessons from the field.</p></article>
+                </div>
             </div>
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+        </section>
+
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24"><div class="reveal mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-gradient-to-r from-green-950 via-green-800 to-green-600 px-6 py-12 text-white shadow-soft sm:px-10 lg:flex lg:items-center lg:justify-between lg:px-14 lg:py-16"><div class="max-w-3xl"><div class="text-xs font-extrabold uppercase tracking-[.18em] text-green-300">Stay connected</div><h2 class="mt-4 font-display text-3xl font-extrabold sm:text-4xl">Follow AgriTrue for new agricultural conversations.</h2><p class="mt-4 text-base leading-7 text-white/65">Share an episode, suggest a topic or support the platform's work with farmers and communities.</p></div><div class="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:ml-10 lg:flex-col xl:flex-row"><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 font-extrabold text-green-900 shadow hover:-translate-y-1"><i class="fa-brands fa-youtube mr-2 text-red-600"></i>Follow Episodes</a><a href="/donate" class="inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-3.5 font-extrabold text-white hover:bg-white/10">Support AgriTrue</a></div></div></section>
+    </main>
+
+    <footer class="bg-[#031d0f] text-white">
+        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+            <div><div class="flex items-center gap-3"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-12 w-12 rounded-full object-cover"><div><div class="font-display text-xl font-extrabold">AgriTrue</div><div class="mt-1 text-[10px] font-bold uppercase tracking-[.2em] text-green-300">Founded in 2025</div></div></div><p class="mt-5 text-sm leading-6 text-white/55">Digital tools, community knowledge and responsible agricultural conversations for more informed farming decisions.</p><div class="mt-5 flex gap-3"><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-pink-300 hover:bg-pink-600 hover:text-white"><i class="fa-brands fa-instagram"></i></a><a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" aria-label="Spotify" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-green-300 hover:bg-[#1DB954] hover:text-white"><i class="fa-brands fa-spotify"></i></a><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-red-300 hover:bg-red-600 hover:text-white"><i class="fa-brands fa-youtube"></i></a></div></div>
+            <div><h3 class="font-extrabold">Farmer tools</h3><div class="mt-5 space-y-3 text-sm text-white/55"><a href="/ml-analyzer" class="block hover:text-green-300">Smart Analyzer</a><a href="/know_your_land" class="block hover:text-green-300">Know Your Land</a><a href="/community-notes" class="block hover:text-green-300">Community Notes</a><a href="/ussd" class="block hover:text-green-300">USSD & Voice</a><a href="/chatbot" class="block hover:text-green-300">AI Chatbot</a></div></div>
+            <div><h3 class="font-extrabold">Resources</h3><div class="mt-5 space-y-3 text-sm text-white/55"><a href="/about" class="block hover:text-green-300">About AgriTrue</a><a href="/research" class="block hover:text-green-300">Research Hub</a><a href="/podcast" class="block hover:text-green-300">Podcast</a><a href="/faqs" class="block hover:text-green-300">FAQs</a><a href="/donate" class="block hover:text-green-300">Donate</a></div></div>
+            <div><h3 class="font-extrabold">Contact</h3><div class="mt-5 space-y-4 text-sm text-white/55"><p class="flex gap-3"><i class="fa-solid fa-location-dot mt-1 text-green-300"></i><span>Nairobi, Kenya</span></p><p class="flex gap-3"><i class="fa-solid fa-envelope mt-1 text-green-300"></i><a href="mailto:info@agritrue.org" class="hover:text-white">info@agritrue.org</a></p><p class="flex gap-3"><i class="fa-solid fa-phone mt-1 text-green-300"></i><a href="tel:+254715142906" class="hover:text-white">+254 715 142 906</a></p></div></div>
         </div>
+        <div class="border-t border-white/10 px-4 py-6"><div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-xs text-white/40 sm:flex-row sm:text-left"><p>© <span id="currentYear"></span> AgriTrue. All rights reserved.</p><p>Voices of the Land — practical agricultural conversations.</p></div></div>
     </footer>
 
-    <!-- JavaScript for navbar responsiveness and page enhancements -->
+    <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat with AgriTrue on WhatsApp"><i class="fa-brands fa-whatsapp text-3xl"></i><span class="whatsapp-copy text-sm font-extrabold">Chat with AgriTrue</span></a>
+
     <script>
-        // Mobile menu logic
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
-        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        document.addEventListener("DOMContentLoaded", () => {
+            const byId = (id) => document.getElementById(id);
+            const mobileMenuBtn = byId("mobileMenuBtn");
+            const closeMobileMenu = byId("closeMobileMenu");
+            const mobileMenu = byId("mobileMenu");
+            const mobileMenuOverlay = byId("mobileMenuOverlay");
 
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.add('show');
-            mobileMenuOverlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        });
-        closeMobileMenu.addEventListener('click', () => {
-            mobileMenu.classList.remove('show');
-            mobileMenuOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
-        mobileMenuOverlay.addEventListener('click', () => {
-            mobileMenu.classList.remove('show');
-            mobileMenuOverlay.classList.remove('show');
-            document.body.style.overflow = '';
-        });
+            function openMobileMenu() {
+                mobileMenu.classList.add("show");
+                mobileMenuOverlay.classList.add("show");
+                mobileMenu.setAttribute("aria-hidden", "false");
+                mobileMenuBtn.setAttribute("aria-expanded", "true");
+                document.body.classList.add("menu-open");
+            }
 
-        // Play featured audio when image is clicked
-        document.querySelector('img[alt="Featured Speaker"]').addEventListener('click', function() {
-            const audio = document.getElementById('featured-audio');
-            audio.play();
-            audio.classList.add('audio-flash');
-            setTimeout(() => audio.classList.remove('audio-flash'), 300);
-        });
+            function closeMenu() {
+                mobileMenu.classList.remove("show");
+                mobileMenuOverlay.classList.remove("show");
+                mobileMenu.setAttribute("aria-hidden", "true");
+                mobileMenuBtn.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("menu-open");
+            }
 
-        // Smooth scroll for navigation links
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = link.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    e.preventDefault();
-                    document.querySelector(href).scrollIntoView({behavior: 'smooth'});
+            mobileMenuBtn.addEventListener("click", openMobileMenu);
+            closeMobileMenu.addEventListener("click", closeMenu);
+            mobileMenuOverlay.addEventListener("click", closeMenu);
+            mobileMenu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+            document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeMenu(); });
+
+            const featuredImageButton = byId("featuredImageButton");
+            const featuredAudio = byId("featuredAudio");
+            const featuredPlayIcon = byId("featuredPlayIcon");
+
+            featuredImageButton.addEventListener("click", async () => {
+                try {
+                    if (featuredAudio.paused) await featuredAudio.play();
+                    else featuredAudio.pause();
+                } catch (error) {
+                    featuredAudio.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
             });
+
+            featuredAudio.addEventListener("play", () => { featuredPlayIcon.className = "fa-solid fa-pause"; });
+            featuredAudio.addEventListener("pause", () => { featuredPlayIcon.className = "fa-solid fa-play"; });
+            featuredAudio.addEventListener("ended", () => { featuredPlayIcon.className = "fa-solid fa-play"; });
+
+            const podcastSearch = byId("podcastSearch");
+            const clearPodcastSearch = byId("clearPodcastSearch");
+            const podcastCards = Array.from(document.querySelectorAll("[data-podcast-card]"));
+            const filterButtons = Array.from(document.querySelectorAll(".filter-button"));
+            const podcastResultCount = byId("podcastResultCount");
+            const podcastEmptyState = byId("podcastEmptyState");
+            const resetPodcastFilters = byId("resetPodcastFilters");
+            let activePlatform = "all";
+
+            function applyPodcastFilters() {
+                const query = podcastSearch.value.trim().toLowerCase();
+                let visibleCount = 0;
+                podcastCards.forEach((card) => {
+                    const haystack = [card.dataset.title, card.dataset.host, card.dataset.description, card.dataset.platform].join(" ").toLowerCase();
+                    const matchesSearch = !query || haystack.includes(query);
+                    const matchesPlatform = activePlatform === "all" || card.dataset.platform === activePlatform;
+                    const visible = matchesSearch && matchesPlatform;
+                    card.classList.toggle("is-hidden", !visible);
+                    if (visible) visibleCount += 1;
+                });
+                podcastResultCount.textContent = `${visibleCount} podcast${visibleCount === 1 ? "" : "s"} shown`;
+                podcastEmptyState.classList.toggle("hidden", visibleCount > 0);
+                clearPodcastSearch.classList.toggle("hidden", !query);
+                clearPodcastSearch.classList.toggle("grid", Boolean(query));
+            }
+
+            podcastSearch.addEventListener("input", applyPodcastFilters);
+            clearPodcastSearch.addEventListener("click", () => { podcastSearch.value = ""; applyPodcastFilters(); podcastSearch.focus(); });
+            filterButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    activePlatform = button.dataset.platform;
+                    filterButtons.forEach((item) => item.classList.toggle("active", item === button));
+                    applyPodcastFilters();
+                });
+            });
+            resetPodcastFilters.addEventListener("click", () => {
+                podcastSearch.value = "";
+                activePlatform = "all";
+                filterButtons.forEach((item) => item.classList.toggle("active", item.dataset.platform === "all"));
+                applyPodcastFilters();
+            });
+            applyPodcastFilters();
+
+            const revealItems = document.querySelectorAll(".reveal");
+            if ("IntersectionObserver" in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.10 });
+                revealItems.forEach((item) => observer.observe(item));
+            } else {
+                revealItems.forEach((item) => item.classList.add("visible"));
+            }
+
+            byId("currentYear").textContent = new Date().getFullYear();
         });
     </script>
 </body>
