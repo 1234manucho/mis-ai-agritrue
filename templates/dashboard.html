@@ -2,1013 +2,1423 @@
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgriTrue - Modern Dashboard</title>
-  <!-- Tailwind CSS CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b6623">
+  <meta name="description" content="AgriTrue Farm Truth helps farmers organize farm records, explore agricultural trends and separate reliable agricultural information from misinformation.">
+  <title>Farm Truth | AgriTrue</title>
+
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome for icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-  <!-- Google Fonts for Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Manrope", "sans-serif"]
+          },
+          boxShadow: {
+            soft: "0 20px 55px rgba(5, 46, 22, .10)",
+            card: "0 22px 65px rgba(15, 23, 42, .10)"
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
+    :root {
+      --agri-green: #0b6623;
+      --agri-dark: #064e3b;
+      --agri-deep: #032b15;
+      --agri-soft: #ecfdf5;
+      --nav-height: 72px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: #f7faf7; }
+
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f3f4f6;
-      color: #1a202c;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 7% 18%, rgba(134,239,172,.15), transparent 24rem),
+        radial-gradient(circle at 93% 76%, rgba(187,247,208,.18), transparent 28rem),
+        #f7faf7;
+      color: #1e293b;
     }
-    .custom-navbar {
-      background: linear-gradient(to right, #16a34a, #22c55e);
-      transition: all 0.3s ease-in-out;
+
+    body.menu-open { overflow: hidden; }
+
+    .site-nav {
+      background: linear-gradient(100deg, #064e3b 0%, #0b6623 50%, #4fae62 100%);
+      box-shadow: 0 10px 30px rgba(5,46,22,.20);
     }
-    .mobile-menu-overlay {
+
+    .nav-link { position: relative; }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: .75rem;
+      right: .75rem;
+      bottom: .3rem;
+      height: 2px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform .2s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after { transform: scaleX(1); }
+
+    .dropdown-menu {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    }
+
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .mobile-overlay {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.6);
-      z-index: 40; display: none; opacity: 0;
-      transition: opacity 0.3s ease-in-out;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      background: rgba(2,25,12,.62);
+      backdrop-filter: blur(5px);
     }
-    .mobile-menu { position: fixed; top: 0; right: -100%; width: 75%; max-width: 350px; height: 100%; background: white; padding: 1.5rem; box-shadow: -2px 0 15px rgba(0,0,0,0.2); z-index: 50; transition: right 0.3s cubic-bezier(0.25,0.46,0.45,0.94);}
-    .mobile-menu.active { right: 0; }
-    .mobile-menu-overlay.active { display: block; opacity: 1; }
-    .card { background: #fff; border-radius: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.3s, box-shadow 0.3s; padding: 2rem;}
-    .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.05);}
-    .nav-link:hover, .nav-link-mobile:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-    .document-content { max-height: 200px; overflow: hidden; transition: max-height 0.5s;}
-    .document-content.expanded { max-height: 2000px;}
-    .info-card { border-left: 6px solid #16a34a; background: #f0fdf4; }
-    .misinfo-card { border-left: 6px solid #ef4444; background: #fef2f2; }
+
+    .mobile-overlay.show { display: block; }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      right: min(-92vw, -390px);
+      z-index: 70;
+      width: min(90vw, 370px);
+      height: 100dvh;
+      overflow-y: auto;
+      background: #f0fdf4;
+      box-shadow: -24px 0 70px rgba(5,46,22,.28);
+      transition: right .3s ease;
+    }
+
+    .mobile-menu.show { right: 0; }
+
+    .hero {
+      position: relative;
+      min-height: 610px;
+      overflow: hidden;
+      background: #052e16;
+    }
+
+    .hero-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.06) contrast(1.04) brightness(.88);
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(2,28,14,.96) 0%, rgba(4,54,27,.83) 48%, rgba(4,74,37,.54) 100%),
+        linear-gradient(0deg, rgba(2,24,13,.78), transparent 62%);
+    }
+
+    .hero-shine {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .hero-shine::before {
+      content: "";
+      position: absolute;
+      top: -25%;
+      bottom: -25%;
+      left: -58%;
+      width: 38%;
+      background: linear-gradient(
+        105deg,
+        transparent,
+        rgba(199,255,211,.14),
+        rgba(255,255,255,.46),
+        rgba(199,255,211,.12),
+        transparent
+      );
+      filter: blur(8px);
+      transform: skewX(-12deg);
+      animation: heroSweep 7.5s ease-in-out infinite;
+    }
+
+    @keyframes heroSweep {
+      0% { left: -58%; opacity: 0; }
+      13% { opacity: .8; }
+      70% { left: 126%; opacity: 0; }
+      100% { left: 126%; opacity: 0; }
+    }
+
+    .glass-card {
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.09);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 70px rgba(0,0,0,.16);
+    }
+
+    .section-card {
+      border: 1px solid #e4eee6;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 22px 62px rgba(5,46,22,.08);
+    }
+
+    .metric-card {
+      border: 1px solid #e6eee7;
+      background: linear-gradient(145deg, #ffffff, #f8fcf8);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      border-color: #bbf7d0;
+      box-shadow: 0 18px 42px rgba(22,101,52,.10);
+    }
+
+    .upload-zone {
+      position: relative;
+      border: 2px dashed #a7d7b2;
+      background:
+        linear-gradient(135deg, rgba(240,253,244,.95), rgba(255,255,255,.98));
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .upload-zone.dragover {
+      border-color: #16a34a;
+      background: #ecfdf5;
+      transform: scale(1.005);
+    }
+
+    .preview-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #e4e9e5;
+      border-radius: 1rem;
+      background: white;
+      padding: .85rem;
+    }
+
+    .preview-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: .75rem;
+      object-fit: cover;
+      background: #f1f5f9;
+    }
+
+    .chart-card {
+      position: relative;
+      min-height: 390px;
+      overflow: hidden;
+      border: 1px solid #e5eee7;
+      background: white;
+      box-shadow: 0 20px 55px rgba(15,23,42,.07);
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 300px;
+    }
+
+    .truth-card,
+    .misinfo-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.7rem;
+      background: white;
+    }
+
+    .truth-card {
+      border: 1px solid #bbf7d0;
+      box-shadow: 0 18px 44px rgba(22,101,52,.08);
+    }
+
+    .misinfo-card {
+      border: 1px solid #fecaca;
+      box-shadow: 0 18px 44px rgba(153,27,27,.07);
+    }
+
+    .truth-card::before,
+    .misinfo-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+    }
+
+    .truth-card::before {
+      background: linear-gradient(90deg, #166534, #22c55e, #86efac);
+    }
+
+    .misinfo-card::before {
+      background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5);
+    }
+
+    .document-content {
+      position: relative;
+      max-height: 230px;
+      overflow: hidden;
+      transition: max-height .5s ease;
+    }
+
+    .document-content::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 82px;
+      background: linear-gradient(transparent, white);
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .document-content.expanded {
+      max-height: 2200px;
+    }
+
+    .document-content.expanded::after {
+      opacity: 0;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .whatsapp-float,
+    .ai-float {
+      position: fixed;
+      right: 18px;
+      z-index: 55;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: white;
+      transition: transform .2s ease;
+    }
+
+    .whatsapp-float {
+      bottom: 18px;
+      width: 64px;
+      height: 64px;
+      border: 3px solid white;
+      background: linear-gradient(145deg, #2ee171, #25d366 48%, #128c4a);
+      font-size: 1.85rem;
+      box-shadow: 0 18px 42px rgba(18,140,74,.42), 0 0 0 7px rgba(37,211,102,.12);
+    }
+
+    .ai-float {
+      bottom: 94px;
+      width: 54px;
+      height: 54px;
+      border: 2px solid white;
+      background: #064e3b;
+      font-size: 1.2rem;
+      box-shadow: 0 14px 34px rgba(5,46,22,.30);
+    }
+
+    .whatsapp-float:hover,
+    .ai-float:hover {
+      transform: translateY(-4px) scale(1.03);
+    }
+
+    @media (max-width: 1023px) {
+      :root { --nav-height: 68px; }
+
+      .hero { min-height: 660px; }
+
+      .hero-overlay {
+        background:
+          linear-gradient(0deg, rgba(2,28,14,.95), rgba(5,71,36,.68)),
+          linear-gradient(90deg, rgba(2,28,14,.72), transparent);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero { min-height: 710px; }
+      .chart-card { min-height: 360px; }
+      .chart-wrap { height: 265px; }
+      .whatsapp-float { width: 58px; height: 58px; }
+      .ai-float { bottom: 88px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
 
+<body class="font-sans antialiased">
+  <!-- Navigation -->
+  <nav class="site-nav fixed inset-x-0 top-0 z-50">
+    <div class="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+      <a href="/" class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-10 w-10 rounded-full border-2 border-white/70 object-cover shadow">
+        <div>
+          <div class="font-display text-xl font-extrabold leading-none text-white sm:text-2xl">AgriTrue</div>
+          <div class="mt-1 hidden text-[9px] font-bold uppercase tracking-[.24em] text-green-100 sm:block">Founded in 2025</div>
+        </div>
+      </a>
 
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
-            </a>
+      <div class="hidden items-center gap-1 lg:flex">
+        <a href="/" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Home</a>
 
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
-                    </div>
-                </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-  <a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
+        <div class="dropdown relative">
+          <button type="button" class="nav-link flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">
+            Utilities <i class="fa-solid fa-chevron-down ml-2 text-[10px]"></i>
+          </button>
+          <div class="dropdown-menu absolute left-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+            <a href="/community-notes" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">Community Notes</a>
+            <a href="/chatbot" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">Smart Analyzer</a>
+            <a href="/ussd" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">USSD Service</a>
+          </div>
+        </div>
 
+        <a href="/dashboard" class="nav-link active rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white">Farm Truth</a>
+        <a href="/know_your_land" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Know Your Land</a>
+        <a href="/about" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">About</a>
 
-                    </div>
-                </div>  
-                {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
-                            {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
-                {% endif %}
-            </div>
+        <div class="dropdown relative">
+          <button type="button" class="nav-link flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">
+            Resources <i class="fa-solid fa-chevron-down ml-2 text-[10px]"></i>
+          </button>
+          <div class="dropdown-menu absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+            <a href="/research" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Research Hub</a>
+            <a href="/faqs" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">FAQs</a>
+            <a href="/podcast" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Podcast</a>
+            <a href="/donate" class="block rounded-xl bg-green-50 px-4 py-3 text-sm font-extrabold text-green-800 hover:bg-green-100">Donate</a>
+          </div>
+        </div>
 
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
+        {% if current_user.is_authenticated %}
+          <div class="dropdown relative ml-1">
+            <button type="button" class="flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/15">
+              <i class="fa-regular fa-circle-user"></i>
+              Profile
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
             </button>
+            <div class="dropdown-menu absolute right-0 top-full mt-2 w-52 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+              <a href="/profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Profile</a>
+              <a href="/edit_profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Edit Profile</a>
+              <a href="/streak" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Streak</a>
+              {% if current_user.is_admin %}
+                <a href="/admin" class="block rounded-xl px-4 py-3 text-sm font-bold text-amber-700 hover:bg-amber-50">Admin Panel</a>
+              {% endif %}
+              <a href="/logout" class="block rounded-xl px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50">Logout</a>
+            </div>
+          </div>
+        {% else %}
+          <a href="/login" class="ml-1 rounded-full border border-white/35 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/10">Login</a>
+          <a href="/register" class="rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-green-800 shadow-lg hover:bg-green-50">Register</a>
+        {% endif %}
+      </div>
+
+      <button id="mobileMenuButton" type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-xl text-white lg:hidden" aria-label="Open navigation menu" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobileOverlay" class="mobile-overlay"></div>
+  <aside id="mobileMenu" class="mobile-menu p-5 lg:hidden" aria-hidden="true">
+    <div class="flex items-center justify-between border-b border-green-200 pb-5">
+      <a href="/" class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full object-cover">
+        <div>
+          <div class="font-display text-lg font-extrabold text-green-950">AgriTrue</div>
+          <div class="text-xs font-semibold text-green-600">Farmer services</div>
         </div>
+      </a>
+      <button id="closeMobileMenu" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl text-green-800 shadow" aria-label="Close navigation menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <nav class="mt-5 space-y-2">
+      <a href="/" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Home</a>
+      <a href="/dashboard" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">Farm Truth</a>
+      <a href="/know_your_land" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Know Your Land</a>
+
+      <details class="rounded-xl border border-green-100 bg-white">
+        <summary class="cursor-pointer list-none px-4 py-3 font-semibold text-green-950">
+          <span class="flex items-center justify-between">
+            Utilities
+            <i class="fa-solid fa-chevron-down text-xs text-green-600"></i>
+          </span>
+        </summary>
+        <div class="space-y-1 px-2 pb-2">
+          <a href="/community-notes" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">Community Notes</a>
+          <a href="/chatbot" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">AI Chatbot</a>
+          <a href="/ml-analyzer" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">Smart Analyzer</a>
+          <a href="/ussd" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">USSD Service</a>
+        </div>
+      </details>
+
+      <a href="/about" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">About Us</a>
+      <a href="/research" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Research Hub</a>
+      <a href="/faqs" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">FAQs</a>
+      <a href="/podcast" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Podcast</a>
+      <a href="/donate" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Donate</a>
     </nav>
-    
-    <!-- Mobile Menu -->
-    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
+
+    <div class="mt-6 border-t border-green-200 pt-5">
+      {% if current_user.is_authenticated %}
+        <a href="/profile" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">My Profile</a>
+        {% if current_user.is_admin %}
+          <a href="/admin" class="mt-3 block rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-center font-bold text-amber-800">Admin Panel</a>
+        {% endif %}
+        <a href="/logout" class="mt-3 block rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center font-bold text-red-600">Logout</a>
+      {% else %}
+        <a href="/login" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">Login</a>
+        <a href="/register" class="mt-3 block rounded-xl border border-green-700 px-4 py-3 text-center font-bold text-green-800">Create Account</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Hero -->
+  <header class="hero mt-[68px] lg:mt-[72px]">
+    <img src="{{ url_for('static', filename='images/final4.jpg') }}" alt="Modern agriculture and farm analytics" class="hero-image">
+    <div class="hero-overlay"></div>
+    <div class="hero-shine" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto grid min-h-[610px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.17em] text-green-100 backdrop-blur">
+          <i class="fa-solid fa-chart-column"></i>
+          AgriTrue Farm Truth
         </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
-                </div>
-            </li>
-        </ul>
-        <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-<a href="/donate" 
-   style="
-        background: linear-gradient(135deg, #28a745, #1e7e34);
-        color: #fff;
-        padding: 10px 26px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
-        display: inline-block;
-   "
-   onmouseover="this.style.background='linear-gradient(135deg, #32c95a, #28a745)'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(40,167,69,0.35)';"
-   onmouseout="this.style.background='linear-gradient(135deg, #28a745, #1e7e34)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
->
-    Donate
-</a>
 
+        <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+          Turn farm records into clearer agricultural decisions.
+        </h1>
 
-                    </div>
-                </div>  
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
-        </div>
-    </div>
-
-
-  <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-    <!-- Quick Stats Section -->
-    <section id="stats" style="max-width:1200px; margin:60px auto; padding-top:40px; font-family:Arial, sans-serif;">
-  <!-- Heading -->
-  <h2 style="font-size:28px; font-weight:700; text-align:center; color:#065f46; margin-bottom:25px; line-height:1.4;">
-    Tracing farm data to uncover accurate results.<br>
-    <span style="font-size:18px; font-weight:400; color:#374151;">
-      This is where farmers upload their documents for farm agriculture, livestock, or poultry to share with others.
-    </span>
-  </h2>
-
-  <!-- Stats Grid -->
-  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:24px; text-align:center;">
-    
-    <!-- Card 1 -->
-    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
-      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-seedling"></i></div>
-      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">12.5M</h3>
-      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Hectares Cultivated</p>
-    </div>
-
-    <!-- Card 2 -->
-    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
-      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-tractor"></i></div>
-      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">75%</h3>
-      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Farm Productivity Increase</p>
-    </div>
-
-    <!-- Card 3 -->
-    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
-      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-water"></i></div>
-      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">30%</h3>
-      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Water Usage Reduction</p>
-    </div>
-
-    <!-- Card 4 -->
-    <div style="background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:transform 0.3s ease;">
-      <div style="color:#059669; font-size:40px; margin-bottom:12px;"><i class="fas fa-globe-americas"></i></div>
-      <h3 style="font-size:32px; font-weight:800; color:#1f2937; margin:0;">20+</h3>
-      <p style="color:#6b7280; margin-top:6px; font-size:14px;">Countries Supported</p>
-    </div>
-
-  </div>
-</section>
-
-
-    <!-- NEW: Farm Documents & Images Section -->
-    <section id="upload-docs" class="max-w-4xl mx-auto my-12 pt-8">
-      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Upload Your Farm Documents & Images 📝📸</h2>
-      <div class="card p-8">
-        <p class="text-gray-600 text-center mb-6">
-          Help us analyze your farm's performance and provide tailored advice by uploading reports, certifications and output insights.
+        <p class="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
+          Upload farm documents, review agricultural trends, compare reliable information against common misinformation and build a stronger record of your farming activities.
         </p>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
-          <!-- File Upload Input -->
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#upload-docs" class="inline-flex items-center rounded-2xl bg-white px-6 py-3.5 font-extrabold text-green-900 shadow-xl transition hover:-translate-y-1 hover:bg-green-50">
+            Upload Farm Records
+            <i class="fa-solid fa-arrow-down ml-2"></i>
+          </a>
+          <a href="#dashboard" class="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 font-extrabold text-white backdrop-blur transition hover:bg-white/15">
+            View Trends
+          </a>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-[2rem] p-5 sm:p-6">
+        <div class="flex items-center justify-between">
           <div>
-            <label for="farm_file" class="block text-sm font-medium text-gray-700">Choose Files (Documents or Images)</label>
-            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div class="space-y-1 text-center">
-                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <div class="flex text-sm text-gray-600">
-                  <label for="farm_file" class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500">
-                    <span>Upload a file</span>
-                    <input id="farm_file" name="farm_file" type="file" class="sr-only" multiple accept="image/*, application/pdf, .doc, .docx">
-                  </label>
-                  <p class="pl-1">or drag and drop</p>
+            <div class="text-xs font-extrabold uppercase tracking-[.15em] text-green-200">What Farm Truth brings together</div>
+            <h2 class="mt-2 font-display text-2xl font-extrabold text-white">One place for records, trends and verification.</h2>
+          </div>
+          <div class="hidden h-12 w-12 place-items-center rounded-2xl bg-green-300 text-xl text-green-950 sm:grid">
+            <i class="fa-solid fa-leaf"></i>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-white/10 p-4">
+            <i class="fa-solid fa-file-arrow-up text-green-300"></i>
+            <div class="mt-3 text-sm font-extrabold text-white">Farm records</div>
+            <p class="mt-2 text-xs leading-5 text-white/58">Upload documents and images through the existing Flask upload route.</p>
+          </div>
+          <div class="rounded-2xl bg-white/10 p-4">
+            <i class="fa-solid fa-chart-line text-green-300"></i>
+            <div class="mt-3 text-sm font-extrabold text-white">Trend views</div>
+            <p class="mt-2 text-xs leading-5 text-white/58">Explore crop, fertilizer, weather and land-use chart examples.</p>
+          </div>
+          <div class="rounded-2xl bg-white/10 p-4">
+            <i class="fa-solid fa-circle-check text-green-300"></i>
+            <div class="mt-3 text-sm font-extrabold text-white">Verified thinking</div>
+            <p class="mt-2 text-xs leading-5 text-white/58">Compare evidence-based farming practices with misleading claims.</p>
+          </div>
+          <div class="rounded-2xl bg-white/10 p-4">
+            <i class="fa-solid fa-book-open text-green-300"></i>
+            <div class="mt-3 text-sm font-extrabold text-white">Learning guide</div>
+            <p class="mt-2 text-xs leading-5 text-white/58">Read practical context on modern, data-driven and sustainable agriculture.</p>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-2xl border border-white/10 bg-black/10 p-4 text-xs leading-5 text-white/58">
+          <i class="fa-solid fa-circle-info mr-2 text-green-300"></i>
+          Dashboard charts are illustrative unless your backend replaces them with verified farm or institutional datasets.
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Quick Metrics -->
+    <section id="stats" class="relative z-20 -mt-10 px-4 sm:px-6 lg:px-8">
+      <div class="section-card mx-auto max-w-7xl rounded-[2rem] p-5 sm:p-7 lg:p-8">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl">
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Agricultural snapshot</div>
+            <h2 class="mt-2 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Trace farm data to uncover clearer patterns.</h2>
+          </div>
+          <p class="max-w-xl text-sm leading-7 text-slate-500">
+            The figures below are retained from your existing dashboard and should be replaced with verified production data when available.
+          </p>
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article class="metric-card reveal rounded-2xl p-5">
+            <div class="flex items-start justify-between">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-100 text-xl text-green-700">
+                <i class="fa-solid fa-seedling"></i>
+              </div>
+              <span class="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Metric</span>
+            </div>
+            <div class="mt-5 font-display text-3xl font-extrabold text-slate-950">12.5M</div>
+            <p class="mt-2 text-sm font-semibold text-slate-500">Hectares Cultivated</p>
+          </article>
+
+          <article class="metric-card reveal rounded-2xl p-5">
+            <div class="flex items-start justify-between">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-100 text-xl text-emerald-700">
+                <i class="fa-solid fa-tractor"></i>
+              </div>
+              <span class="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Metric</span>
+            </div>
+            <div class="mt-5 font-display text-3xl font-extrabold text-slate-950">75%</div>
+            <p class="mt-2 text-sm font-semibold text-slate-500">Farm Productivity Increase</p>
+          </article>
+
+          <article class="metric-card reveal rounded-2xl p-5">
+            <div class="flex items-start justify-between">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-sky-100 text-xl text-sky-700">
+                <i class="fa-solid fa-droplet"></i>
+              </div>
+              <span class="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Metric</span>
+            </div>
+            <div class="mt-5 font-display text-3xl font-extrabold text-slate-950">30%</div>
+            <p class="mt-2 text-sm font-semibold text-slate-500">Water Usage Reduction</p>
+          </article>
+
+          <article class="metric-card reveal rounded-2xl p-5">
+            <div class="flex items-start justify-between">
+              <div class="grid h-12 w-12 place-items-center rounded-2xl bg-lime-100 text-xl text-lime-700">
+                <i class="fa-solid fa-earth-africa"></i>
+              </div>
+              <span class="rounded-full bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.12em] text-slate-400">Metric</span>
+            </div>
+            <div class="mt-5 font-display text-3xl font-extrabold text-slate-950">20+</div>
+            <p class="mt-2 text-sm font-semibold text-slate-500">Countries Supported</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upload -->
+    <section id="upload-docs" class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="grid gap-8 lg:grid-cols-[.42fr_.58fr] lg:items-start">
+          <div class="lg:sticky lg:top-28">
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Farm record center</div>
+            <h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Upload farm documents and images.</h2>
+            <p class="mt-4 text-sm leading-7 text-slate-500">
+              Share reports, certifications, field images and farm records through your existing <strong>/upload</strong> workflow. The backend route and form field names are preserved.
+            </p>
+
+            <div class="mt-6 space-y-3">
+              <div class="flex gap-3 rounded-2xl border border-green-100 bg-green-50 p-4">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-green-700 text-white">
+                  <i class="fa-solid fa-file-pdf"></i>
                 </div>
-                <p class="text-xs text-gray-500">
-                  PNG, JPG, PDF, DOC, DOCX up to 10MB
-                </p>
+                <div>
+                  <div class="text-sm font-extrabold text-green-950">Documents</div>
+                  <p class="mt-1 text-xs leading-5 text-slate-500">PDF, DOC and DOCX files can be selected.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 rounded-2xl border border-green-100 bg-green-50 p-4">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-green-700 text-white">
+                  <i class="fa-solid fa-image"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-extrabold text-green-950">Farm images</div>
+                  <p class="mt-1 text-xs leading-5 text-slate-500">Upload crop, livestock, field or supporting images.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-extrabold text-amber-950">Before uploading</div>
+                  <p class="mt-1 text-xs leading-5 text-amber-800">Avoid unnecessary personal identifiers or confidential records unless they are required for the service.</p>
+                </div>
               </div>
             </div>
-            <div id="file-preview-container" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              <!-- File previews will be inserted here by JavaScript -->
+          </div>
+
+          <div class="section-card reveal rounded-[2rem] p-5 sm:p-7 lg:p-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="mb-6 space-y-3">
+                  {% for category, message in messages %}
+                    <div class="rounded-2xl border px-4 py-3 text-sm font-bold {% if category == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-green-200 bg-green-50 text-green-800{% endif %}">
+                      <i class="fa-solid {% if category == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} mr-2"></i>{{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
+              <div>
+                <label for="farm_file" class="mb-2 block text-sm font-extrabold text-slate-700">Farm documents or images</label>
+
+                <div id="uploadZone" class="upload-zone cursor-pointer rounded-[1.5rem] px-5 py-9 text-center sm:px-8">
+                  <input id="farm_file" name="farm_file" type="file" class="sr-only" multiple accept="image/*,application/pdf,.doc,.docx">
+
+                  <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-green-100 text-2xl text-green-700">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                  </div>
+
+                  <h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Drop files here or choose from your device</h3>
+                  <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                    PNG, JPG, JPEG, PDF, DOC and DOCX. Your original page indicated a 10 MB limit; make sure the Flask backend enforces the same limit.
+                  </p>
+
+                  <button type="button" id="chooseFilesButton" class="mt-5 inline-flex items-center rounded-2xl bg-green-700 px-5 py-3 font-extrabold text-white shadow-lg hover:bg-green-800">
+                    <i class="fa-regular fa-folder-open mr-2"></i>
+                    Choose Files
+                  </button>
+                </div>
+
+                <div id="fileSummary" class="mt-4 hidden rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-bold text-green-800"></div>
+
+                <div id="file-preview-container" class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+              </div>
+
+              <div>
+                <label for="description" class="mb-2 block text-sm font-extrabold text-slate-700">Description <span class="font-medium text-slate-400">(optional)</span></label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows="4"
+                  maxlength="1000"
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100"
+                  placeholder="Describe what you are uploading, the farm activity, reporting period or any useful context."
+                ></textarea>
+                <div class="mt-2 flex justify-between text-xs text-slate-400">
+                  <span>Helpful context improves record organization.</span>
+                  <span><span id="descriptionCount">0</span>/1000</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs leading-5 text-slate-400">
+                  Files are sent to the existing AgriTrue upload endpoint when you submit.
+                </p>
+                <button id="uploadSubmit" type="submit" class="inline-flex min-h-[50px] items-center justify-center rounded-2xl bg-green-700 px-6 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-800">
+                  <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>
+                  Upload Documents
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section id="dashboard" class="border-y border-green-100 bg-green-50/55 px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Agricultural trends</div>
+          <h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Explore the dashboard visually.</h2>
+          <p class="mt-4 text-sm leading-7 text-slate-500">
+            These four charts preserve the datasets from your existing page. Replace them with verified backend data when Farm Truth is connected to real records.
+          </p>
+        </div>
+
+        <div class="mt-10 grid gap-5 lg:grid-cols-2">
+          <article class="chart-card reveal rounded-[1.7rem] p-5 sm:p-6">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Production trend</div>
+                <h3 class="mt-2 font-display text-xl font-extrabold text-green-950">Crop Yield Over Time</h3>
+              </div>
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-green-100 text-green-700">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cropYieldChart"></canvas>
+            </div>
+          </article>
+
+          <article class="chart-card reveal rounded-[1.7rem] p-5 sm:p-6">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Input mix</div>
+                <h3 class="mt-2 font-display text-xl font-extrabold text-green-950">Fertilizer Usage Breakdown</h3>
+              </div>
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700">
+                <i class="fa-solid fa-chart-pie"></i>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="fertilizerChart"></canvas>
+            </div>
+          </article>
+
+          <article class="chart-card reveal rounded-[1.7rem] p-5 sm:p-6">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Climate context</div>
+                <h3 class="mt-2 font-display text-xl font-extrabold text-green-950">Rainfall & Temperature</h3>
+              </div>
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-100 text-sky-700">
+                <i class="fa-solid fa-cloud-sun-rain"></i>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="weatherChart"></canvas>
+            </div>
+          </article>
+
+          <article class="chart-card reveal rounded-[1.7rem] p-5 sm:p-6">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs font-extrabold uppercase tracking-[.14em] text-green-700">Land allocation</div>
+                <h3 class="mt-2 font-display text-xl font-extrabold text-green-950">Land Use Distribution</h3>
+              </div>
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-lime-100 text-lime-700">
+                <i class="fa-solid fa-chart-area"></i>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="landUseChart"></canvas>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Information / misinformation -->
+    <section id="agri-info" class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Information integrity</div>
+          <h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Separate useful agricultural guidance from misleading claims.</h2>
+          <p class="mt-4 text-sm leading-7 text-slate-500">Use this section as an education layer and continue verifying important claims against reputable research, extension services and qualified experts.</p>
+        </div>
+
+        <div class="mt-10 grid gap-5 lg:grid-cols-2">
+          <article class="truth-card reveal p-6 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.12em] text-green-700">
+                  <i class="fa-solid fa-circle-check"></i>
+                  Accurate information
+                </div>
+                <h3 class="mt-4 font-display text-2xl font-extrabold text-green-950">Evidence-informed farming principles</h3>
+              </div>
+              <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-green-100 text-xl text-green-700">
+                <i class="fa-solid fa-shield-heart"></i>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-3">
+              <div class="flex gap-3 rounded-2xl bg-green-50/70 p-4">
+                <i class="fa-solid fa-check mt-1 text-green-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Precision farming uses data and technology to optimize crop yields and resource use.</p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-green-50/70 p-4">
+                <i class="fa-solid fa-check mt-1 text-green-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Crop rotation helps maintain soil fertility and reduce pests.</p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-green-50/70 p-4">
+                <i class="fa-solid fa-check mt-1 text-green-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Modern irrigation systems can reduce water usage by up to 30%.</p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-green-50/70 p-4">
+                <i class="fa-solid fa-check mt-1 text-green-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Integrated pest management minimizes chemical use and environmental impact.</p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-green-50/70 p-4">
+                <i class="fa-solid fa-check mt-1 text-green-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Hydroponics and aeroponics enable year-round farming in controlled environments.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="misinfo-card reveal p-6 sm:p-7">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.12em] text-red-700">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  Common misinformation
+                </div>
+                <h3 class="mt-4 font-display text-2xl font-extrabold text-slate-950">Claims that should not be accepted at face value</h3>
+              </div>
+              <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-red-100 text-xl text-red-700">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </div>
+            </div>
+
+            <div class="mt-6 space-y-3">
+              <div class="flex gap-3 rounded-2xl bg-red-50/70 p-4">
+                <i class="fa-solid fa-xmark mt-1 text-red-600"></i>
+                <p class="text-sm leading-6 text-slate-600">All GMOs are unsafe for consumption. <strong class="text-red-700">False.</strong></p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-red-50/70 p-4">
+                <i class="fa-solid fa-xmark mt-1 text-red-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Organic farming never uses pesticides. <strong class="text-red-700">False.</strong></p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-red-50/70 p-4">
+                <i class="fa-solid fa-xmark mt-1 text-red-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Modern agriculture always harms the environment. <strong class="text-red-700">False.</strong></p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-red-50/70 p-4">
+                <i class="fa-solid fa-xmark mt-1 text-red-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Fertilizers always pollute water sources. <strong class="text-red-700">False.</strong></p>
+              </div>
+              <div class="flex gap-3 rounded-2xl bg-red-50/70 p-4">
+                <i class="fa-solid fa-xmark mt-1 text-red-600"></i>
+                <p class="text-sm leading-6 text-slate-600">Technology replaces farmers. <strong class="text-red-700">False.</strong></p>
+              </div>
+            </div>
+
+            <div class="mt-5 rounded-2xl border border-red-100 bg-white p-4 text-xs leading-6 text-slate-500">
+              <strong class="text-red-700">Verification note:</strong> Always verify agricultural claims with trusted sources, scientific research and qualified agricultural professionals.
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation -->
+    <section id="documentation" class="bg-slate-950 px-4 py-16 text-white sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="grid gap-8 lg:grid-cols-[.35fr_.65fr] lg:items-start">
+          <div class="lg:sticky lg:top-28">
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-300">Learning resource</div>
+            <h2 class="mt-3 font-display text-3xl font-extrabold sm:text-4xl">A Guide to Modern Agriculture</h2>
+            <p class="mt-4 text-sm leading-7 text-white/55">
+              The educational content from your original page is preserved, now presented as a structured expandable guide.
+            </p>
+
+            <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-6 text-white/55">
+              <i class="fa-solid fa-book-open mr-2 text-green-300"></i>
+              Use the guide for general learning and pair it with local agronomic advice and verified sources.
             </div>
           </div>
-          <!-- Optional Description Field -->
+
+          <article class="rounded-[2rem] border border-white/10 bg-white p-6 text-slate-700 shadow-2xl sm:p-8">
+            <div id="documentContent" class="document-content">
+              <p class="mb-5 text-sm leading-7 text-slate-600 sm:text-base">
+                Modern agriculture is a dynamic field driven by innovation and technology. It encompasses a wide range of practices designed to increase efficiency, improve crop yields, and ensure sustainability for future generations. From precision farming techniques that use GPS and data analytics to smart irrigation systems that conserve water, the goal is to produce more with less.
+              </p>
+
+              <p class="mb-5 text-sm leading-7 text-slate-600 sm:text-base">
+                One of the key pillars of modern farming is <strong class="text-green-800">data-driven decision-making</strong>. Farmers now use sensors, drones, and satellite imagery to collect vast amounts of information about their land, crops, and weather patterns. This data is then analyzed to provide insights into soil health, pest infestations, and nutrient deficiencies, allowing for targeted interventions that reduce waste and maximize output.
+              </p>
+
+              <p class="mb-5 text-sm leading-7 text-slate-600 sm:text-base">
+                Another critical area is <strong class="text-green-800">sustainable farming</strong>. As the global population grows, there is an increasing demand for food, but also a greater need to protect our natural resources. Modern agriculture emphasizes practices like no-till farming to reduce soil erosion, crop rotation to maintain soil fertility, and integrated pest management to minimize the use of harmful chemicals. These methods not only help the environment but also lead to more resilient and profitable farms.
+              </p>
+
+              <p class="text-sm leading-7 text-slate-600 sm:text-base">
+                <strong class="text-green-800">Hydroponics</strong> and <strong class="text-green-800">aeroponics</strong> are also gaining traction, allowing crops to be grown in controlled environments without soil. This can significantly reduce water usage and enable farming in areas where traditional agriculture is not possible. These controlled-environment agriculture systems offer consistent yields year-round, regardless of external climate conditions.
+              </p>
+            </div>
+
+            <div class="mt-7">
+              <button id="readMoreBtn" type="button" class="inline-flex items-center rounded-2xl bg-green-700 px-5 py-3 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-800" aria-expanded="false">
+                <span>Read More</span>
+                <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-green-950 via-green-800 to-green-600 p-7 text-white shadow-card sm:p-10 lg:p-12">
+        <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <label for="description" class="block text-sm font-medium text-gray-700">Description (Optional)</label>
-            <div class="mt-1">
-              <textarea id="description" name="description" rows="3" class="shadow-sm focus:ring-green-500 focus:border-green-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md p-2" placeholder="Describe the documents or images you are uploading."></textarea>
-            </div>
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-200">Continue with AgriTrue</div>
+            <h2 class="mt-3 font-display text-3xl font-extrabold sm:text-4xl">Investigate your farm using the wider AgriTrue toolkit.</h2>
+            <p class="mt-4 max-w-3xl text-sm leading-7 text-white/65">
+              Use Know Your Land for county-level context, Smart Analyzer for images and documents, Community Notes for shared verification, and AgriTrue AI for agricultural questions.
+            </p>
           </div>
-          <!-- Submit Button -->
-          <div class="text-center">
-            <button type="submit" class="inline-flex justify-center py-3 px-8 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200">
-              Upload Documents
-            </button>
+
+          <div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
+            <a href="/ml-analyzer" class="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3.5 font-extrabold text-green-900 shadow-lg hover:bg-green-50">Smart Analyzer</a>
+            <a href="/know_your_land" class="inline-flex items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3.5 font-extrabold text-white hover:bg-white/15">Know Your Land</a>
           </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- Charts Section -->
-    <section id="dashboard" class="max-w-7xl mx-auto my-12 pt-8">
-      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Detailed Agricultural Trends</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="card">
-          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-line mr-2"></i> Crop Yield Over Time</h3>
-          <canvas id="cropYieldChart" class="w-full"></canvas>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-pie mr-2"></i> Fertilizer Usage Breakdown</h3>
-          <canvas id="fertilizerChart" class="w-full"></canvas>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-cloud-sun-rain mr-2"></i> Rainfall & Temperature</h3>
-          <canvas id="weatherChart" class="w-full"></canvas>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-semibold text-green-700 mb-4 flex items-center"><i class="fas fa-chart-area mr-2"></i> Land Use Distribution</h3>
-          <canvas id="landUseChart" class="w-full"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- Agricultural Information & Misinformation Section -->
-    <section id="agri-info" class="max-w-7xl mx-auto my-12 pt-8">
-      <h2 class="text-3xl font-bold text-center text-green-800 mb-8">Agricultural Information & Misinformation</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Accurate Information Card -->
-        <div class="card info-card">
-          <h3 class="text-xl font-bold text-green-700 mb-2 flex items-center"><i class="fas fa-check-circle mr-2"></i> Accurate Information</h3>
-          <ul class="list-disc pl-6 text-gray-700 space-y-2">
-            <li>Precision farming uses data and technology to optimize crop yields and resource use.</li>
-            <li>Crop rotation helps maintain soil fertility and reduce pests.</li>
-            <li>Modern irrigation systems can reduce water usage by up to 30%.</li>
-            <li>Integrated pest management minimizes chemical use and environmental impact.</li>
-            <li>Hydroponics and aeroponics enable year-round farming in controlled environments.</li>
-          </ul>
-        </div>
-        <!-- Misinformation Card -->
-        <div class="card misinfo-card">
-          <h3 class="text-xl font-bold text-red-600 mb-2 flex items-center"><i class="fas fa-exclamation-triangle mr-2"></i> Common Misinformation</h3>
-          <ul class="list-disc pl-6 text-gray-700 space-y-2">
-            <li>All GMOs are unsafe for consumption. <span class="text-red-500 font-semibold">False</span></li>
-            <li>Organic farming never uses pesticides. <span class="text-red-500 font-semibold">False</span></li>
-            <li>Modern agriculture always harms the environment. <span class="text-red-500 font-semibold">False</span></li>
-            <li>Fertilizers always pollute water sources. <span class="text-red-500 font-semibold">False</span></li>
-            <li>Technology replaces farmers. <span class="text-red-500 font-semibold">False</span></li>
-          </ul>
-          <div class="mt-4 text-sm text-gray-500">
-            <span class="font-bold text-red-600">Note:</span> Always verify agricultural claims with trusted sources and scientific research.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="container-fluid py-5"></div>
-    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
-        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
-                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
-            </span>
-            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
-        </div>
-        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
-            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
-                Hello! I am AgriTrue AI. How can I help you today?
-                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
-            </div>
-        </div>
-        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
-                
-                 <input type="file" id="image-input" accept="image/*" style="display:none;">
-                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
-                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
-                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
-               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
-                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
-                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
-                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
-            </div>
-            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
-                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
-                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
-            </div>
-            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
-                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-phone-alt"></i>
-                </a>
-                <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-envelope"></i>
-                </a>
-                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-sms"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
-        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
-    </button>
-
-<style>
-    @keyframes slide-up {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
-    .dot-pulse {
-        position: relative;
-        width: 10px; height: 10px; border-radius: 50%;
-        background-color: #22c55e; color: #22c55e;
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .dot-pulse::before, .dot-pulse::after {
-        content: ''; position: absolute; width: 10px; height: 10px;
-        border-radius: 50%; background-color: #22c55e;
-        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-    }
-    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
-    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
-    @keyframes dot-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
-        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    }
-</style>
-
-<script>
-    window.onload = function() {
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeChatbotBtn = document.getElementById("close-chatbot");
-        const userInput = document.getElementById("user-input");
-        const sendBtn = document.getElementById("send-btn");
-        const voiceInputBtn = document.getElementById("voice-input-btn");
-        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
-        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
-        const reportBtn = document.getElementById("report-btn"); // New button for Report
-        const messagesContainer = document.getElementById("chatbot-messages");
-        const headerText = document.getElementById("header-text");
-        const originalHeaderText = headerText.innerHTML;
-
-        const imageInput = document.getElementById("image-input");
-        const imageUploadBtn = document.getElementById("image-upload-btn");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
-        const imagePreview = document.getElementById("image-preview");
-        const removeImageBtn = document.getElementById("remove-image-btn");
-        let uploadedImageBase64 = null;
-
-        // Helper functions for TTS
-        function base64ToArrayBuffer(base64) {
-            const binaryString = atob(base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-        function pcmToWav(pcm16, sampleRate) {
-            const wavHeader = new ArrayBuffer(44);
-            const view = new DataView(wavHeader);
-            view.setUint32(0, 0x46464952, true); // "RIFF"
-            view.setUint32(4, 36 + pcm16.length * 2, true);
-            view.setUint32(8, 0x45564157, true); // "WAVE"
-            view.setUint32(12, 0x20746d66, true); // "fmt "
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, 1, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true);
-            view.setUint32(36, 0x61746164, true); // "data"
-            view.setUint32(40, pcm16.length * 2, true);
-            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
-            buffer.set(new Uint8Array(wavHeader), 0);
-            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
-            return new Blob([buffer], { type: "audio/wav" });
-        }
-        async function speakMessage(text) {
-            const audio = new Audio();
-            audio.src = '#';
-            const payload = {
-                contents: [{ parts: [{ text: text }] }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
-                }
-            };
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const audioData = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-                if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    audio.src = audioUrl;
-                    audio.play();
-                } else {
-                    console.error("TTS response is not a valid audio format.");
-                }
-            } catch (error) {
-                console.error('Error with TTS:', error);
-            }
-        }
-
-        // Function to append a new message to the chat
-        function appendMessage(message, sender, imageBase64 = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.maxWidth = '80%';
-            messageDiv.style.padding = '10px 14px';
-            messageDiv.style.borderRadius = '18px';
-            messageDiv.style.lineHeight = '1.4';
-            messageDiv.style.fontSize = '0.95rem';
-            messageDiv.style.position = 'relative';
-
-            if (sender === 'user') {
-                messageDiv.style.backgroundColor = '#e2e8f0';
-                messageDiv.style.color = '#333';
-                messageDiv.style.alignSelf = 'flex-end';
-                messageDiv.style.borderBottomRightRadius = '4px';
-            } else {
-                messageDiv.style.backgroundColor = '#22c55e';
-                messageDiv.style.color = 'white';
-                messageDiv.style.alignSelf = 'flex-start';
-                messageDiv.style.borderBottomLeftRadius = '4px';
-            }
-
-            if (imageBase64) {
-                const img = document.createElement('img');
-                img.src = `data:image/jpeg;base64,${imageBase64}`;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '8px';
-                img.style.marginBottom = '8px';
-                messageDiv.appendChild(img);
-            }
-            const textNode = document.createTextNode(message);
-            messageDiv.appendChild(textNode);
-            messagesContainer.appendChild(messageDiv);
-
-            if (sender === 'bot') {
-                const ttsButton = document.createElement('button');
-                ttsButton.textContent = '🔊';
-                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
-                ttsButton.onclick = () => speakMessage(message);
-                messageDiv.appendChild(ttsButton);
-            }
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        async function getGeminiTextResponse(prompt) {
-            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response at this time.";
-                } catch (error) {
-                    console.error('Error calling Gemini API:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
-        }
-
-        async function getGeminiImageResponse(prompt, imageBase64) {
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
-                }]
-            };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response for this image.";
-                } catch (error) {
-                    console.error('Error calling Gemini API with image:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
-        }
-
-
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            const hasImage = uploadedImageBase64 !== null;
-            if (message || hasImage) {
-                appendMessage(message, 'user', uploadedImageBase64);
-                userInput.value = '';
-                uploadedImageBase64 = null;
-                imagePreviewContainer.style.display = 'none';
-
-                const thinkingMessageDiv = document.createElement('div');
-                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-                thinkingMessageDiv.className = 'message bot-message';
-                thinkingMessageDiv.style.display = 'flex';
-                thinkingMessageDiv.style.alignItems = 'center';
-                thinkingMessageDiv.style.gap = '0.5rem';
-                messagesContainer.appendChild(thinkingMessageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                let botResponse;
-                if (hasImage) {
-                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
-                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
-                } else {
-                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
-                    // Special handling for greetings
-                    const lowerCaseMessage = message.toLowerCase();
-                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
-                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
-                    }
-                    botResponse = await getGeminiTextResponse(aiPrompt);
-                }
-
-                messagesContainer.removeChild(thinkingMessageDiv);
-                appendMessage(botResponse, 'bot');
-            }
-        }
-
-        // Function for the "Get Advice" feature
-        async function getAdvice() {
-            const problem = prompt("What is your crop and what problem are you seeing?");
-            if (!problem) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Function for the "Generate Report" feature
-        async function generateReport() {
-            const topic = prompt("What is the topic for your agricultural report?");
-            if (!topic) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Existing function to generate a farm fact
-        async function generateFarmFact() {
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            thinkingMessageDiv.style.display = 'flex';
-            thinkingMessageDiv.style.alignItems = 'center';
-            thinkingMessageDiv.style.gap = '0.5rem';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
-            const botResponse = await getGeminiTextResponse(factPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            voiceInputBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
-                    voiceInputBtn.innerHTML = '�';
-                    voiceInputBtn.style.backgroundColor = 'gray';
-                } catch (e) { console.error('Speech recognition start error:', e); }
-            });
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                sendMessage();
-            };
-            recognition.onend = () => {
-                voiceInputBtn.innerHTML = '🎙️';
-                voiceInputBtn.style.backgroundColor = '#3b82f6';
-            };
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
-            };
-        } else {
-            voiceInputBtn.style.display = 'none';
-            console.warn("Speech Recognition API not supported in this browser.");
-        }
-
-        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
-                    imagePreview.src = reader.result;
-                    imagePreviewContainer.style.display = 'block';
-                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        removeImageBtn.addEventListener('click', () => {
-            uploadedImageBase64 = null;
-            imagePreviewContainer.style.display = 'none';
-            userInput.placeholder = "Type a message...";
-            imageInput.value = '';
-        });
-
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
-        };
-        closeChatbotBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "block";
-            headerText.innerHTML = originalHeaderText;
-        };
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { sendMessage(); }
-        });
-        factBtn.addEventListener('click', generateFarmFact);
-        adviceBtn.addEventListener('click', getAdvice);
-        reportBtn.addEventListener('click', generateReport);
-    };
-</script>
-    <!-- Documentation Section -->
-    <section id="documentation" class="max-w-7xl mx-auto my-12 pt-8">
-      <div class="card">
-        <h2 class="text-3xl font-bold text-green-800 mb-4">A Guide to Modern Agriculture</h2>
-        <div id="documentContent" class="document-content">
-          <p class="text-gray-600 leading-relaxed mb-4">
-            Modern agriculture is a dynamic field driven by innovation and technology. It encompasses a wide range of practices designed to increase efficiency, improve crop yields, and ensure sustainability for future generations. From precision farming techniques that use GPS and data analytics to smart irrigation systems that conserve water, the goal is to produce more with less.
-          </p>
-          <p class="text-gray-600 leading-relaxed mb-4">
-            One of the key pillars of modern farming is <strong>data-driven decision-making</strong>. Farmers now use sensors, drones, and satellite imagery to collect vast amounts of information about their land, crops, and weather patterns. This data is then analyzed to provide insights into soil health, pest infestations, and nutrient deficiencies, allowing for targeted interventions that reduce waste and maximize output.
-          </p>
-          <p class="text-gray-600 leading-relaxed mb-4">
-            Another critical area is <strong>sustainable farming</strong>. As the global population grows, there is an increasing demand for food, but also a greater need to protect our natural resources. Modern agriculture emphasizes practices like no-till farming to reduce soil erosion, crop rotation to maintain soil fertility, and integrated pest management to minimize the use of harmful chemicals. These methods not only help the environment but also lead to more resilient and profitable farms.
-          </p>
-          <p class="text-gray-600 leading-relaxed">
-            <strong>Hydroponics</strong> and <strong>aeroponics</strong> are also gaining traction, allowing crops to be grown in controlled environments without soil. This can significantly reduce water usage and enable farming in areas where traditional agriculture is not possible. These controlled-environment agriculture systems offer consistent yields year-round, regardless of external climate conditions.
-          </p>
-        </div>
-        <div class="mt-6 text-center">
-          <button id="readMoreBtn" class="bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 transition hover:scale-105">
-            Read More
-          </button>
         </div>
       </div>
     </section>
   </main>
-  <footer class="bg-gray-800 text-white py-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-          <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
+
+  <!-- Floating shortcuts -->
+  <a href="/chatbot" class="ai-float" aria-label="Open AgriTrue AI chatbot" title="AgriTrue AI">
+    <i class="fa-solid fa-comment-dots"></i>
+  </a>
+
+  <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Contact AgriTrue on WhatsApp" title="WhatsApp AgriTrue">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+  <!-- Footer -->
+  <footer class="bg-[#041c10] px-4 pb-8 pt-14 text-white sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div class="lg:col-span-2">
+          <div class="flex items-center gap-3">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-12 w-12 rounded-full border-2 border-white/20 object-cover">
+            <div>
+              <div class="font-display text-2xl font-extrabold">AgriTrue</div>
+              <div class="text-xs font-bold uppercase tracking-[.18em] text-green-300">Founded in 2025</div>
+            </div>
+          </div>
+
+          <p class="mt-5 max-w-xl text-sm leading-7 text-white/50">
+            AgriTrue helps farmers, researchers and agricultural communities access practical tools, trusted information and collaborative knowledge for more informed and sustainable farming.
+          </p>
         </div>
+
         <div>
-          <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-          <ul class="space-y-2">
-            <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-            <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
-            <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-            <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-          </ul>
+          <h3 class="font-display text-lg font-extrabold">Explore</h3>
+          <div class="mt-4 space-y-3 text-sm text-white/55">
+            <a href="/dashboard" class="block hover:text-green-300">Farm Truth</a>
+            <a href="/know_your_land" class="block hover:text-green-300">Know Your Land</a>
+            <a href="/community-notes" class="block hover:text-green-300">Community Notes</a>
+            <a href="/ml-analyzer" class="block hover:text-green-300">Smart Analyzer</a>
+            <a href="/research" class="block hover:text-green-300">Research Hub</a>
+          </div>
         </div>
+
         <div>
-          <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-          <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-          <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-          <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
+          <h3 class="font-display text-lg font-extrabold">Contact</h3>
+          <div class="mt-4 space-y-3 text-sm text-white/55">
+            <p><i class="fa-solid fa-location-dot mr-2 text-green-300"></i>Nairobi, Kenya</p>
+            <a href="mailto:info@agritrue.org" class="block hover:text-green-300"><i class="fa-regular fa-envelope mr-2 text-green-300"></i>info@agritrue.org</a>
+            <a href="tel:+254715142906" class="block hover:text-green-300"><i class="fa-solid fa-phone mr-2 text-green-300"></i>+254 715 142 906</a>
+          </div>
         </div>
       </div>
-      <hr class="border-gray-700 my-8">
-      <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
+
+      <div class="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        <p>&copy; <span id="copyrightYear"></span> AgriTrue. All rights reserved.</p>
+        <p>Verify important agricultural decisions with qualified professionals and reliable sources.</p>
+      </div>
     </div>
   </footer>
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Mobile menu
-      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-      const closeMobileMenu = document.getElementById('closeMobileMenu');
-      const mobileMenu = document.getElementById('mobileMenu');
-      const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-      const navLinks = document.querySelectorAll('.nav-link-mobile');
+    document.addEventListener("DOMContentLoaded", () => {
+      // Mobile navigation.
+      const mobileMenuButton = document.getElementById("mobileMenuButton");
+      const closeMobileMenu = document.getElementById("closeMobileMenu");
+      const mobileMenu = document.getElementById("mobileMenu");
+      const mobileOverlay = document.getElementById("mobileOverlay");
+
       function openMenu() {
-        mobileMenu.classList.add('active');
-        mobileMenuOverlay.classList.add('active');
+        mobileMenu.classList.add("show");
+        mobileOverlay.classList.add("show");
+        mobileMenu.setAttribute("aria-hidden", "false");
+        mobileMenuButton.setAttribute("aria-expanded", "true");
+        document.body.classList.add("menu-open");
       }
+
       function closeMenu() {
-        mobileMenu.classList.remove('active');
-        mobileMenuOverlay.classList.remove('active');
+        mobileMenu.classList.remove("show");
+        mobileOverlay.classList.remove("show");
+        mobileMenu.setAttribute("aria-hidden", "true");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("menu-open");
       }
-      mobileMenuBtn.addEventListener('click', openMenu);
-      closeMobileMenu.addEventListener('click', closeMenu);
-      mobileMenuOverlay.addEventListener('click', closeMenu);
-      navLinks.forEach(link => link.addEventListener('click', closeMenu));
-      // Read More
-      const readMoreBtn = document.getElementById('readMoreBtn');
-      const documentContent = document.getElementById('documentContent');
-      readMoreBtn.addEventListener('click', () => {
-        const isExpanded = documentContent.classList.toggle('expanded');
-        readMoreBtn.textContent = isExpanded ? 'Read Less' : 'Read More';
+
+      mobileMenuButton.addEventListener("click", openMenu);
+      closeMobileMenu.addEventListener("click", closeMenu);
+      mobileOverlay.addEventListener("click", closeMenu);
+      mobileMenu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
       });
-      // Chart.js global defaults
-      Chart.defaults.font.family = 'Inter, sans-serif';
-      Chart.defaults.color = '#4a5568';
-      // Crop Yield Line Chart
-      const cropYieldCtx = document.getElementById('cropYieldChart').getContext('2d');
+
+      // Upload interactions and preview.
+      const fileInput = document.getElementById("farm_file");
+      const uploadZone = document.getElementById("uploadZone");
+      const chooseFilesButton = document.getElementById("chooseFilesButton");
+      const previewContainer = document.getElementById("file-preview-container");
+      const fileSummary = document.getElementById("fileSummary");
+      const uploadForm = document.getElementById("uploadForm");
+      const uploadSubmit = document.getElementById("uploadSubmit");
+
+      function humanSize(bytes) {
+        if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+        const units = ["B", "KB", "MB", "GB"];
+        const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        return `${(bytes / Math.pow(1024, index)).toFixed(index ? 1 : 0)} ${units[index]}`;
+      }
+
+      function fileIcon(file) {
+        const name = file.name.toLowerCase();
+        if (file.type.startsWith("image/")) return "fa-regular fa-image";
+        if (file.type === "application/pdf" || name.endsWith(".pdf")) return "fa-regular fa-file-pdf";
+        if (name.endsWith(".doc") || name.endsWith(".docx")) return "fa-regular fa-file-word";
+        return "fa-regular fa-file";
+      }
+
+      function renderFiles(files) {
+        previewContainer.innerHTML = "";
+        const list = Array.from(files || []);
+
+        if (!list.length) {
+          fileSummary.classList.add("hidden");
+          return;
+        }
+
+        const totalBytes = list.reduce((sum, file) => sum + file.size, 0);
+        fileSummary.textContent = `${list.length} file${list.length === 1 ? "" : "s"} selected • ${humanSize(totalBytes)} total`;
+        fileSummary.classList.remove("hidden");
+
+        list.forEach((file) => {
+          const card = document.createElement("div");
+          card.className = "preview-card";
+
+          if (file.type.startsWith("image/")) {
+            const img = document.createElement("img");
+            img.className = "preview-thumb";
+            img.alt = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            card.appendChild(img);
+          } else {
+            const iconBox = document.createElement("div");
+            iconBox.className = "preview-thumb grid place-items-center bg-slate-50 text-4xl text-green-700";
+            iconBox.innerHTML = `<i class="${fileIcon(file)}"></i>`;
+            card.appendChild(iconBox);
+          }
+
+          const name = document.createElement("div");
+          name.className = "mt-3 truncate text-xs font-extrabold text-slate-700";
+          name.title = file.name;
+          name.textContent = file.name;
+
+          const meta = document.createElement("div");
+          meta.className = "mt-1 text-[11px] font-medium text-slate-400";
+          meta.textContent = humanSize(file.size);
+
+          card.appendChild(name);
+          card.appendChild(meta);
+          previewContainer.appendChild(card);
+        });
+      }
+
+      chooseFilesButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        fileInput.click();
+      });
+
+      uploadZone.addEventListener("click", (event) => {
+        if (event.target !== fileInput && event.target !== chooseFilesButton) {
+          fileInput.click();
+        }
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        uploadZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          uploadZone.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        uploadZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          uploadZone.classList.remove("dragover");
+        });
+      });
+
+      uploadZone.addEventListener("drop", (event) => {
+        const droppedFiles = event.dataTransfer.files;
+
+        if (droppedFiles && droppedFiles.length) {
+          try {
+            const transfer = new DataTransfer();
+            Array.from(droppedFiles).forEach((file) => transfer.items.add(file));
+            fileInput.files = transfer.files;
+          } catch (error) {
+            console.warn("Browser did not allow assigning dropped files to the file input.", error);
+          }
+          renderFiles(droppedFiles);
+        }
+      });
+
+      fileInput.addEventListener("change", () => renderFiles(fileInput.files));
+
+      uploadForm.addEventListener("submit", () => {
+        uploadSubmit.disabled = true;
+        uploadSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Uploading';
+      });
+
+      // Description counter.
+      const description = document.getElementById("description");
+      const descriptionCount = document.getElementById("descriptionCount");
+
+      description.addEventListener("input", () => {
+        descriptionCount.textContent = description.value.length;
+      });
+
+      // Expandable guide.
+      const readMoreBtn = document.getElementById("readMoreBtn");
+      const documentContent = document.getElementById("documentContent");
+
+      readMoreBtn.addEventListener("click", () => {
+        const expanded = documentContent.classList.toggle("expanded");
+        readMoreBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        readMoreBtn.querySelector("span").textContent = expanded ? "Read Less" : "Read More";
+        readMoreBtn.querySelector("i").className = expanded
+          ? "fa-solid fa-chevron-up ml-2 text-xs"
+          : "fa-solid fa-chevron-down ml-2 text-xs";
+      });
+
+      // Reveal animations.
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
+
+      // Chart configuration.
+      Chart.defaults.font.family = "Inter, sans-serif";
+      Chart.defaults.color = "#64748b";
+      Chart.defaults.plugins.legend.labels.usePointStyle = true;
+      Chart.defaults.plugins.legend.labels.boxWidth = 8;
+      Chart.defaults.plugins.legend.labels.padding = 16;
+
+      const commonGrid = {
+        color: "rgba(148, 163, 184, .16)",
+        drawBorder: false
+      };
+
+      const cropYieldCtx = document.getElementById("cropYieldChart").getContext("2d");
       new Chart(cropYieldCtx, {
-        type: 'line',
+        type: "line",
         data: {
-          labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+          labels: ["2018", "2019", "2020", "2021", "2022", "2023", "2024"],
           datasets: [
             {
-              label: 'Maize Yield (tons/ha)',
+              label: "Maize Yield (tons/ha)",
               data: [8.2, 8.5, 8.1, 8.7, 9.0, 9.2, 9.1],
-              borderColor: '#16a34a',
-              backgroundColor: 'rgba(22, 163, 74, 0.2)',
-              tension: 0.4,
-              fill: true,
+              borderColor: "#166534",
+              backgroundColor: "rgba(22, 101, 52, .10)",
+              pointBackgroundColor: "#166534",
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2.5,
+              tension: .38,
+              fill: true
             },
             {
-              label: 'Wheat Yield (tons/ha)',
+              label: "Wheat Yield (tons/ha)",
               data: [5.1, 5.3, 5.0, 5.5, 5.6, 5.8, 5.7],
-              borderColor: '#22c55e',
-              backgroundColor: 'rgba(34, 197, 94, 0.2)',
-              tension: 0.4,
-              fill: true,
+              borderColor: "#22c55e",
+              backgroundColor: "rgba(34, 197, 94, .06)",
+              pointBackgroundColor: "#22c55e",
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2.5,
+              tension: .38,
+              fill: true
             }
           ]
         },
         options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { position: "top", align: "start" },
+            tooltip: { mode: "index", intersect: false }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, grid: commonGrid }
+          }
+        }
+      });
+
+      const fertilizerCtx = document.getElementById("fertilizerChart").getContext("2d");
+      new Chart(fertilizerCtx, {
+        type: "doughnut",
+        data: {
+          labels: ["Nitrogen", "Phosphorus", "Potassium", "Organic"],
+          datasets: [{
+            label: "Fertilizer Usage",
+            data: [45, 25, 15, 15],
+            backgroundColor: ["#166534", "#22c55e", "#84cc16", "#f59e0b"],
+            borderColor: "#ffffff",
+            borderWidth: 4,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          cutout: "63%",
+          plugins: {
+            legend: { position: "bottom" }
+          }
+        }
+      });
+
+      const weatherCtx = document.getElementById("weatherChart").getContext("2d");
+      new Chart(weatherCtx, {
+        type: "bar",
+        data: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+          datasets: [
+            {
+              label: "Average Rainfall (mm)",
+              data: [50, 65, 80, 120, 150, 110, 95],
+              backgroundColor: "rgba(14, 165, 233, .72)",
+              borderRadius: 8,
+              yAxisID: "y"
+            },
+            {
+              label: "Average Temp (°C)",
+              data: [15, 16, 18, 20, 22, 25, 26],
+              backgroundColor: "rgba(245, 158, 11, .76)",
+              borderRadius: 8,
+              yAxisID: "y1"
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
           responsive: true,
           plugins: {
-            legend: { position: 'top' },
-            tooltip: { mode: 'index', intersect: false }
+            legend: { position: "top", align: "start" }
           },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-      // Fertilizer Usage Doughnut Chart
-      const fertilizerCtx = document.getElementById('fertilizerChart').getContext('2d');
-      new Chart(fertilizerCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Nitrogen', 'Phosphorus', 'Potassium', 'Organic'],
-          datasets: [{
-            label: 'Fertilizer Usage',
-            data: [45, 25, 15, 15],
-            backgroundColor: [
-              '#16a34a',
-              '#22c55e',
-              '#65a30d',
-              '#a3e635'
-            ],
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'right' } }
-        }
-      });
-      // Rainfall & Temp Bar Chart
-      const weatherCtx = document.getElementById('weatherChart').getContext('2d');
-      new Chart(weatherCtx, {
-        type: 'bar',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-          datasets: [
-            {
-              label: 'Average Rainfall (mm)',
-              data: [50, 65, 80, 120, 150, 110, 95],
-              backgroundColor: '#3b82f6',
-              yAxisID: 'y',
-            },
-            {
-              label: 'Average Temp (°C)',
-              data: [15, 16, 18, 20, 22, 25, 26],
-              backgroundColor: '#ef4444',
-              yAxisID: 'y1',
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { position: 'top' } },
           scales: {
+            x: { grid: { display: false } },
             y: {
-              type: 'linear',
+              type: "linear",
               display: true,
-              position: 'left',
-              title: { display: true, text: 'Rainfall (mm)' }
+              position: "left",
+              grid: commonGrid,
+              title: { display: true, text: "Rainfall (mm)" }
             },
             y1: {
-              type: 'linear',
+              type: "linear",
               display: true,
-              position: 'right',
-              title: { display: true, text: 'Temperature (°C)' },
-              grid: { drawOnChartArea: false }
+              position: "right",
+              grid: { drawOnChartArea: false },
+              title: { display: true, text: "Temperature (°C)" }
             }
           }
         }
       });
-      // Land Use Area Chart
-      const landUseCtx = document.getElementById('landUseChart').getContext('2d');
+
+      const landUseCtx = document.getElementById("landUseChart").getContext("2d");
       new Chart(landUseCtx, {
-        type: 'polarArea',
+        type: "polarArea",
         data: {
-          labels: ['Cropland', 'Pasture', 'Forest', 'Urban', 'Water'],
+          labels: ["Cropland", "Pasture", "Forest", "Urban", "Water"],
           datasets: [{
-            label: 'Land Use',
+            label: "Land Use",
             data: [45, 30, 15, 5, 5],
             backgroundColor: [
-              '#16a34a',
-              '#22c55e',
-              '#a3e635',
-              '#60a5fa',
-              '#3b82f6'
-            ]
+              "rgba(22, 101, 52, .82)",
+              "rgba(34, 197, 94, .74)",
+              "rgba(132, 204, 22, .72)",
+              "rgba(148, 163, 184, .72)",
+              "rgba(14, 165, 233, .72)"
+            ],
+            borderColor: "#ffffff",
+            borderWidth: 3
           }]
         },
         options: {
+          maintainAspectRatio: false,
           responsive: true,
-          plugins: { legend: { position: 'right' } },
+          plugins: {
+            legend: { position: "bottom" }
+          },
           scales: {
             r: {
-              pointLabels: {
-                display: true,
-                centerPointLabels: true,
-                font: { size: 14 }
-              }
+              grid: { color: "rgba(148, 163, 184, .16)" },
+              ticks: { display: false }
             }
           }
         }
       });
+
+      document.getElementById("copyrightYear").textContent = new Date().getFullYear();
     });
   </script>
 </body>
