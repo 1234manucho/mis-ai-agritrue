@@ -1,960 +1,606 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Know Your Land | AgriTrue</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-   <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0fdf4;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b6623">
+  <meta name="description" content="Explore county-level agricultural guidance, soil information, weather context and crop recommendations with AgriTrue Know Your Land.">
+  <title>Know Your Land | AgriTrue</title>
 
-        /* Navbar Styles */
-        .custom-navbar {
-            background: linear-gradient(90deg, #0b6623, #90ee90);
-        }
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        .hero-content {
-            top: 50%;
-            transform: translateY(-50%);
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Manrope", "sans-serif"]
+          },
+          boxShadow: {
+            soft: "0 18px 45px rgba(5, 46, 22, .10)",
+            card: "0 20px 55px rgba(15, 23, 42, .10)"
+          }
         }
-
-        /* Loader Styles */
-        #agritrue-loader {
-            position: fixed;
-            z-index: 9999;
-            background: #050806;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 0.5s ease;
-        }
-
-        .leaf {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #03f103, #81C784);
-            border-radius: 0 50% 50% 50%;
-            animation: spin 1.2s linear infinite;
-            transform: rotate(-45deg);
-            margin: auto;
-        }
-
-        .loading-text {
-            margin-top: 20px;
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Slideshow Styles */
-        #slideshow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #000;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-
-        .dark-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)); 
-            z-index: 2;
-        }
-
-        /* Chatbot Styles */
-        #chatbot-icon {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #34d399;
-            color: #fff;
-            font-size: 2rem;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 999;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        #chatbot-container {
-            position: fixed;
-            bottom: 100px;
-            right: 24px;
-            width: 360px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1000;
-            animation: slide-up 0.4s ease-out;
-        }
-        
-        @keyframes slide-up {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        #chatbot-header {
-            background: linear-gradient(90deg, #34d399, #10b981);
-            color: white;
-            padding: 16px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #chatbot-body {
-            padding: 16px;
-            background: #f0fdf4;
-            overflow-y: auto;
-            max-height: 320px;
-        }
-        
-        #chatbot-input-container {
-            display: flex;
-            padding: 12px;
-            background: #ecfdf5;
-            border-top: 1px solid #d1fae5;
-        }
-        
-        #chatbot-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d1fae5;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-        
-        #send-message, #mic-button {
-            background: #34d399;
-            color: white;
-            border: none;
-            padding: 0 12px;
-            margin-left: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .chatbot-message {
-            padding: 10px 14px;
-            border-radius: 14px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-        
-        .user-message {
-            background: #34d399;
-            color: white;
-            margin-left: auto;
-        }
-        
-        .bot-message {
-            background: #d1fae5;
-            color: black;
-            margin-right: auto;
-        }
-
-        /* Hide default Bootstrap toggler on larger screens */
-        @media (min-width: 992px) {
-            .navbar-toggler {
-                display: none;
-            }
-        }
-
-        /* Mobile Menu Styles */
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background-color: #f0fdf4;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
-            transition: right 0.3s ease-in-out;
-            z-index: 1050;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .mobile-menu.show {
-            right: 0;
-        }
-
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            display: none;
-        }
-
-        .mobile-menu-overlay.show {
-            display: block;
-        }
-    </style>
-</head>
-<body class="bg-[#f0fdf4] font-['Inter']">
-    
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 shadow-md custom-navbar">
-        <div class="container mx-auto px-4 flex items-center justify-between py-3">
-            <a class="flex items-center space-x-2" href="/">
-                <img src="/static/images/logo.jpg" alt="AgriTrue Logo" class="h-9 rounded-full">
-                <span class="text-white text-2xl font-bold">AgriTrue</span>
-            </a>
-
-            <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Utilities <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/community-notes" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Community Notes</a>
-                            <a href="/chatbot" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">AI Chatbot</a>
-                            <a href="/ml-analyzer" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">ML Analyzer</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/ussd" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">USSD Service</a>
-                        </div>
-                    </div>
-                </div>
-                <a href="/dashboard" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Farm Truth</a>
-                <a href="/know_your_land" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Know Your Land</a>
-                <a href="/about" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">About Us</a>
-                  <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                    </div>
-                </div>  
-                {% if current_user.is_authenticated %}
-                <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Profile <i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 right-0 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Profile</a>
-                            <a href="/edit_profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Edit Profile</a>
-                            <a href="/streak" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">View Streak</a>
-                            <hr class="my-1 border-gray-200">
-                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 text-red-600">Logout</a>
-                            {% if current_user.is_admin %}
-                            <hr class="my-1 border-gray-200">
-                            <a href="/admin" class="block px-4 py-2 text-sm text-yellow-500 hover:bg-yellow-100">Admin Panel</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% else %}
-                <a href="/login" class="bg-white text-green-700 font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-50">Login</a>
-                <a href="/register" class="bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-200 hover:bg-green-800">Register</a>
-                {% endif %}
-            </div>
-
-            <!-- Mobile Toggler Button -->
-            <button id="mobileMenuBtn" class="lg:hidden text-white focus:outline-none">
-                <i class="fas fa-bars text-2xl"></i>
-            </button>
-        </div>
-    </nav>
-    
-    <!-- Mobile Menu -->
-    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
-    <div id="mobileMenu" class="mobile-menu lg:hidden">
-        <div class="flex justify-between items-center mb-5">
-            <h5 class="text-xl font-bold text-green-700">Menu</h5>
-            <button id="closeMobileMenu" class="text-3xl text-green-700">&times;</button>
-        </div>
-        <ul class="flex flex-col space-y-2">
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/dashboard"><i class="fas fa-tachometer-alt mr-3"></i>Farm Truth</a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/about">
-                    <i class="fas fa-info-circle mr-3"></i>About Us
-                </a>
-            </li>
-            <li>
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center" href="/know_your_land"><i class="fas fa-map-marked-alt mr-3"></i>Know Your Land</a>
-            </li>
-            <li class="relative">
-                <a class="nav-link-mobile p-4 text-lg font-medium text-green-700 hover:bg-green-100 rounded-lg flex items-center justify-between" href="#tools" onclick="document.getElementById('toolsCollapse').classList.toggle('hidden')">
-                    <span><i class="fas fa-tools mr-3"></i>Utilities</span>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </a>
-                <div id="toolsCollapse" class="hidden pl-8 pt-2 space-y-2">
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/community-notes">Community Notes</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/chatbot">AI Chatbot</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ml-analyzer">ML Analyzer</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/ussd">USSD Service</a>
-                    <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 rounded-lg" href="/streak">Streak</a>
-                   
-                </div>
-            </li>
-        </ul>
-        <div class="relative group">
-                    <a href="#" class="nav-link text-white font-medium p-2 rounded-lg transition duration-200 hover:bg-white hover:bg-opacity-10">Resource & Downloads<i class="fas fa-chevron-down text-xs ml-1"></i></a>
-                    <div class="absolute hidden group-hover:block w-48 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
-                        <div class="py-1">
-                            <a href="/research" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Research Hub</a>
-                            <a href="/faqs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">FAQS</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100">Media & News</a>
-                        </div>
-                    </div>
-                </div>  
-        <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col space-y-4">
-            {% if current_user.is_authenticated %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/profile">My Profile</a>
-            {% if current_user.is_admin %}
-            <a class="btn btn-warning p-3 rounded-lg text-center text-white font-bold bg-yellow-500 hover:bg-yellow-600" href="/admin">Admin Panel</a>
-            {% endif %}
-            <a class="btn btn-outline-danger p-3 rounded-lg text-center font-bold text-red-600 border border-red-600 hover:bg-red-50" href="/logout">Logout</a>
-            {% else %}
-            <a class="btn btn-success p-3 rounded-lg text-center text-white font-bold bg-green-600 hover:bg-green-700" href="/login">Login</a>
-            <a class="btn btn-outline-success p-3 rounded-lg text-center font-bold text-green-600 border border-green-600 hover:bg-green-50" href="/register">Register</a>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header class="relative bg-gradient-to-br from-green-700 via-green-900 to-green-800 text-white py-20 px-4 shadow-xl overflow-hidden">
-      <div class="absolute inset-0 z-0">
-        <img src="/static/images/land.jpeg" alt="Land background" class="w-full h-full object-cover opacity-40" />
-        <div class="absolute inset-0 bg-gradient-to-br from-green-800 via-transparent to-green-900 opacity-80"></div>
-      </div>
-      <div class="relative z-10 max-w-6xl mx-auto text-center animate-fade-in">
-        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 drop-shadow-lg">
-          Know Your Land 🌾
-        </h1>
-        <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto drop-shadow">
-          Your land holds the key to better harvests. Discover your soil type, local weather, and get tailored crop and fertilizer recommendations.
-        </p>
-      </div>
-    </header>
-    <style>
-      @keyframes fade-in {
-        from { opacity: 0; transform: translateY(30px);}
-        to { opacity: 1; transform: translateY(0);}
       }
-      .animate-fade-in {
-        animation: fade-in 1s ease;
-      }
-    </style>
-
-    <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto px-4 py-12 space-y-12">
-
-        <!-- Form Section -->
-        <section class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-            <h2 class="text-3xl font-semibold text-green-700 mb-6">Find Your County's Agricultural Data</h2>
-            <form method="POST" class="space-y-6">
-                <label for="county" class="block text-lg font-medium text-gray-700">Enter your county name:</label>
-                <div class="flex flex-col sm:flex-row items-stretch gap-4">
-                    <input name="county" type="text" id="county" placeholder="e.g., Kirinyaga" required
-                           class="flex-grow px-4 py-3 rounded-lg border border-gray-300 focus:ring-4 focus:ring-green-400 focus:outline-none text-lg transition shadow-sm">
-                    <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition transform hover:scale-105 shadow-md">
-                        Search
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Results Section -->
-        <section>
-            {% if results %}
-            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-green-600 space-y-6">
-                <h2 class="text-3xl font-bold text-green-700 capitalize">Results for {{ request.form['county'] }}</h2>
-                <ul class="space-y-4 text-lg">
-                    <li class="flex items-center"><span class="text-2xl mr-3">🌱</span> <strong>Soil Type:</strong> {{ results.soil_type }}</li>
-                    <li class="flex items-center"><span class="text-2xl mr-3">🧪</span> <strong>Soil pH:</strong> {{ results.ph }}</li>
-                    <li class="flex items-center"><span class="text-2xl mr-3">🌦</span> <strong>Weather Forecast:</strong> {{ results.weather }}</li>
-                    <li class="flex items-center"><span class="text-2xl mr-3">🌾</span> <strong>Recommended Crop:</strong> {{ results.crop }}</li>
-                    <li class="flex items-center"><span class="text-2xl mr-3">🧴</span> <strong>Fertilizer Suggestion:</strong> {{ results.fertilizer }}</li>
-                </ul>
-            </div>
-            {% elif request.method == 'POST' %}
-            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-red-500 text-center">
-                <p class="text-xl font-semibold text-red-600">No data found for the specified county.</p>
-            </div>
-            {% endif %}
-        </section>
-
-        <!-- Creative Ideas Section -->
-        <section class="py-8">
-            <h2 class="text-3xl font-semibold text-center text-green-700 mb-8">Creative Ways to Know Your Land</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Sensory Map Card -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
-                    <div class="text-5xl mb-4">🗺️</div>
-                    <h3 class="text-xl font-bold mb-2 text-gray-800">Create a Sensory Map</h3>
-                    <p class="text-gray-600">
-                        Turn learning into a tactile experience. Use materials like sand, leaves, or stones from your local area to build a map you can feel.
-                    </p>
-                </div>
-
-                <!-- Land-Inspired Journal Card -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
-                    <div class="text-5xl mb-4">✍️</div>
-                    <h3 class="text-xl font-bold mb-2 text-gray-800">Start a Land Journal</h3>
-                    <p class="text-gray-600">
-                        Document your discoveries. Fill a notebook with sketches of local plants, pressed flowers, and stories inspired by the places you visit.
-                    </p>
-                </div>
-
-                <!-- Time-Lapse Tour Card -->
-                <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
-                    <div class="text-5xl mb-4">📱</div>
-                    <h3 class="text-xl font-bold mb-2 text-gray-800">Time-Lapse a Single Spot</h3>
-                    <p class="text-gray-600">
-                        Capture the passage of time. Take a photo of the same location every month for a year to see how the landscape changes with the seasons.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Map Embed Section -->
-        <section>
-            <h3 class="text-3xl font-semibold mb-6 text-green-700">Explore Interactive Soil Map of Kenya</h3>
-            <div class="overflow-hidden rounded-2xl shadow-xl border border-gray-300">
-                <iframe
-                    src="https://opendata.rcmrd.org/maps/rcmrd::kenya-soils-map/explore?location=0.832339%2C39.830470%2C6.11&path="
-                    width="100%" height="500" class="w-full">
-                </iframe>
-            </div>
-        </section>
-
-        <!-- Back to Home Button -->
-      
-    </main>
-
-    <div class="container-fluid py-5"></div>
-    <div id="chatbot-container" style="display:none; position:fixed; bottom:100px; right:24px; width:360px; max-width:95vw; height:520px; background:white; border-radius:14px; box-shadow:0 8px 32px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; z-index:1000; animation:slide-up 0.4s ease-out; font-family:'Inter',sans-serif;">
-        <div id="chatbot-header" style="background:linear-gradient(90deg,#22c55e,#16a34a); color:white; padding:18px 16px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-            <span id="header-text" style="font-size:1.2em; display:flex; align-items:center; gap:8px;">
-                <i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue
-            </span>
-            <button id="close-chatbot" style="background:transparent; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
-        </div>
-        <div id="chatbot-messages" style="flex:1; padding:1rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; background:#f0fdf4;">
-            <div class="message bot-message" style="max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; font-size:0.95rem; position:relative; background-color:#22c55e; color:white; align-self:flex-start; border-bottom-left-radius:4px;">
-                Hello! I am AgriTrue AI. How can I help you today?
-                <button class="tts-btn" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;">🔊</button>
-            </div>
-        </div>
-        <div style="padding:1rem; border-top:1px solid #e5e7eb; background:#ecfdf5;">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
-                
-                 <input type="file" id="image-input" accept="image/*" style="display:none;">
-                <button id="image-upload-btn" title="Upload Image" style="background:#8b5cf6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">📸</button>
-                <button id="voice-input-btn" title="Use Voice Input" style="background:#3b82f6; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;">🎙️</button>
-                <input id="user-input" type="text" placeholder="Type a message..." style="flex:1 1 120px; min-width:120px; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:9999px; outline:none; transition:box-shadow 0.2s; font-family:'Inter',sans-serif; font-size:1rem;">
-               <button id="send-btn" title="Send Message" style="background:#16a34a; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-paper-plane"></i></button>
-                <!-- <button id="fact-btn" title="Get a Farm Fact" style="background:#f9a8d4; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-lightbulb"></i></button>
-                <button id="advice-btn" title="Get Advice" style="background:#42b983; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-stethoscope"></i></button> -->
-                <!-- <button id="report-btn" title="Generate Report" style="background:#2c3e50; color:white; padding:0.75rem; border-radius:9999px; border:none; cursor:pointer; font-size:1.2rem; min-width:44px;"><i class="fa-solid fa-chart-line"></i></button> -->
-            </div>
-            <div id="image-preview-container" style="margin-top:0.5rem; display:none;">
-                <img id="image-preview" src="#" alt="Image Preview" style="max-height:6rem; border-radius:0.5rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom:0.5rem;">
-                <button id="remove-image-btn" style="color:#ef4444; background:none; border:none; cursor:pointer; font-size:0.875rem;">Remove Image</button>
-            </div>
-            <div style="display:flex; justify-content:center; gap:1.2rem; margin-top:0.5rem;">
-                <a href="https://wa.me/254715142906" target="_blank" title="WhatsApp" style="background:#25D366; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a href="tel:+254715142906" title="Call" style="background:#16a34a; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-phone-alt"></i>
-                </a>
-                <a href="mailto:agritrue13@gmail.com" title="Email" style="background:#3b82f6; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-envelope"></i>
-                </a>
-                <a href="sms:+254715142906" title="SMS" style="background:#f97316; color:white; width:2.5rem; height:2.5rem; display:flex; align-items:center; justify-content:center; border-radius:9999px; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); font-size:1.3rem;">
-                    <i class="fas fa-sms"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    <button id="chatbot-icon" style="position:fixed; bottom:24px; right:24px; background:#16a34a; color:white; border-radius:9999px; padding:1rem; box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1); cursor:pointer; transition:transform 0.2s; z-index:1050; display:flex; align-items:center; justify-content:center;">
-        <i class="fas fa-comment-dots" style="font-size:1.5rem;"></i>
-    </button>
-
-<style>
-    @keyframes slide-up {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .message.bot-message:hover .tts-btn { opacity: 1; pointer-events: auto; }
-    .dot-pulse {
-        position: relative;
-        width: 10px; height: 10px; border-radius: 50%;
-        background-color: #22c55e; color: #22c55e;
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-        animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    .dot-pulse::before, .dot-pulse::after {
-        content: ''; position: absolute; width: 10px; height: 10px;
-        border-radius: 50%; background-color: #22c55e;
-        color: #22c55e; box-shadow: 0 0 0 0 rgba(34, 197, 94, 1);
-    }
-    .dot-pulse::before { left: -15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.3s infinite; }
-    .dot-pulse::after { left: 15px; animation: dot-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) -0.6s infinite; }
-    @keyframes dot-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
-        100% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    }
-</style>
-
-<script>
-    window.onload = function() {
-        const chatbotIcon = document.getElementById("chatbot-icon");
-        const chatbotContainer = document.getElementById("chatbot-container");
-        const closeChatbotBtn = document.getElementById("close-chatbot");
-        const userInput = document.getElementById("user-input");
-        const sendBtn = document.getElementById("send-btn");
-        const voiceInputBtn = document.getElementById("voice-input-btn");
-        const factBtn = document.getElementById("fact-btn"); // New button for "Farm Fact"
-        const adviceBtn = document.getElementById("advice-btn"); // New button for Advice
-        const reportBtn = document.getElementById("report-btn"); // New button for Report
-        const messagesContainer = document.getElementById("chatbot-messages");
-        const headerText = document.getElementById("header-text");
-        const originalHeaderText = headerText.innerHTML;
-
-        const imageInput = document.getElementById("image-input");
-        const imageUploadBtn = document.getElementById("image-upload-btn");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
-        const imagePreview = document.getElementById("image-preview");
-        const removeImageBtn = document.getElementById("remove-image-btn");
-        let uploadedImageBase64 = null;
-
-        // Helper functions for TTS
-        function base64ToArrayBuffer(base64) {
-            const binaryString = atob(base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-        function pcmToWav(pcm16, sampleRate) {
-            const wavHeader = new ArrayBuffer(44);
-            const view = new DataView(wavHeader);
-            view.setUint32(0, 0x46464952, true); // "RIFF"
-            view.setUint32(4, 36 + pcm16.length * 2, true);
-            view.setUint32(8, 0x45564157, true); // "WAVE"
-            view.setUint32(12, 0x20746d66, true); // "fmt "
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, 1, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true);
-            view.setUint32(36, 0x61746164, true); // "data"
-            view.setUint32(40, pcm16.length * 2, true);
-            const buffer = new Uint8Array(wavHeader.byteLength + pcm16.byteLength * 2);
-            buffer.set(new Uint8Array(wavHeader), 0);
-            buffer.set(new Uint8Array(pcm16.buffer), wavHeader.byteLength);
-            return new Blob([buffer], { type: "audio/wav" });
-        }
-        async function speakMessage(text) {
-            const audio = new Audio();
-            audio.src = '#';
-            const payload = {
-                contents: [{ parts: [{ text: text }] }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
-                }
-            };
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const audioData = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-                if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                    const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-                    const pcmData = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmData);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-                    audio.src = audioUrl;
-                    audio.play();
-                } else {
-                    console.error("TTS response is not a valid audio format.");
-                }
-            } catch (error) {
-                console.error('Error with TTS:', error);
-            }
-        }
-
-        // Function to append a new message to the chat
-        function appendMessage(message, sender, imageBase64 = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.maxWidth = '80%';
-            messageDiv.style.padding = '10px 14px';
-            messageDiv.style.borderRadius = '18px';
-            messageDiv.style.lineHeight = '1.4';
-            messageDiv.style.fontSize = '0.95rem';
-            messageDiv.style.position = 'relative';
-
-            if (sender === 'user') {
-                messageDiv.style.backgroundColor = '#e2e8f0';
-                messageDiv.style.color = '#333';
-                messageDiv.style.alignSelf = 'flex-end';
-                messageDiv.style.borderBottomRightRadius = '4px';
-            } else {
-                messageDiv.style.backgroundColor = '#22c55e';
-                messageDiv.style.color = 'white';
-                messageDiv.style.alignSelf = 'flex-start';
-                messageDiv.style.borderBottomLeftRadius = '4px';
-            }
-
-            if (imageBase64) {
-                const img = document.createElement('img');
-                img.src = `data:image/jpeg;base64,${imageBase64}`;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '8px';
-                img.style.marginBottom = '8px';
-                messageDiv.appendChild(img);
-            }
-            const textNode = document.createTextNode(message);
-            messageDiv.appendChild(textNode);
-            messagesContainer.appendChild(messageDiv);
-
-            if (sender === 'bot') {
-                const ttsButton = document.createElement('button');
-                ttsButton.textContent = '🔊';
-                ttsButton.style.cssText = 'background:rgba(255,255,255,0.2); color:white; border:none; padding:6px; border-radius:50%; cursor:pointer; position:absolute; bottom:4px; right:-24px; transition:all 0.2s ease-in-out; opacity:1; pointer-events:auto;';
-                ttsButton.onclick = () => speakMessage(message);
-                messageDiv.appendChild(ttsButton);
-            }
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        async function getGeminiTextResponse(prompt) {
-            const apiKey = "AIzaSyAtHy3rOfV2aYRfi0Ywbt_RLQnQjN2dNrA";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response at this time.";
-                } catch (error) {
-                    console.error('Error calling Gemini API:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't get a response. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to connect right now. Please try again in a moment.";
-        }
-
-        async function getGeminiImageResponse(prompt, imageBase64) {
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: imageBase64 } } ]
-                }]
-            };
-            let retries = 0;
-            const maxRetries = 3;
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    if (!response.ok) {
-                        if (response.status === 429) {
-                            retries++;
-                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                            continue;
-                        }
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I'm sorry, I couldn't generate a response for this image.";
-                } catch (error) {
-                    console.error('Error calling Gemini API with image:', error);
-                    retries++;
-                    if (retries >= maxRetries) {
-                        return "I'm sorry, I couldn't analyze the image. Please check your internet connection and try again later.";
-                    }
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-                }
-            }
-            return "I'm sorry, I'm unable to process the image right now. Please try again in a moment.";
-        }
-
-
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            const hasImage = uploadedImageBase64 !== null;
-            if (message || hasImage) {
-                appendMessage(message, 'user', uploadedImageBase64);
-                userInput.value = '';
-                uploadedImageBase64 = null;
-                imagePreviewContainer.style.display = 'none';
-
-                const thinkingMessageDiv = document.createElement('div');
-                thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-                thinkingMessageDiv.className = 'message bot-message';
-                thinkingMessageDiv.style.display = 'flex';
-                thinkingMessageDiv.style.alignItems = 'center';
-                thinkingMessageDiv.style.gap = '0.5rem';
-                messagesContainer.appendChild(thinkingMessageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                let botResponse;
-                if (hasImage) {
-                    const aiPrompt = `You are AgriTrue, an expert agricultural AI. Analyze the uploaded image to identify any plant diseases, pests, or nutritional deficiencies. Provide a clear diagnosis and suggest a specific course of action or treatment. If you cannot identify the issue, say so clearly.`;
-                    botResponse = await getGeminiImageResponse(aiPrompt, uploadedImageBase64);
-                } else {
-                    let aiPrompt = `You are AgriTrue, an expert agricultural AI. Respond to the user's query in a concise and helpful way, keeping your advice related to farming and crop management. User's query: ${message}`;
-                    // Special handling for greetings
-                    const lowerCaseMessage = message.toLowerCase();
-                    if (lowerCaseMessage.includes('hello') || lowerCaseMessage.includes('hi')) {
-                        aiPrompt = `The user said "${message}". Respond with a friendly greeting and ask how you can help them with their farming needs.`;
-                    }
-                    botResponse = await getGeminiTextResponse(aiPrompt);
-                }
-
-                messagesContainer.removeChild(thinkingMessageDiv);
-                appendMessage(botResponse, 'bot');
-            }
-        }
-
-        // Function for the "Get Advice" feature
-        async function getAdvice() {
-            const problem = prompt("What is your crop and what problem are you seeing?");
-            if (!problem) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an expert agricultural advisor. A farmer needs help with a crop problem. The problem is: "${problem}". Provide a detailed diagnosis and a step-by-step plan for treatment or resolution. Structure your response with clear headings like "Diagnosis" and "Recommended Action Plan."`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Function for the "Generate Report" feature
-        async function generateReport() {
-            const topic = prompt("What is the topic for your agricultural report?");
-            if (!topic) return;
-
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const aiPrompt = `You are AgriTrue, an agricultural analyst. Generate a short, well-structured report on the topic of "${topic}". The report should include an an introduction, key findings, and a conclusion. Use markdown for headings and bullet points to make the report easy to read.`;
-            const botResponse = await getGeminiTextResponse(aiPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        // Existing function to generate a farm fact
-        async function generateFarmFact() {
-            const thinkingMessageDiv = document.createElement('div');
-            thinkingMessageDiv.innerHTML = '<span class="dot-pulse"></span>';
-            thinkingMessageDiv.className = 'message bot-message';
-            thinkingMessageDiv.style.display = 'flex';
-            thinkingMessageDiv.style.alignItems = 'center';
-            thinkingMessageDiv.style.gap = '0.5rem';
-            messagesContainer.appendChild(thinkingMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            const factPrompt = "Generate a concise and interesting fact about farming, a practical agronomy tip, or a tip on pest management. The response should be a single, short paragraph.";
-            const botResponse = await getGeminiTextResponse(factPrompt);
-
-            messagesContainer.removeChild(thinkingMessageDiv);
-            appendMessage(botResponse, 'bot');
-        }
-
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            voiceInputBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
-                    voiceInputBtn.innerHTML = '�';
-                    voiceInputBtn.style.backgroundColor = 'gray';
-                } catch (e) { console.error('Speech recognition start error:', e); }
-            });
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                sendMessage();
-            };
-            recognition.onend = () => {
-                voiceInputBtn.innerHTML = '🎙️';
-                voiceInputBtn.style.backgroundColor = '#3b82f6';
-            };
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                appendMessage("Voice recognition error. Please try again or type your message.", 'bot');
-            };
-        } else {
-            voiceInputBtn.style.display = 'none';
-            console.warn("Speech Recognition API not supported in this browser.");
-        }
-
-        imageUploadBtn.addEventListener('click', () => { imageInput.click(); });
-        imageInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    uploadedImageBase64 = reader.result.replace('data:', '').replace(/^.+,/, '');
-                    imagePreview.src = reader.result;
-                    imagePreviewContainer.style.display = 'block';
-                    userInput.placeholder = "Image uploaded. You can type a message to go with it...";
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        removeImageBtn.addEventListener('click', () => {
-            uploadedImageBase64 = null;
-            imagePreviewContainer.style.display = 'none';
-            userInput.placeholder = "Type a message...";
-            imageInput.value = '';
-        });
-
-        chatbotIcon.onclick = () => {
-            chatbotContainer.style.display = "flex";
-            chatbotIcon.style.display = "none";
-            headerText.innerHTML = `<i class="fa-solid fa-seedling" style="font-size:1.2em; margin-right:8px;"></i> AgriTrue`;
-        };
-        closeChatbotBtn.onclick = () => {
-            chatbotContainer.style.display = "none";
-            chatbotIcon.style.display = "block";
-            headerText.innerHTML = originalHeaderText;
-        };
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { sendMessage(); }
-        });
-        factBtn.addEventListener('click', generateFarmFact);
-        adviceBtn.addEventListener('click', getAdvice);
-        reportBtn.addEventListener('click', generateReport);
     };
-</script>
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">About AgriTrue</h5>
-                    <p class="text-gray-400 leading-relaxed">AgriTrue empowers farmers, researchers, and communities with innovative tools, data insights, and collaborative solutions for a sustainable agricultural future.</p>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Quick Links</h5>
-                    <ul class="space-y-2">
-                        <li><a href="/dashboard" class="hover:text-green-400 transition-colors">Info Graphics</a></li>
-                        <li><a href="/know_your_land" class="hover:text-green-400 transition-colors">Know Your Land</a></li>
-                        <li><a href="/community-notes" class="hover:text-green-400 transition-colors">Community Notes</a></li>
-                        <li><a href="/chatbot" class="hover:text-green-400 transition-colors">AI Chatbot</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 class="text-xl font-bold mb-4 text-green-400">Contact Us</h5>
-                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i>Nairobi, Kenya</p>
-                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i>info@agritrue.org</p>
-                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i>+254 715 142 906</p>
-                </div>
-            </div>
-            <hr class="border-gray-700 my-8">
-            <p class="text-center text-gray-500 text-sm">&copy; 2025 AgriTrue. All rights reserved.</p>
-        </div>
-    </footer>
+  </script>
 
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 5% 18%, rgba(134, 239, 172, .14), transparent 24rem),
+        radial-gradient(circle at 95% 75%, rgba(187, 247, 208, .18), transparent 28rem),
+        #f7faf7;
+      color: #1e293b;
+    }
+    body.menu-open { overflow: hidden; }
+
+    .site-nav {
+      background: linear-gradient(100deg, #064e3b 0%, #0b6623 50%, #4fae62 100%);
+      box-shadow: 0 10px 30px rgba(5,46,22,.18);
+    }
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: .75rem;
+      right: .75rem;
+      bottom: .35rem;
+      height: 2px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      transform: scaleX(0);
+      transition: transform .2s ease;
+    }
+    .nav-link:hover::after,
+    .nav-link.active::after { transform: scaleX(1); }
+
+    .dropdown-menu {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    }
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      background: rgba(2,25,12,.62);
+      backdrop-filter: blur(5px);
+    }
+    .mobile-overlay.show { display: block; }
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      right: min(-92vw,-390px);
+      z-index: 70;
+      width: min(90vw,370px);
+      height: 100dvh;
+      overflow-y: auto;
+      background: #f0fdf4;
+      box-shadow: -24px 0 70px rgba(5,46,22,.28);
+      transition: right .3s ease;
+    }
+    .mobile-menu.show { right: 0; }
+
+    .hero {
+      position: relative;
+      min-height: 570px;
+      overflow: hidden;
+      background: #052e16;
+    }
+    .hero-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.08) contrast(1.04);
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(2,28,14,.95) 0%, rgba(4,54,27,.80) 48%, rgba(5,75,38,.46) 100%),
+        linear-gradient(0deg, rgba(2,24,13,.72), transparent 60%);
+    }
+    .hero-shine {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    .hero-shine::before {
+      content: "";
+      position: absolute;
+      top: -25%;
+      bottom: -25%;
+      left: -55%;
+      width: 36%;
+      background: linear-gradient(105deg, transparent, rgba(199,255,211,.14), rgba(255,255,255,.48), rgba(199,255,211,.12), transparent);
+      filter: blur(8px);
+      transform: skewX(-12deg);
+      animation: shineSweep 7.5s ease-in-out infinite;
+    }
+    @keyframes shineSweep {
+      0% { left: -55%; opacity: 0; }
+      12% { opacity: .8; }
+      68% { left: 125%; opacity: 0; }
+      100% { left: 125%; opacity: 0; }
+    }
+
+    .glass-panel {
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 22px 65px rgba(0,0,0,.15);
+    }
+    .search-shell {
+      border: 1px solid #dcfce7;
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 24px 65px rgba(5,46,22,.10);
+    }
+    .search-input {
+      width: 100%;
+      border: 1px solid #d9e4dc;
+      border-radius: 1rem;
+      background: #f9fbf9;
+      padding: 1rem 1rem 1rem 3.1rem;
+      color: #1f2937;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .search-input:focus {
+      border-color: #16a34a;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+    .result-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #dcfce7;
+      background: white;
+      box-shadow: 0 22px 60px rgba(5,46,22,.10);
+    }
+    .result-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg,#166534,#22c55e,#86efac);
+    }
+    .data-card,
+    .feature-card {
+      border: 1px solid #e5eee7;
+      background: linear-gradient(145deg,#fff,#f9fcf9);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .data-card:hover,
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: #bbf7d0;
+      box-shadow: 0 18px 42px rgba(22,101,52,.10);
+    }
+    .map-shell {
+      overflow: hidden;
+      border: 1px solid #dfe9e1;
+      border-radius: 1.6rem;
+      background: white;
+      box-shadow: 0 22px 60px rgba(15,23,42,.10);
+    }
+    .map-shell iframe {
+      display: block;
+      width: 100%;
+      height: 560px;
+      border: 0;
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .ai-float,
+    .whatsapp-float {
+      position: fixed;
+      right: 18px;
+      z-index: 55;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: white;
+      border: 3px solid white;
+      transition: transform .2s ease;
+    }
+    .ai-float {
+      bottom: 94px;
+      width: 54px;
+      height: 54px;
+      background: #064e3b;
+      box-shadow: 0 14px 34px rgba(5,46,22,.30);
+    }
+    .whatsapp-float {
+      bottom: 18px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(145deg,#2ee171,#25d366 48%,#128c4a);
+      font-size: 1.85rem;
+      box-shadow: 0 18px 42px rgba(18,140,74,.42),0 0 0 7px rgba(37,211,102,.12);
+    }
+    .ai-float:hover,
+    .whatsapp-float:hover { transform: translateY(-4px); }
+
+    @media (max-width: 1023px) {
+      .hero { min-height: 650px; }
+      .hero-overlay {
+        background:
+          linear-gradient(0deg, rgba(2,28,14,.96), rgba(5,71,36,.68)),
+          linear-gradient(90deg, rgba(2,28,14,.70), transparent);
+      }
+    }
+    @media (max-width: 640px) {
+      .hero { min-height: 690px; }
+      .map-shell iframe { height: 430px; }
+      .whatsapp-float { width: 58px; height: 58px; }
+      .ai-float { bottom: 88px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <nav class="site-nav fixed inset-x-0 top-0 z-50">
+    <div class="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+      <a href="/" class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue logo" class="h-10 w-10 rounded-full border-2 border-white/70 object-cover shadow">
+        <div>
+          <div class="font-display text-xl font-extrabold leading-none text-white sm:text-2xl">AgriTrue</div>
+          <div class="mt-1 hidden text-[9px] font-bold uppercase tracking-[.24em] text-green-100 sm:block">Founded in 2025</div>
+        </div>
+      </a>
+
+      <div class="hidden items-center gap-1 lg:flex">
+        <a href="/" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Home</a>
+        <div class="dropdown relative">
+          <button type="button" class="nav-link flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Utilities <i class="fa-solid fa-chevron-down ml-2 text-[10px]"></i></button>
+          <div class="dropdown-menu absolute left-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+            <a href="/community-notes" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">Community Notes</a>
+            <a href="/chatbot" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">AI Chatbot</a>
+            <a href="/ml-analyzer" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">Smart Analyzer</a>
+            <a href="/ussd" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50 hover:text-green-800">USSD Service</a>
+          </div>
+        </div>
+        <a href="/dashboard" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Farm Truth</a>
+        <a href="/know_your_land" class="nav-link active rounded-xl bg-white/10 px-3 py-2.5 text-sm font-semibold text-white">Know Your Land</a>
+        <a href="/about" class="nav-link rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">About</a>
+        <div class="dropdown relative">
+          <button type="button" class="nav-link flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-white hover:bg-white/10">Resources <i class="fa-solid fa-chevron-down ml-2 text-[10px]"></i></button>
+          <div class="dropdown-menu absolute right-0 top-full mt-2 w-56 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+            <a href="/research" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Research Hub</a>
+            <a href="/faqs" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">FAQs</a>
+            <a href="/podcast" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Podcast</a>
+          </div>
+        </div>
+
+        {% if current_user.is_authenticated %}
+          <div class="dropdown relative ml-1">
+            <button type="button" class="flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/15"><i class="fa-regular fa-circle-user"></i>Profile<i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+            <div class="dropdown-menu absolute right-0 top-full mt-2 w-52 rounded-2xl border border-green-100 bg-white p-2 shadow-2xl">
+              <a href="/profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Profile</a>
+              <a href="/edit_profile" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">Edit Profile</a>
+              <a href="/streak" class="block rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-green-50">View Streak</a>
+              {% if current_user.is_admin %}<a href="/admin" class="block rounded-xl px-4 py-3 text-sm font-bold text-amber-700 hover:bg-amber-50">Admin Panel</a>{% endif %}
+              <a href="/logout" class="block rounded-xl px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50">Logout</a>
+            </div>
+          </div>
+        {% else %}
+          <a href="/login" class="ml-1 rounded-full border border-white/35 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/10">Login</a>
+          <a href="/register" class="rounded-full bg-white px-4 py-2.5 text-sm font-extrabold text-green-800 shadow-lg hover:bg-green-50">Register</a>
+        {% endif %}
+      </div>
+
+      <button id="mobileMenuButton" type="button" class="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-xl text-white lg:hidden" aria-label="Open navigation menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+
+  <div id="mobileOverlay" class="mobile-overlay"></div>
+  <aside id="mobileMenu" class="mobile-menu p-5 lg:hidden" aria-hidden="true">
+    <div class="flex items-center justify-between border-b border-green-200 pb-5">
+      <a href="/" class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="" class="h-11 w-11 rounded-full object-cover">
+        <div><div class="font-display text-lg font-extrabold text-green-950">AgriTrue</div><div class="text-xs font-semibold text-green-600">Farmer services</div></div>
+      </a>
+      <button id="closeMobileMenu" type="button" class="grid h-10 w-10 place-items-center rounded-xl bg-white text-xl text-green-800 shadow" aria-label="Close navigation menu"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <nav class="mt-5 space-y-2">
+      <a href="/" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Home</a>
+      <a href="/dashboard" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Farm Truth</a>
+      <a href="/know_your_land" class="block rounded-xl bg-green-700 px-4 py-3 font-bold text-white">Know Your Land</a>
+      <details class="rounded-xl border border-green-100 bg-white">
+        <summary class="cursor-pointer list-none px-4 py-3 font-semibold text-green-950"><span class="flex items-center justify-between">Utilities<i class="fa-solid fa-chevron-down text-xs text-green-600"></i></span></summary>
+        <div class="space-y-1 px-2 pb-2">
+          <a href="/community-notes" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">Community Notes</a>
+          <a href="/chatbot" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">AI Chatbot</a>
+          <a href="/ml-analyzer" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">Smart Analyzer</a>
+          <a href="/ussd" class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-green-50">USSD Service</a>
+        </div>
+      </details>
+      <a href="/about" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">About Us</a>
+      <a href="/research" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Research Hub</a>
+      <a href="/faqs" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">FAQs</a>
+      <a href="/podcast" class="block rounded-xl px-4 py-3 font-semibold text-green-950 hover:bg-green-100">Podcast</a>
+    </nav>
+
+    <div class="mt-6 border-t border-green-200 pt-5">
+      {% if current_user.is_authenticated %}
+        <a href="/profile" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">My Profile</a>
+        {% if current_user.is_admin %}<a href="/admin" class="mt-3 block rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-center font-bold text-amber-800">Admin Panel</a>{% endif %}
+        <a href="/logout" class="mt-3 block rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center font-bold text-red-600">Logout</a>
+      {% else %}
+        <a href="/login" class="block rounded-xl bg-green-700 px-4 py-3 text-center font-bold text-white">Login</a>
+        <a href="/register" class="mt-3 block rounded-xl border border-green-700 px-4 py-3 text-center font-bold text-green-800">Create Account</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <header class="hero mt-[68px] lg:mt-[72px]">
+    <img src="{{ url_for('static', filename='images/land.jpeg') }}" alt="Agricultural land landscape" class="hero-image">
+    <div class="hero-overlay"></div>
+    <div class="hero-shine" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto grid min-h-[570px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.12fr_.88fr] lg:px-8">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[.17em] text-green-100 backdrop-blur"><i class="fa-solid fa-map-location-dot"></i>AgriTrue Land Intelligence</div>
+        <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-7xl">Know your land before you make the next farm decision.</h1>
+        <p class="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">Explore county-level soil characteristics, weather context, crop recommendations and fertilizer guidance in one simple farmer-friendly view.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="#county-search" class="inline-flex items-center rounded-2xl bg-white px-6 py-3.5 font-extrabold text-green-900 shadow-xl transition hover:-translate-y-1 hover:bg-green-50">Search Your County<i class="fa-solid fa-arrow-down ml-2"></i></a>
+          <a href="/ml-analyzer" class="inline-flex items-center rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 font-extrabold text-white backdrop-blur hover:bg-white/15">Open Smart Analyzer</a>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-[2rem] p-5 sm:p-6">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 place-items-center rounded-xl bg-green-300 text-green-950"><i class="fa-solid fa-seedling"></i></div><div class="mt-4 text-sm font-extrabold text-white">Crop guidance</div><p class="mt-2 text-xs leading-5 text-white/60">Use local context to support crop planning.</p></div>
+          <div class="rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 place-items-center rounded-xl bg-green-300 text-green-950"><i class="fa-solid fa-vial"></i></div><div class="mt-4 text-sm font-extrabold text-white">Soil context</div><p class="mt-2 text-xs leading-5 text-white/60">Understand general soil type and pH guidance.</p></div>
+          <div class="rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 place-items-center rounded-xl bg-green-300 text-green-950"><i class="fa-solid fa-cloud-sun-rain"></i></div><div class="mt-4 text-sm font-extrabold text-white">Weather context</div><p class="mt-2 text-xs leading-5 text-white/60">Review weather information alongside farm planning.</p></div>
+          <div class="rounded-2xl bg-white/10 p-4"><div class="grid h-11 w-11 place-items-center rounded-xl bg-green-300 text-green-950"><i class="fa-solid fa-flask"></i></div><div class="mt-4 text-sm font-extrabold text-white">Input guidance</div><p class="mt-2 text-xs leading-5 text-white/60">See fertilizer suggestions for further verification.</p></div>
+        </div>
+        <div class="mt-4 rounded-2xl border border-amber-200/20 bg-amber-100/10 p-4 text-xs leading-5 text-amber-50/80"><i class="fa-solid fa-circle-info mr-2 text-amber-300"></i>County-level guidance is informational. Confirm field-specific decisions with soil testing and a qualified agricultural professional.</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="county-search" class="relative z-20 -mt-10 px-4 sm:px-6 lg:px-8">
+      <div class="search-shell mx-auto max-w-5xl rounded-[2rem] p-5 sm:p-7 lg:p-8">
+        <div class="grid gap-7 lg:grid-cols-[.72fr_1.28fr] lg:items-end">
+          <div>
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">County lookup</div>
+            <h2 class="mt-2 font-display text-2xl font-extrabold text-green-950 sm:text-3xl">Find agricultural information for your county</h2>
+            <p class="mt-3 text-sm leading-6 text-slate-500">Enter a Kenyan county name to retrieve the information available in your AgriTrue dataset.</p>
+          </div>
+          <form method="POST" class="grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div class="relative">
+              <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-green-600"></i>
+              <input name="county" type="text" id="county" autocomplete="address-level1" placeholder="e.g. Kirinyaga, Bungoma, Nakuru" value="{{ request.form.get('county', '') }}" required class="search-input">
+            </div>
+            <button type="submit" class="inline-flex min-h-[54px] items-center justify-center rounded-2xl bg-green-700 px-7 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-green-800"><i class="fa-solid fa-magnifying-glass mr-2"></i>Search</button>
+          </form>
+        </div>
+        <div class="mt-6 flex flex-wrap items-center gap-2 text-xs">
+          <span class="font-bold text-slate-500">Try:</span>
+          <button type="button" class="county-chip rounded-full bg-green-50 px-3 py-2 font-bold text-green-800 hover:bg-green-100" data-county="Nairobi">Nairobi</button>
+          <button type="button" class="county-chip rounded-full bg-green-50 px-3 py-2 font-bold text-green-800 hover:bg-green-100" data-county="Bungoma">Bungoma</button>
+          <button type="button" class="county-chip rounded-full bg-green-50 px-3 py-2 font-bold text-green-800 hover:bg-green-100" data-county="Kirinyaga">Kirinyaga</button>
+          <button type="button" class="county-chip rounded-full bg-green-50 px-3 py-2 font-bold text-green-800 hover:bg-green-100" data-county="Nakuru">Nakuru</button>
+          <button type="button" class="county-chip rounded-full bg-green-50 px-3 py-2 font-bold text-green-800 hover:bg-green-100" data-county="Kisumu">Kisumu</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 py-14 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        {% if results %}
+          <div id="land-results" class="result-card reveal rounded-[2rem] p-5 sm:p-8 lg:p-9">
+            <div class="flex flex-col gap-5 border-b border-slate-100 pb-7 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">County agricultural snapshot</div>
+                <h2 class="mt-2 font-display text-3xl font-extrabold capitalize text-green-950">{{ request.form.get('county', '') }}</h2>
+                <p class="mt-2 text-sm text-slate-500">Review the available indicators together rather than relying on a single field.</p>
+              </div>
+              <div class="inline-flex self-start items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-xs font-extrabold text-green-800"><span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>Data found</div>
+            </div>
+
+            <div class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              <article class="data-card rounded-2xl p-5"><div class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-layer-group"></i></div><div class="mt-4 text-xs font-extrabold uppercase tracking-[.12em] text-slate-400">Soil type</div><div class="mt-2 font-display text-lg font-extrabold text-slate-900">{{ results.soil_type }}</div></article>
+              <article class="data-card rounded-2xl p-5"><div class="grid h-11 w-11 place-items-center rounded-xl bg-cyan-100 text-cyan-700"><i class="fa-solid fa-vial-circle-check"></i></div><div class="mt-4 text-xs font-extrabold uppercase tracking-[.12em] text-slate-400">Soil pH</div><div class="mt-2 font-display text-lg font-extrabold text-slate-900">{{ results.ph }}</div></article>
+              <article class="data-card rounded-2xl p-5"><div class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-700"><i class="fa-solid fa-cloud-sun"></i></div><div class="mt-4 text-xs font-extrabold uppercase tracking-[.12em] text-slate-400">Weather</div><div class="mt-2 font-display text-lg font-extrabold text-slate-900">{{ results.weather }}</div></article>
+              <article class="data-card rounded-2xl p-5"><div class="grid h-11 w-11 place-items-center rounded-xl bg-lime-100 text-lime-700"><i class="fa-solid fa-wheat-awn"></i></div><div class="mt-4 text-xs font-extrabold uppercase tracking-[.12em] text-slate-400">Recommended crop</div><div class="mt-2 font-display text-lg font-extrabold text-slate-900">{{ results.crop }}</div></article>
+              <article class="data-card rounded-2xl p-5"><div class="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-amber-700"><i class="fa-solid fa-flask-vial"></i></div><div class="mt-4 text-xs font-extrabold uppercase tracking-[.12em] text-slate-400">Fertilizer</div><div class="mt-2 font-display text-lg font-extrabold text-slate-900">{{ results.fertilizer }}</div></article>
+            </div>
+
+            <div class="mt-7 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-600"></i><strong>Field verification matters:</strong> soil type, pH and fertilizer needs can vary within the same county. Use a soil test and professional agronomic guidance before making major input decisions.</div>
+              <a href="/ml-analyzer" class="inline-flex items-center justify-center rounded-2xl border border-green-200 bg-green-50 px-5 py-3.5 font-extrabold text-green-800 hover:bg-green-100">Analyze a crop<i class="fa-solid fa-arrow-right ml-2"></i></a>
+            </div>
+          </div>
+        {% elif request.method == 'POST' %}
+          <div class="reveal mx-auto max-w-3xl rounded-[2rem] border border-red-100 bg-white p-7 text-center shadow-soft sm:p-9">
+            <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-50 text-2xl text-red-600"><i class="fa-solid fa-location-question"></i></div>
+            <h2 class="mt-5 font-display text-2xl font-extrabold text-slate-900">No county data found</h2>
+            <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">We could not find agricultural information for “{{ request.form.get('county', '') }}”. Check the spelling or try another Kenyan county.</p>
+            <a href="#county-search" class="mt-6 inline-flex rounded-2xl bg-green-700 px-5 py-3 font-extrabold text-white hover:bg-green-800">Try another county</a>
+          </div>
+        {% else %}
+          <div class="mx-auto max-w-4xl text-center">
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Start with your location</div>
+            <h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">One county search brings the essentials together.</h2>
+            <p class="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500">Search above to see soil type, pH, weather context, crop recommendations and fertilizer guidance where data is available.</p>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="border-y border-green-100 bg-green-50/60 px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">From information to action</div>
+          <h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Use land information as a starting point—not the final diagnosis.</h2>
+          <p class="mt-4 text-sm leading-7 text-slate-500">Good farm decisions combine local data, field observation, testing and experienced agricultural advice.</p>
+        </div>
+        <div class="mt-10 grid gap-5 md:grid-cols-3">
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-green-100 text-xl text-green-700"><i class="fa-solid fa-map"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Understand the county context</h3><p class="mt-3 text-sm leading-7 text-slate-500">Review the available soil, weather and crop information to understand the general farming context in your area.</p></article>
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-xl text-amber-700"><i class="fa-solid fa-vials"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Test your actual field</h3><p class="mt-3 text-sm leading-7 text-slate-500">Use a soil test to confirm field-specific pH, nutrients and fertilizer requirements before investing in major inputs.</p></article>
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-12 w-12 place-items-center rounded-2xl bg-blue-100 text-xl text-blue-700"><i class="fa-solid fa-user-doctor"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Confirm important decisions</h3><p class="mt-3 text-sm leading-7 text-slate-500">Consult an extension officer, agronomist, laboratory or other qualified professional when the decision could materially affect your farm.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-2xl"><div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-700">Farmer field habits</div><h2 class="mt-3 font-display text-3xl font-extrabold text-green-950 sm:text-4xl">Build a better picture of your land over time.</h2></div>
+          <p class="max-w-xl text-sm leading-7 text-slate-500">Simple observations collected consistently can reveal seasonal changes that a single snapshot may miss.</p>
+        </div>
+        <div class="mt-9 grid gap-5 md:grid-cols-3">
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-14 w-14 place-items-center rounded-2xl bg-green-100 text-2xl text-green-700"><i class="fa-solid fa-map-location-dot"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Create a simple field map</h3><p class="mt-3 text-sm leading-7 text-slate-500">Mark wet areas, slopes, compacted sections, crop performance and visible soil differences so you can compare zones within your farm.</p></article>
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-14 w-14 place-items-center rounded-2xl bg-amber-100 text-2xl text-amber-700"><i class="fa-solid fa-book-open"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Keep a farm journal</h3><p class="mt-3 text-sm leading-7 text-slate-500">Record planting dates, rainfall, inputs, pests, symptoms and harvest results. These records improve future planning and professional consultations.</p></article>
+          <article class="feature-card reveal rounded-[1.7rem] p-6"><div class="grid h-14 w-14 place-items-center rounded-2xl bg-sky-100 text-2xl text-sky-700"><i class="fa-solid fa-camera-retro"></i></div><h3 class="mt-5 font-display text-xl font-extrabold text-green-950">Photograph the same location</h3><p class="mt-3 text-sm leading-7 text-slate-500">Take regular photographs from the same point to compare crop growth, erosion, vegetation cover and seasonal changes.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-slate-950 px-4 py-16 text-white sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
+        <div class="grid gap-8 lg:grid-cols-[.38fr_.62fr] lg:items-start">
+          <div class="lg:sticky lg:top-28">
+            <div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-300">Interactive reference</div>
+            <h2 class="mt-3 font-display text-3xl font-extrabold sm:text-4xl">Explore the Kenya soils map</h2>
+            <p class="mt-4 text-sm leading-7 text-white/60">Use the interactive map as an additional reference for broader soil patterns. Zoom and pan to inspect different areas.</p>
+            <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-6 text-white/55"><i class="fa-solid fa-circle-info mr-2 text-green-300"></i>The embedded map is provided by an external data service. Its availability and dataset terms are controlled by that provider.</div>
+          </div>
+          <div class="map-shell reveal">
+            <iframe title="Interactive Kenya soils map" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://opendata.rcmrd.org/maps/rcmrd::kenya-soils-map/explore?location=0.832339%2C39.830470%2C6.11&path=" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-green-950 via-green-800 to-green-600 p-7 text-white shadow-card sm:p-10 lg:p-12">
+        <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div><div class="text-xs font-extrabold uppercase tracking-[.16em] text-green-200">Need more than county data?</div><h2 class="mt-3 font-display text-3xl font-extrabold sm:text-4xl">Use AgriTrue’s other tools to investigate your farm further.</h2><p class="mt-4 max-w-3xl text-sm leading-7 text-white/65">Analyze an image, ask the agricultural assistant, consult Community Notes or access the low-bandwidth USSD service.</p></div>
+          <div class="flex flex-col gap-3 sm:flex-row lg:flex-col"><a href="/ml-analyzer" class="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3.5 font-extrabold text-green-900 shadow-lg hover:bg-green-50">Smart Analyzer</a><a href="/chatbot" class="inline-flex items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-5 py-3.5 font-extrabold text-white hover:bg-white/15">Ask AgriTrue AI</a></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <a href="/chatbot" class="ai-float" aria-label="Open AgriTrue AI chatbot" title="AgriTrue AI"><i class="fa-solid fa-comment-dots"></i></a>
+  <a href="https://wa.me/254715142906" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Contact AgriTrue on WhatsApp" title="WhatsApp AgriTrue"><i class="fa-brands fa-whatsapp"></i></a>
+
+  <footer class="bg-[#041c10] px-4 pb-8 pt-14 text-white sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+        <div class="lg:col-span-2">
+          <div class="flex items-center gap-3"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="AgriTrue" class="h-12 w-12 rounded-full border-2 border-white/20 object-cover"><div><div class="font-display text-2xl font-extrabold">AgriTrue</div><div class="text-xs font-bold uppercase tracking-[.18em] text-green-300">Founded in 2025</div></div></div>
+          <p class="mt-5 max-w-xl text-sm leading-7 text-white/50">AgriTrue helps farmers, researchers and agricultural communities access practical tools, trusted information and collaborative knowledge for more informed and sustainable farming.</p>
+        </div>
+        <div><h3 class="font-display text-lg font-extrabold">Explore</h3><div class="mt-4 space-y-3 text-sm text-white/55"><a href="/dashboard" class="block hover:text-green-300">Farm Truth</a><a href="/know_your_land" class="block hover:text-green-300">Know Your Land</a><a href="/community-notes" class="block hover:text-green-300">Community Notes</a><a href="/ml-analyzer" class="block hover:text-green-300">Smart Analyzer</a><a href="/research" class="block hover:text-green-300">Research Hub</a></div></div>
+        <div><h3 class="font-display text-lg font-extrabold">Contact</h3><div class="mt-4 space-y-3 text-sm text-white/55"><p><i class="fa-solid fa-location-dot mr-2 text-green-300"></i>Nairobi, Kenya</p><a href="mailto:info@agritrue.org" class="block hover:text-green-300"><i class="fa-regular fa-envelope mr-2 text-green-300"></i>info@agritrue.org</a><a href="tel:+254715142906" class="block hover:text-green-300"><i class="fa-solid fa-phone mr-2 text-green-300"></i>+254 715 142 906</a></div></div>
+      </div>
+      <div class="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between"><p>&copy; <span id="copyrightYear"></span> AgriTrue. All rights reserved.</p><p>County-level agricultural information is for guidance and should be professionally verified.</p></div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const menuButton = document.getElementById("mobileMenuButton");
+      const closeButton = document.getElementById("closeMobileMenu");
+      const menu = document.getElementById("mobileMenu");
+      const overlay = document.getElementById("mobileOverlay");
+
+      const openMenu = () => {
+        menu.classList.add("show");
+        overlay.classList.add("show");
+        menu.setAttribute("aria-hidden", "false");
+        menuButton.setAttribute("aria-expanded", "true");
+        document.body.classList.add("menu-open");
+      };
+
+      const closeMenu = () => {
+        menu.classList.remove("show");
+        overlay.classList.remove("show");
+        menu.setAttribute("aria-hidden", "true");
+        menuButton.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("menu-open");
+      };
+
+      menuButton.addEventListener("click", openMenu);
+      closeButton.addEventListener("click", closeMenu);
+      overlay.addEventListener("click", closeMenu);
+      menu.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
+
+      const countyInput = document.getElementById("county");
+      document.querySelectorAll(".county-chip").forEach(button => {
+        button.addEventListener("click", () => {
+          countyInput.value = button.dataset.county;
+          countyInput.focus();
+        });
+      });
+
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll(".reveal").forEach(element => observer.observe(element));
+
+      const results = document.getElementById("land-results");
+      if (results) {
+        setTimeout(() => results.scrollIntoView({ behavior: "smooth", block: "center" }), 220);
+      }
+
+      document.getElementById("copyrightYear").textContent = new Date().getFullYear();
+    });
+  </script>
 </body>
 </html>
